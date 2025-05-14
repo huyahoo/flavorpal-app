@@ -1,0 +1,12 @@
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.DS_Store
+**/node_modules
+**/dist
+**/coverage
+.env
+backend/.env
+frontend/.env
+*.log
+# Add any other files/directories that should not be copied into Docker images
