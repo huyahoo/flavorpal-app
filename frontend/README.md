@@ -1,6 +1,5 @@
 ## Environment
-Node==v18.17.1
-NPM==10.9.2
+Node==v22.15.0 (npm v10.9.2)
 
 ## Recommended IDE Setup
 
