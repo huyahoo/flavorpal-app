@@ -1,89 +1,56 @@
-<script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+  <div 
+    id="flavorpal-app-container" 
+    class="max-w-md mx-auto min-h-screen bg-flavorpal-gray-light font-sans overflow-x-hidden relative flex flex-col"
+  >
+    <main class="flex-grow overflow-y-auto" :class="{ 'pb-16': showBottomNav }">
+      <router-view v-slot="{ Component }">
+        <transition name="page-fade" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
+    </main>
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <h1 class="text-3xl font-bold underline">
-        Hello world!
-      </h1>
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+    <BottomNavigationBar v-if="showBottomNav" />
+  </div>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+<script setup lang="ts">
+import { onMounted, computed } from 'vue';
+import { useRoute } from 'vue-router';
+import { useAuthStore } from './store/auth';
+import BottomNavigationBar from './components/common/BottomNavigationBar.vue'; // Import the component
+
+const authStore = useAuthStore();
+const route = useRoute();
+
+// Determine if the bottom navigation should be shown based on route meta
+const showBottomNav = computed(() => {
+  // Default to false if meta is not defined, or if explicitly set to false
+  return route.meta.showBottomNav !== false && authStore.isAuthenticated;
+});
+
+onMounted(() => {
+  authStore.initializeAuth();
+});
+</script>
+
+<style>
+/* Global styles for body are in src/assets/main.css */
+.page-fade-enter-active {
+  transition: opacity 0.3s ease-out;
+}
+.page-fade-leave-active {
+  transition: opacity 0.2s ease-in;
+}
+.page-fade-enter-from,
+.page-fade-leave-to {
+  opacity: 0;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+/* Ensure the app container itself doesn't get an unwanted scrollbar if content is precisely screen height */
+#flavorpal-app-container {
+  /* Consider adding a subtle box-shadow here if not done by individual cards */
+   box-shadow: 0 0 25px rgba(0,0,0,0.1);
 }
 </style>
