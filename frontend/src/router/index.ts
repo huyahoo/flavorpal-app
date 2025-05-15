@@ -76,26 +76,30 @@ const routes: Array<RouteRecordRaw> = [
     props: true, 
     meta: { requiresAuth: true, title: 'FlavorPal - Product Details', showBottomNav: true } 
   },
-  // {
-  //   path: '/:pathMatch(.*)*',
-  //   name: 'NotFound',
-  //   // MODIFIED: Made redirect async and use await import for the store
-  //   redirect: async (to: RouteLocationNormalized) => {
-  //     // Dynamically import the auth store to ensure Pinia is initialized
-  //     // and to avoid potential circular dependencies at app startup.
-  //     const { useAuthStore } = await import('../store/auth');
-  //     const authStore = useAuthStore();
-
-  //     // It's good practice to ensure auth state is known before redirecting.
-  //     // The beforeEach guard should handle most of this, but an extra check here is fine.
-  //     if (!authStore.user && localStorage.getItem('flavorpal_current_user_v4')) {
-  //         await authStore.initializeAuth(); // Ensure session is loaded
-  //     }
-      
-  //     // Redirect to Home if authenticated, otherwise to Login.
-  //     return authStore.isAuthenticated ? { name: 'Home' } : { name: 'Login' };
-  //   }
-  // }
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: {
+      template: '<div>Redirecting...</div>'
+    },
+    beforeEnter: async (to, from, next) => {
+      // Dynamically import the auth store
+      const { useAuthStore } = await import('../store/auth');
+      const authStore = useAuthStore();
+  
+      // If necessary, initialize the auth state
+      if (!authStore.user && localStorage.getItem('flavorpal_current_user_v4')) {
+        await authStore.initializeAuth();
+      }
+  
+      // Redirect based on auth status
+      if (authStore.isAuthenticated) {
+        next({ name: 'Home' });
+      } else {
+        next({ name: 'Login' });
+      }
+    }
+  }
 ];
 
 const router = createRouter({
