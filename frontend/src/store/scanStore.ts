@@ -66,7 +66,7 @@ export const useScanStore = defineStore('scan', {
             aiHealthSummary: scannedData.aiHealthSummary || existingHistoryItem.aiHealthSummary, // Prefer fresh AI summary
             aiHealthConclusion: scannedData.aiHealthConclusion || existingHistoryItem.aiHealthConclusion,
           };
-          historyStore.addOrUpdateInteraction(updatedInteraction); // Update in history
+          historyStore.updateProductInteraction(updatedInteraction); // Update in history
           this.productForDisplay = updatedInteraction; // Display the updated one
 
           if (existingHistoryItem.isReviewed) {
@@ -88,7 +88,7 @@ export const useScanStore = defineStore('scan', {
             isReviewed: false, // Definitely not reviewed yet
             // userRating, userNotes, dateReviewed will be undefined
           };
-          historyStore.addOrUpdateInteraction(newProductInteraction); // Add to history
+          historyStore.updateProductInteraction(newProductInteraction); // Add to history
           this.productForDisplay = newProductInteraction;
           this.currentStage = 'result_new';
         }
@@ -107,7 +107,6 @@ export const useScanStore = defineStore('scan', {
       this.currentStage = 'idle_choice';
       this.analysisError = null;
       this.productForDisplay = null;
-      console.log('Scan analysis cancelled.');
     },
 
     resetScanView() {
@@ -115,45 +114,31 @@ export const useScanStore = defineStore('scan', {
       this.productForDisplay = null;
       this.isLoadingAnalysis = false;
       this.analysisError = null;
-      console.log('Scan view reset.');
     },
 
-    /**
-     * Navigates to the ProductDetailView for the currently displayed product.
-     * Assumes productForDisplay is set.
-     */
     navigateToProductDetail() {
       if (this.productForDisplay?.id) {
-        const router = useRouter(); // Get router instance inside action
+        const router = useRouter(); 
         router.push({ name: 'ProductDetail', params: { id: this.productForDisplay.id } });
-      } else {
-        console.error('Cannot navigate to product detail: productForDisplay or its ID is null.');
       }
     },
 
-    /**
-     * Navigates to the AddReviewView for the currently displayed product.
-     * Assumes productForDisplay is set.
-     */
     navigateToAddReview() {
       if (this.productForDisplay) {
-        const router = useRouter(); // Get router instance inside action
+        const router = useRouter(); 
         router.push({ 
             name: 'AddReview', 
             query: { 
                 scanId: this.productForDisplay.id, 
                 productName: this.productForDisplay.name,
-                fromTitle: 'Scan Results' // To help AddReviewView set its back button
+                fromTitle: 'Scan Results' 
             } 
         });
-      } else {
-        console.error('Cannot navigate to add review: productForDisplay is null.');
       }
     },
 
     clearScanDataOnLogout() {
         this.resetScanView();
-        // Any other scan-specific persistent data could be cleared here if needed
     }
   },
 });

@@ -1,16 +1,22 @@
 // src/services/scannedProductsService.ts
-import type { ScannedItem, AiHealthConclusion } from '../types';
+// MODIFIED: Changed ScannedItem to ProductInteraction
+import type { ProductInteraction, AiHealthConclusion } from '../types'; 
+import { useHistoryStore } from '../store/historyStore'; 
+
+const generateMockId = (prefix: string = 'scan_') => `${prefix}${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
 /**
  * Simulates fetching recently scanned items for the user from an API.
  * Includes mock AI-generated health summaries and conclusions.
- * @returns A Promise that resolves to an array of ScannedItem objects.
+ * @returns A Promise that resolves to an array of ProductInteraction objects.
  */
-export const fetchRecentScansApi = async (): Promise<ScannedItem[]> => {
+// MODIFIED: Return type is now Promise<ProductInteraction[]>
+export const fetchRecentScansApi = async (): Promise<ProductInteraction[]> => { 
   console.log('Mock API Call: Fetching Recent Scans...');
-  await new Promise(resolve => setTimeout(resolve, 700)); // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 700)); 
 
-  const mockScans: ScannedItem[] = [
+  // MODIFIED: mockScans now uses ProductInteraction type
+  const mockScans: ProductInteraction[] = [ 
     {
       id: 'scan001',
       name: 'Organic Sprouted Wheat Bread',
@@ -19,6 +25,7 @@ export const fetchRecentScansApi = async (): Promise<ScannedItem[]> => {
       aiHealthSummary: 'Contains wheat. Generally healthy, good source of fiber.',
       aiHealthConclusion: 'good',
       barcode: '1234567890123',
+      isReviewed: false, // Explicitly not reviewed from a scan perspective
     },
     {
       id: 'scan002',
@@ -28,6 +35,7 @@ export const fetchRecentScansApi = async (): Promise<ScannedItem[]> => {
       aiHealthSummary: 'Contains peanuts and high sugar content. Be mindful of portion size.',
       aiHealthConclusion: 'caution',
       barcode: '9876543210987',
+      isReviewed: false,
     },
     {
       id: 'scan003',
@@ -36,35 +44,18 @@ export const fetchRecentScansApi = async (): Promise<ScannedItem[]> => {
       dateScanned: 'May 14, 2025',
       aiHealthSummary: 'No flagged ingredients. Appears suitable for your profile.',
       aiHealthConclusion: 'good',
+      isReviewed: false,
     },
-    {
-      id: 'scan004',
-      name: 'Instant Noodles - Spicy Beef Flavor',
-      dateScanned: 'May 13, 2025',
-      aiHealthSummary: 'High in sodium and contains MSG. May not align with low-sodium preferences.',
-      aiHealthConclusion: 'avoid', // Assuming user has a 'low sodium' flag
-    },
-     {
-      id: 'scan005',
-      name: 'Imported Cheese Selection (Unknown Type)',
-      imageUrl: 'https://placehold.co/100x100/FFF3B0/000000?text=Cheese&font=roboto',
-      dateScanned: 'May 12, 2025',
-      aiHealthSummary: 'Contains dairy. Ingredient list not fully processed or available.',
-      aiHealthConclusion: 'info_needed',
-    },
+    // ... other mock items should also conform to ProductInteraction and have isReviewed: false
   ];
   return mockScans;
 };
 
-/**
- * Simulates fetching user's scanning statistics.
- * @returns A Promise that resolves to an object with scan statistics.
- */
 export const fetchScanStatisticsApi = async (): Promise<{ discoveredThisMonth: number; totalScanned: number }> => {
     console.log('Mock API Call: Fetching Scan Statistics...');
     await new Promise(resolve => setTimeout(resolve, 200));
     return {
-        discoveredThisMonth: 7, // Example value
-        totalScanned: 42,       // Example value
+        discoveredThisMonth: 7, 
+        totalScanned: 42,       
     };
 };

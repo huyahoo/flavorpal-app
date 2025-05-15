@@ -24,14 +24,21 @@ import BottomNavigationBar from './components/common/BottomNavigationBar.vue';
 const authStore = useAuthStore();
 const route = useRoute();
 
-// Determine if the bottom navigation should be shown based on route meta
-const showBottomNav = computed(() => {
-  // Default to false if meta is not defined, or if explicitly set to false
-  return route.meta.showBottomNav !== false && authStore.isAuthenticated;
+// Computed property to determine if the bottom navigation should be shown
+const showBottomNavComputed = computed(() => {
+  // 1. User must be authenticated
+  // 2. The route's meta field 'showBottomNav' must not be explicitly false.
+  //    If 'showBottomNav' is undefined in meta, we assume it should be shown for authenticated users.
+  return authStore.isAuthenticated && route.meta.showBottomNav !== false;
 });
 
-onMounted(() => {
-  authStore.initializeAuth();
+onMounted(async () => { // Make onMounted async if initializeAuth is async
+  // Ensure auth state is initialized, especially on page refresh or direct navigation
+  if (!authStore.user && localStorage.getItem('flavorpal_current_user_v4')) {
+    await authStore.initializeAuth();
+  }
+  // If authStore.initializeAuth() itself doesn't handle routing logic based on initial auth state,
+  // you might need to add some here, but typically router guards and the init function cover it.
 });
 </script>
 
@@ -47,10 +54,7 @@ onMounted(() => {
 .page-fade-leave-to {
   opacity: 0;
 }
-
-/* Ensure the app container itself doesn't get an unwanted scrollbar if content is precisely screen height */
 #flavorpal-app-container {
-  /* Consider adding a subtle box-shadow here if not done by individual cards */
    box-shadow: 0 0 25px rgba(0,0,0,0.1);
 }
 </style>

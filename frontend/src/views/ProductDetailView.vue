@@ -21,14 +21,14 @@
       <div v-else-if="product" class="space-y-6">
         <section class="bg-white p-5 rounded-xl shadow-lg">
           <h2 class="text-2xl sm:text-3xl font-bold text-flavorpal-gray-dark mb-3">{{ product.name }}</h2>
-
           <div class="mb-4 relative w-full aspect-[4/3] bg-flavorpal-gray-light rounded-lg overflow-hidden flex items-center justify-center">
               <div 
                 v-if="product.isReviewed" 
                 class="absolute top-0 left-0 z-10"
                 aria-label="Item has been reviewed"
               >
-                <div class="w-24 h-24 overflow-hidden"> <div class="absolute transform -rotate-45 bg-flavorpal-green text-white text-center shadow-md"
+                <div class="w-24 h-24 overflow-hidden"> 
+                  <div class="absolute transform -rotate-45 bg-flavorpal-green text-white text-center shadow-md"
                     style="left: -30px; top: 12px; width: 110px; font-size: 0.7rem; padding: 2px 0;" 
                     > 
                     Reviewed
@@ -58,7 +58,7 @@
               Reviewed on: {{ product.dateReviewed }}
             </p>
           </div>
-           <div v-else>
+          <div v-else>
              <p class="text-xs text-gray-500">
               Scanned on: {{ product.dateScanned }}
             </p>
@@ -109,7 +109,7 @@
               @click="markAsNewProductUserChoice(true)"
               :class="product.isNewForUser === true ? 'bg-flavorpal-green text-white ring-2 ring-offset-1 ring-flavorpal-green-dark' : 'bg-gray-100 hover:bg-gray-200 text-flavorpal-gray-dark'"
               class="flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-150 ease-in-out"
-              aria-pressed="product.isNewForUser === true"
+              :aria-pressed="product.isNewForUser === true" 
             >
               Yes, first time trying!
             </button>
@@ -117,7 +117,7 @@
               @click="markAsNewProductUserChoice(false)"
               :class="product.isNewForUser === false ? 'bg-flavorpal-green text-white ring-2 ring-offset-1 ring-flavorpal-green-dark' : 'bg-gray-100 hover:bg-gray-200 text-flavorpal-gray-dark'"
               class="flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-150 ease-in-out"
-              aria-pressed="product.isNewForUser === false"
+              :aria-pressed="product.isNewForUser === false"
             >
               No, I've had it before
             </button>
@@ -131,8 +131,8 @@
               v-for="related in relatedProducts" 
               :key="related.id"
               class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
-              @click="viewRelatedItemDetail(related.id)"
-              role="button" tabindex="0" @keypress.enter="viewRelatedItemDetail(related.id)" :aria-label="`View details for ${related.name}`"
+              @click="related.id ? viewRelatedItemDetail(related.id) : null" role="button" tabindex="0" 
+              @keypress.enter="related.id ? viewRelatedItemDetail(related.id) : null" :aria-label="`View details for ${related.name}`"
             >
               <div class="flex-shrink-0 w-12 h-12 bg-flavorpal-gray-light rounded-full flex items-center justify-center mr-3 overflow-hidden">
                  <img v-if="related.imageUrl" :src="related.imageUrl" :alt="related.name" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextSibling.style.display='flex';"/>
@@ -160,11 +160,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch, onBeforeMount } from 'vue'; // Added onBeforeMount
+import { ref, onMounted, computed, watch, onBeforeMount } from 'vue'; 
 import { useRoute, useRouter } from 'vue-router';
-import { useHistoryStore } from '../store/historyStore';
+import { useHistoryStore } from '../store/historyStore'; 
 import type { ProductInteraction, AiHealthConclusion } from '../types';
-import StarRating from '@/components/common/StarRating.vue';
+import StarRating from '@/components/common/StarRating.vue'; 
 
 const props = defineProps<{
   id: string; 
@@ -174,8 +174,8 @@ const router = useRouter();
 const route = useRoute(); 
 const historyStore = useHistoryStore();
 
-const product = ref<(ProductInteraction & { isNewForUser?: boolean }) | null>(null);
-const relatedProducts = ref<Partial<ProductInteraction & {isReviewed?: boolean}>[]>([]); // Ensure isReviewed is available for related items
+const product = ref<(ProductInteraction & { isNewForUser?: boolean }) | null>(null); 
+const relatedProducts = ref<Partial<ProductInteraction & {isReviewed?: boolean, id?: string}>[]>([]); // Ensure id is potentially part of Partial
 const loadingProduct = ref<boolean>(true);
 const previousRouteName = ref<string | null>(null);
 
@@ -205,24 +205,18 @@ const loadProductData = async (productId: string) => {
   loadingProduct.value = false;
 };
 
-// Capture previous route name before the component mounts or when route changes
-// This is a bit more reliable than onMounted for capturing 'from' route if this component is reused.
 onBeforeMount(() => {
-    // Try to get the 'from' route's name or meta title
-    // router.options.history.state.back is the path of the previous route
     const fromPath = router.options.history.state.back as string | null;
     if (fromPath) {
         const fromRouteResolved = router.resolve(fromPath);
         if (fromRouteResolved && fromRouteResolved.meta.title) {
             previousRouteName.value = fromRouteResolved.meta.title.toString().replace('FlavorPal - ', '');
         } else if (fromRouteResolved && fromRouteResolved.name) {
-            // Capitalize first letter of route name for display
             const nameStr = fromRouteResolved.name.toString();
             previousRouteName.value = nameStr.charAt(0).toUpperCase() + nameStr.slice(1);
         }
     }
-    // Fallback if 'fromTitle' was passed via query (more explicit)
-    if (!previousRouteName.value && route.query.fromTitle) {
+    if (!previousRouteName.value && route.query.fromTitle) { 
         previousRouteName.value = route.query.fromTitle as string;
     }
 });
@@ -233,9 +227,8 @@ onMounted(() => {
 });
 
 watch(() => props.id, (newId, oldId) => {
-  if (newId && newId !== oldId) { // Ensure it's a different product
+  if (newId && newId !== oldId) { 
     loadProductData(newId);
-     // Re-evaluate previousRouteName if navigating between product detail pages
     const fromPath = router.options.history.state.back as string | null;
     if (fromPath) {
         const fromRouteResolved = router.resolve(fromPath);
@@ -245,7 +238,7 @@ watch(() => props.id, (newId, oldId) => {
             const nameStr = fromRouteResolved.name.toString();
             previousRouteName.value = nameStr.charAt(0).toUpperCase() + nameStr.slice(1);
         } else {
-            previousRouteName.value = null; // Clear if no valid name found
+            previousRouteName.value = null; 
         }
     } else {
         previousRouteName.value = null;
@@ -279,14 +272,10 @@ const markAsNewProductUserChoice = (isNew: boolean) => {
   }
 };
 
-const viewRelatedItemDetail = (itemId: string) => {
-  // When navigating to a related product, we are coming from 'ProductDetail'
-  // So, the 'fromTitle' for the next ProductDetailView could be the current product's name.
-  // However, relying on router.options.history.state.back is generally preferred.
+const viewRelatedItemDetail = (itemId: string) => { // itemId is now guaranteed to be string by the template check
   router.push({ name: 'ProductDetail', params: { id: itemId } });
 };
 
-// --- AI Conclusion Styling Helpers ---
 const getConclusionColor = (conclusion?: AiHealthConclusion): string => {
   switch (conclusion) {
     case 'good': return 'bg-flavorpal-green';
@@ -322,7 +311,7 @@ const getConclusionText = (conclusion?: AiHealthConclusion): string => {
 .whitespace-pre-wrap {
   white-space: pre-wrap; 
 }
-.aspect-\[4\/3\] { /* Custom aspect ratio if not in Tailwind default */
+.aspect-\[4\/3\] { 
   aspect-ratio: 4 / 3;
 }
 </style>

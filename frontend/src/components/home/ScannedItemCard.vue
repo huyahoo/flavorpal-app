@@ -25,7 +25,8 @@
       </svg>
     </div>
 
-    <div class="flex-grow min-w-0"> <h3 :id="`scannedItemName-${item.id}`" class="font-semibold text-base sm:text-lg text-flavorpal-gray-dark truncate">{{ item.name }}</h3>
+    <div class="flex-grow min-w-0"> 
+      <h3 :id="`scannedItemName-${item.id}`" class="font-semibold text-base sm:text-lg text-flavorpal-gray-dark truncate">{{ item.name }}</h3>
       
       <p v-if="item.aiHealthSummary" class="text-xs sm:text-sm text-flavorpal-gray mt-1 line-clamp-2">
         {{ item.aiHealthSummary }}
@@ -48,11 +49,12 @@
 </template>
 
 <script setup lang="ts">
-import type { ScannedItem, AiHealthConclusion } from '../../types';
+// MODIFIED: Changed ScannedItem to ProductInteraction
+import type { ProductInteraction, AiHealthConclusion } from '../../types'; 
 import { useRouter } from 'vue-router';
 
 const props = defineProps<{
-  item: ScannedItem;
+  item: ProductInteraction; // MODIFIED: Use ProductInteraction
 }>();
 
 const router = useRouter();
@@ -69,7 +71,6 @@ const getConclusionColor = (conclusion?: AiHealthConclusion): string => {
   }
 };
 
-// Function to determine the text color for the AI health conclusion
 const getConclusionTextColor = (conclusion?: AiHealthConclusion): string => {
   switch (conclusion) {
     case 'good': return 'text-flavorpal-green-dark';
@@ -81,8 +82,6 @@ const getConclusionTextColor = (conclusion?: AiHealthConclusion): string => {
   }
 };
 
-
-// Function to get user-friendly text for the AI health conclusion
 const getConclusionText = (conclusion?: AiHealthConclusion): string => {
   switch (conclusion) {
     case 'good': return 'Looks good for you';
@@ -106,7 +105,6 @@ const handleItemClick = () => {
 </script>
 
 <style scoped>
-/* Custom line-clamp utility for multi-line text truncation */
 .line-clamp-2 {
   overflow: hidden;
   display: -webkit-box;
