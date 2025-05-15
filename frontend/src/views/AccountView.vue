@@ -93,31 +93,64 @@
       <section v-if="authStore.user" class="bg-white p-5 rounded-xl shadow-lg">
         <div class="flex justify-between items-center mb-3">
           <h3 class="text-lg font-semibold text-flavorpal-gray-dark">Health Keywords</h3>
-          <button @click="editKeywords" class="text-sm text-flavorpal-green hover:text-flavorpal-green-dark font-medium flex items-center p-1 rounded hover:bg-flavorpal-green-light transition-colors">
+          <button v-if="!isEditingKeywords" @click="startEditKeywords" class="text-sm text-flavorpal-green hover:text-flavorpal-green-dark font-medium flex items-center p-1 rounded hover:bg-flavorpal-green-light transition-colors">
              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
             Edit Keywords
           </button>
         </div>
-        <div v-if="authStore.healthFlags.length > 0" class="flex flex-wrap gap-2">
-          <span 
-            v-for="(flag, index) in authStore.healthFlags" 
-            :key="index"
-            class="px-3 py-1.5 bg-flavorpal-green-light text-flavorpal-green-dark text-sm font-medium rounded-full shadow-sm"
-          >
-            {{ flag }}
-          </span>
+        <div v-if="!isEditingKeywords">
+            <div v-if="authStore.healthFlags.length > 0" class="flex flex-wrap gap-2">
+            <span 
+                v-for="(flag, index) in authStore.healthFlags" 
+                :key="index"
+                class="px-3 py-1.5 bg-flavorpal-green-light text-flavorpal-green-dark text-sm font-medium rounded-full shadow-sm"
+            >
+                {{ flag }}
+            </span>
+            </div>
+            <p v-else class="text-sm text-flavorpal-gray">No health keywords set. Add some to personalize your experience!</p>
         </div>
-        <p v-else class="text-sm text-flavorpal-gray">No health keywords set. Add some to personalize your experience!</p>
+        <form v-else @submit.prevent="saveKeywords" class="space-y-3">
+            <div>
+                <label for="keywordsInput" class="block text-sm font-medium text-gray-700 mb-1">Edit your keywords (comma-separated):</label>
+                <input
+                    type="text"
+                    id="keywordsInput"
+                    v-model="newKeywordsInput"
+                    class="block w-full px-3 py-2 border border-flavorpal-green rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-flavorpal-green-dark sm:text-sm"
+                    placeholder="e.g., nuts, gluten-free, low sugar"
+                    ref="keywordsInputRef"
+                    aria-describedby="keywords-edit-error"
+                />
+            </div>
+            <div class="flex items-center space-x-2">
+                <button 
+                    type="submit" 
+                    :disabled="authStore.loading" 
+                    class="px-3 py-1.5 text-sm font-medium text-white bg-flavorpal-green hover:bg-flavorpal-green-dark rounded-md disabled:opacity-60 transition-colors"
+                >
+                    Save Keywords
+                </button>
+                <button 
+                    type="button" 
+                    @click="cancelEditKeywords" 
+                    class="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors"
+                >
+                    Cancel
+                </button>
+            </div>
+            <p v-if="keywordsEditError" id="keywords-edit-error" class="text-xs text-red-500 mt-1">{{ keywordsEditError }}</p>
+        </form>
       </section>
 
       <section v-if="authStore.user" class="bg-white rounded-xl shadow-lg overflow-hidden">
         <ul class="divide-y divide-gray-200">
           <li>
-            <router-link to="/history" class="flex items-center p-4 hover:bg-gray-50 transition-colors">
+            <button @click="navigateToMyReviews" class="w-full flex items-center p-4 hover:bg-gray-50 transition-colors text-left">
               <svg class="w-5 h-5 text-flavorpal-gray-dark mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-              <span class="text-base text-flavorpal-gray-dark font-medium">Review History</span>
+              <span class="text-base text-flavorpal-gray-dark font-medium">My Reviews</span>
               <svg class="w-4 h-4 text-gray-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-            </router-link>
+            </button>
           </li>
           <li>
             <button @click="changePassword" class="w-full flex items-center p-4 hover:bg-gray-50 transition-colors text-left">
@@ -150,20 +183,44 @@
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { useAuthStore } from '../store/auth';
 import { useUserProfileStore } from '../store/userProfileStore';
+import { useHistoryStore } from '../store/historyStore';
 import { useRouter } from 'vue-router';
-import BadgeItem from '@/components/account/BadgeItem.vue'; // Make sure path is correct
+import BadgeItem from '@/components/account/BadgeItem.vue'; 
 
 const authStore = useAuthStore();
 const userProfileStore = useUserProfileStore();
+const historyStore = useHistoryStore();
 const router = useRouter();
 
-// State for username editing
+// --- State for Username Editing ---
 const isEditingUsername = ref(false);
 const newUsernameInput = ref('');
 const usernameInputRef = ref<HTMLInputElement | null>(null);
 const usernameEditError = ref<string | null>(null);
 
-// Username editing functions
+// --- State for Keywords Editing ---
+const isEditingKeywords = ref(false);
+const newKeywordsInput = ref(''); // Comma-separated string
+const keywordsInputRef = ref<HTMLInputElement | null>(null); // For focusing the input
+const keywordsEditError = ref<string | null>(null);
+
+
+// Mock TastePoints (from userProfileStore now)
+// const tastePoints = ref(157); // Removed, will use userProfileStore.tastePoints
+
+// Interface for Badge data (remains the same)
+interface Badge {
+  id: string;
+  name: string;
+  icon: string; 
+  bgColor?: string; 
+  iconColor?: string; 
+}
+
+// Mock user badges (from userProfileStore now)
+// const userBadges = ref<Badge[]>([]); // Removed, will use userProfileStore.badges
+
+// --- Username Editing Functions ---
 const startEditUsername = () => {
   isEditingUsername.value = true;
   newUsernameInput.value = authStore.user?.username || '';
@@ -199,13 +256,52 @@ const cancelEditUsername = () => {
   newUsernameInput.value = authStore.user?.username || '';
 };
 
-// Other event handlers
-const handleLogout = async () => {
-  await authStore.logout(); // This will also clear userProfileStore via its subscription or direct call in logout
+// --- Keywords Editing Functions ---
+const startEditKeywords = () => {
+  isEditingKeywords.value = true;
+  // Join the array of flags into a comma-separated string for the input field
+  newKeywordsInput.value = authStore.healthFlags.join(', '); 
+  keywordsEditError.value = null; // Clear previous errors
+  nextTick(() => {
+    keywordsInputRef.value?.focus(); // Focus the input field
+  });
 };
 
-const editKeywords = () => {
-  alert('Edit health keywords functionality to be implemented!');
+const saveKeywords = async () => {
+  keywordsEditError.value = null; // Clear previous errors
+  // Split the comma-separated string into an array, trimming whitespace and filtering out empty strings
+  const flagsArray = newKeywordsInput.value
+    .split(',')
+    .map(flag => flag.trim())
+    .filter(flag => flag !== ''); 
+
+  // Call the authStore action to update health flags
+  const success = await authStore.updateHealthFlags(flagsArray);
+  if (success) {
+    isEditingKeywords.value = false; // Exit editing mode on success
+  } else {
+    // If authStore.updateHealthFlags sets an error, display it. Otherwise, show a generic message.
+    keywordsEditError.value = authStore.error || "Failed to update health keywords.";
+  }
+};
+
+const cancelEditKeywords = () => {
+  isEditingKeywords.value = false;
+  keywordsEditError.value = null; // Clear errors
+  // Optionally reset newKeywordsInput to current flags if needed, or just let it be
+  // newKeywordsInput.value = authStore.healthFlags.join(', '); 
+};
+
+
+// --- Navigation Handler for "My Reviews" ---
+const navigateToMyReviews = () => {
+  historyStore.setInitialHistoryFilters('reviewed_only');
+  router.push({ name: 'History' });
+};
+
+// Other event handlers
+const handleLogout = async () => {
+  await authStore.logout(); 
 };
 
 const changePassword = () => {
@@ -219,7 +315,12 @@ onMounted(async () => {
   }
   
   if (authStore.isAuthenticated) {
-    userProfileStore.loadUserProfile();
+    // userProfileStore.loadUserProfile() is already called in the previous version,
+    // ensure it's still being called if you need tastePoints and badges from there.
+    // If not already called by another component or App.vue, call it here.
+    if (userProfileStore.badges.length === 0 && userProfileStore.tastePoints === 0) {
+        userProfileStore.loadUserProfile();
+    }
   }
 });
 </script>
