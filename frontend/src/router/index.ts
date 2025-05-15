@@ -7,6 +7,7 @@ import AccountView from '../views/AccountView.vue';
 import DiscoverView from '../views/DiscoverView.vue';
 import HistoryView from '../views/HistoryView.vue';
 import ScanView from '../views/ScanView.vue';
+import ProductDetailView from '../views/ProductDetailView.vue';
 
 // Import the store type for use in guards, but get instance dynamically
 // import { useAuthStore } from '../store/auth'; // Avoid direct top-level import if store uses router
@@ -70,6 +71,13 @@ const routes: Array<RouteRecordRaw> = [
     // Lazy load this component for better initial load time
     component: () => import('../views/AddReviewView.vue'),
     meta: { requiresAuth: true, title: 'FlavorPal - Add Review' }
+  },
+  {
+    path: '/product/:id', // Dynamic segment for product ID
+    name: 'ProductDetail',
+    component: ProductDetailView,
+    props: true, // Pass route params as props to the component
+    meta: { requiresAuth: true, title: 'FlavorPal - Product Details', showBottomNav: true } // Or false if it should be full screen
   },
   // Catch-all route for 404 Not Found pages
   {

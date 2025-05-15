@@ -151,6 +151,7 @@ const username = computed(() => {
 // Function to handle navigation to an item's detail page (placeholder)
 const viewItemDetail = (itemId: string) => {
   console.log('Navigate to detail for item:', itemId);
+  router.push({ name: 'ProductDetail', params: { id: itemId } });
   // Example navigation: router.push({ name: 'ProductDetail', params: { id: itemId } });
   // You'll need to define a 'ProductDetail' route and view for this.
 };
