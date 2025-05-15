@@ -3,7 +3,7 @@
     id="flavorpal-app-container" 
     class="max-w-md mx-auto min-h-screen bg-flavorpal-gray-light font-sans overflow-x-hidden relative flex flex-col"
   >
-    <main class="flex-grow overflow-y-auto" :class="{ 'pb-16': showBottomNav }">
+    <main class="flex-grow overflow-y-auto" :class="{ 'pb-20': showBottomNavComputed }"> 
       <router-view v-slot="{ Component }">
         <transition name="page-fade" mode="out-in">
           <component :is="Component" />
@@ -11,15 +11,15 @@
       </router-view>
     </main>
 
-    <BottomNavigationBar v-if="showBottomNav" />
+    <BottomNavigationBar v-if="showBottomNavComputed" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute } from 'vue-router'; // Import useRoute
 import { useAuthStore } from './store/auth';
-import BottomNavigationBar from './components/common/BottomNavigationBar.vue'; // Import the component
+import BottomNavigationBar from './components/common/BottomNavigationBar.vue';
 
 const authStore = useAuthStore();
 const route = useRoute();

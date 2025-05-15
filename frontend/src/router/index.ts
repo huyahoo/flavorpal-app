@@ -18,6 +18,7 @@ declare module 'vue-router' {
     requiresAuth?: boolean;    // True if the route requires user to be authenticated
     requiresGuest?: boolean;   // True if the route is only for unauthenticated (guest) users
     title?: string;            // Optional page title for the browser tab
+    showBottomNav?: boolean; // Optional flag to show/hide the bottom navigation bar
   }
 }
 
@@ -27,50 +28,50 @@ const routes: Array<RouteRecordRaw> = [
     path: '/',
     name: 'Home',
     component: HomeView,
-    meta: { requiresAuth: true, title: 'FlavorPal - Home' } // This route needs authentication
+    meta: { requiresAuth: true, title: 'FlavorPal - Home', showBottomNav: true  } // This route needs authentication
   },
   {
     path: '/login',
     name: 'Login',
     component: LoginView,
-    meta: { requiresGuest: true, title: 'FlavorPal - Login' } // Guest-only route
+    meta: { requiresGuest: true, title: 'FlavorPal - Login', showBottomNav: false } // Guest-only route
   },
   {
     path: '/register',
     name: 'Register',
     component: RegisterView,
-    meta: { requiresGuest: true, title: 'FlavorPal - Register' } // Guest-only route
+    meta: { requiresGuest: true, title: 'FlavorPal - Register', showBottomNav: false } // Guest-only route
   },
   {
     path: '/account',
     name: 'Account',
     component: AccountView,
-    meta: { requiresAuth: true, title: 'FlavorPal - Account' }
+    meta: { requiresAuth: true, title: 'FlavorPal - Account', showBottomNav: true  }
   },
   {
     path: '/discover',
     name: 'Discover',
     component: DiscoverView,
-    meta: { requiresAuth: true, title: 'FlavorPal - Discover' }
+    meta: { requiresAuth: true, title: 'FlavorPal - Discover', showBottomNav: true  }
   },
   {
     path: '/history',
     name: 'History',
     component: HistoryView,
-    meta: { requiresAuth: true, title: 'FlavorPal - History' }
+    meta: { requiresAuth: true, title: 'FlavorPal - History', showBottomNav: true  }
   },
   {
     path: '/scan',
     name: 'Scan',
     component: ScanView,
-    meta: { requiresAuth: true, title: 'FlavorPal - Scan' }
+    meta: { requiresAuth: true, title: 'FlavorPal - Scan', showBottomNav: false  }
   },
   {
     path: '/add-review',
     name: 'AddReview',
     // Lazy load this component for better initial load time
     component: () => import('../views/AddReviewView.vue'),
-    meta: { requiresAuth: true, title: 'FlavorPal - Add Review' }
+    meta: { requiresAuth: true, title: 'FlavorPal - Add Review', showBottomNav: false  }
   },
   {
     path: '/product/:id', // Dynamic segment for product ID
