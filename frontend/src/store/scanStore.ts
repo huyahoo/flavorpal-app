@@ -1,16 +1,15 @@
 // src/store/scanStore.ts
 import { defineStore } from 'pinia';
 import type { ProductInteraction, AiHealthConclusion } from '../types';
-// Ensure OpenFoodFactsResult is imported if it's a distinct type, or rely on Partial<ProductInteraction>
 import { mockProcessScanOrPhoto, type OpenFoodFactsResult } from '../services/scanService'; 
 import { useHistoryStore } from './historyStore';
 import { useAuthStore } from './auth';
 
-export type ScanViewStage = 'idle_choice' | 'inputting_barcode' | 'analyzing' | 'result_reviewed' | 'result_new' | 'result_not_found' | 'error';
+export type ScanViewStage = 'idle_choice' | 'inputting_barcode' | 'analyzing' | 'result_reviewed' | 'result_new' | 'error';
 
 export interface ScanStoreState {
   currentStage: ScanViewStage;
-  productForDisplay: ProductInteraction | Partial<ProductInteraction> | null; // Can be partial if not found but barcode is known
+  productForDisplay: ProductInteraction | Partial<ProductInteraction> | null; 
   isLoadingAnalysis: boolean;
   analysisError: string | null;
   scannedBarcodeValue: string; 
@@ -52,31 +51,23 @@ export const useScanStore = defineStore('scan', {
 
       try {
         const serviceResult = await mockProcessScanOrPhoto(inputType, effectiveBarcode);
-        const scannedDataPartial = serviceResult as OpenFoodFactsResult; // Type assertion
+        // Ensure serviceResult is treated as OpenFoodFactsResult for barcode scans
+        const scannedDataPartial = serviceResult as OpenFoodFactsResult; 
 
-        if (!scannedDataPartial) { // Handle case where service might return null/undefined
+        if (!scannedDataPartial) {
             throw new Error("Could not retrieve product information from service.");
         }
         
-        // If product not found in OFF DB or API error, but we have barcode info
-        if (scannedDataPartial.fetchStatus === 'not_found_in_db' || scannedDataPartial.fetchStatus === 'api_error') {
-            this.productForDisplay = { // Set minimal info for display
-                id: scannedDataPartial.id || effectiveBarcode || generateInteractionId('unknown_'),
-                name: scannedDataPartial.name || `Product (Barcode: ${effectiveBarcode || 'N/A'})`,
-                barcode: effectiveBarcode,
-                dateScanned: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                aiHealthSummary: scannedDataPartial.aiHealthSummary || "Product information could not be retrieved.",
-                aiHealthConclusion: scannedDataPartial.aiHealthConclusion || 'info_needed',
-                isReviewed: false, // Not found, so definitely not reviewed from this scan
-            };
-            // DO NOT save to historyStore yet.
-            this.currentStage = 'result_new'; // Or a new 'result_not_found_in_db' stage
+        // If API error during barcode scan, show error and stop
+        if (scannedDataPartial.fetchStatus === 'api_error') {
+            this.analysisError = scannedDataPartial.aiHealthSummary || 'Failed to fetch product data.';
+            this.currentStage = 'error';
             this.isLoadingAnalysis = false;
             this.scannedBarcodeValue = '';
-            return; // End processing here for not_found or api_error
+            return;
         }
 
-        // Proceed if product was 'found' by the service (either OFF or photo mock)
+        // Client-Side Mock AI Analysis (if ingredientsText is available)
         const authStore = useAuthStore();
         let finalAiSummary = scannedDataPartial.aiHealthSummary || "No specific health insights generated.";
         let finalAiConclusion = scannedDataPartial.aiHealthConclusion || 'neutral';
@@ -102,7 +93,7 @@ export const useScanStore = defineStore('scan', {
                  finalAiConclusion = 'good';
             }
           }
-        } else if (authStore.healthFlags.length > 0 && !scannedDataPartial.ingredientsText && scannedDataPartial.aiHealthConclusion !== 'error_analyzing') {
+        } else if (authStore.healthFlags.length > 0 && !scannedDataPartial.ingredientsText && scannedDataPartial.aiHealthConclusion !== 'error_analyzing' && scannedDataPartial.aiHealthConclusion !== 'info_needed') {
             finalAiSummary = "Ingredient information not available for detailed analysis.";
             finalAiConclusion = 'info_needed';
         }
@@ -113,13 +104,12 @@ export const useScanStore = defineStore('scan', {
         }
 
         let existingHistoryItem: ProductInteraction | undefined = undefined;
-        // Use the ID from scannedDataPartial if it exists (e.g., barcode from OFF)
-        const idToSearch = scannedDataPartial.id || effectiveBarcode; 
+        // Use the ID from scannedDataPartial if it exists (e.g., barcode from OFF or generated for photo)
+        const idToSearch = scannedDataPartial.id || effectiveBarcode || generateInteractionId('unknown_');
 
-        if (idToSearch) {
-            existingHistoryItem = historyStore.getProductInteractionById(idToSearch);
-        }
-        // If not found by ID, and we have an effectiveBarcode that's different, try that
+        existingHistoryItem = historyStore.getProductInteractionById(idToSearch);
+        
+        // If not found by ID, and we have an effectiveBarcode that's different from idToSearch (less likely now), try that
         if (!existingHistoryItem && effectiveBarcode && effectiveBarcode !== idToSearch) {
             existingHistoryItem = historyStore.allProductInteractions.find(
                 item => item.barcode === effectiveBarcode
@@ -129,6 +119,7 @@ export const useScanStore = defineStore('scan', {
         let productToDisplayAndSave: ProductInteraction;
 
         if (existingHistoryItem) {
+          console.log('Scan matched existing item in history:', existingHistoryItem.name);
           productToDisplayAndSave = {
             ...existingHistoryItem, 
             name: scannedDataPartial.name || existingHistoryItem.name, 
@@ -143,21 +134,23 @@ export const useScanStore = defineStore('scan', {
             // isReviewed, userRating, etc., are preserved from existingHistoryItem
           };
         } else {
-          // This is for a product successfully identified by the service (e.g. OFF) but new to user's history
+          // This is for a product identified by the service (e.g. OFF 'found' or 'not_found_in_db', or a photo) 
+          // but new to the user's detailed history list.
           productToDisplayAndSave = {
-            id: idToSearch || generateInteractionId('prod_'), // Use ID from service or generate
+            id: idToSearch, // Use the determined ID
             name: scannedDataPartial.name || 'Unknown Product',
             imageUrl: scannedDataPartial.imageUrl,
             dateScanned: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-            barcode: effectiveBarcode,
+            barcode: effectiveBarcode, // Store the scanned barcode
             ingredientsText: scannedDataPartial.ingredientsText,
             categories: scannedDataPartial.categories,
             brands: scannedDataPartial.brands,
             genericName: scannedDataPartial.genericName,
             aiHealthSummary: finalAiSummary,
             aiHealthConclusion: finalAiConclusion,
-            isReviewed: false, 
-          };
+            isReviewed: false, // New interaction is not reviewed by default
+            fetchStatus: scannedDataPartial.fetchStatus, // Persist fetch status if available
+          } as ProductInteraction; // Assert type as ProductInteraction
         }
         
         // Only add to history if it was successfully 'found' by the service
@@ -170,11 +163,13 @@ export const useScanStore = defineStore('scan', {
         if (productToDisplayAndSave.isReviewed) {
           this.currentStage = 'result_reviewed';
         } else {
-          // This covers both 'found but not reviewed' and 'not_found_in_db' (where user might want to add review)
+          // This covers 'found but not reviewed' and 'not_found_in_db' (where user might want to add review)
+          // and photo scans.
           this.currentStage = 'result_new'; 
         }
 
       } catch (err: any) {
+        console.error('Error during scan analysis process:', err);
         this.analysisError = err.message || 'Analysis failed. Please try again.';
         this.currentStage = 'error';
       } finally {

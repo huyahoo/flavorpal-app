@@ -142,8 +142,8 @@
 
           <div v-if="scanStore.currentStage === 'result_new' && scanStore.productForDisplay">
             <h3 class="text-lg font-semibold mb-1">{{ scanStore.productForDisplay.name }}</h3>
-             <p class="text-sm text-gray-600 mb-1 line-clamp-2">{{ scanStore.productForDisplay.aiHealthSummary || 'Product information processed.' }}</p>
-             <div v-if="scanStore.productForDisplay.aiHealthConclusion" class="flex items-center mb-3">
+            <p class="text-sm text-gray-600 mb-1 line-clamp-2">{{ scanStore.productForDisplay.aiHealthSummary || 'Product information processed.' }}</p>
+            <div v-if="scanStore.productForDisplay.aiHealthConclusion" class="flex items-center mb-3">
                   <span class="w-2.5 h-2.5 rounded-full mr-1.5 flex-shrink-0" :class="getConclusionColor(scanStore.productForDisplay.aiHealthConclusion)" aria-hidden="true"></span>
                   <span class="text-xs font-medium" :class="getConclusionTextColor(scanStore.productForDisplay.aiHealthConclusion)">
                       {{ getConclusionText(scanStore.productForDisplay.aiHealthConclusion) }}
@@ -152,17 +152,10 @@
             <div class="flex flex-col sm:flex-row sm:justify-between items-center gap-3">
               <button @click="handleScanAnother" class="w-full sm:w-auto text-sm text-gray-500 hover:text-gray-700 py-2.5 px-4 rounded-lg hover:bg-gray-100 border border-gray-300 sm:border-transparent transition-colors">Scan Another</button>
               <button 
-                v-if="('fetchStatus' in scanStore.productForDisplay) && (scanStore.productForDisplay.fetchStatus === 'found' || (scanStore.productForDisplay.fetchStatus === 'not_found_in_db' && scanStore.productForDisplay.barcode))"
                 @click="handleNavigateToProductDetail" 
-                class="w-full sm:w-auto bg-flavorpal-green hover:bg-flavorpal-green-dark text-white font-medium py-2.5 px-5 rounded-lg text-sm transition-colors"
-              >
-                See Details &rarr; 
-              </button>
-              <button 
-                v-else @click="handleNavigateToAddReview" 
                 class="w-full sm:w-auto bg-flavorpal-orange hover:bg-flavorpal-orange-dark text-white font-medium py-2.5 px-5 rounded-lg text-sm transition-colors"
               >
-                Add Your Review &rarr;
+                See Details &rarr; 
               </button>
             </div>
           </div>
@@ -181,13 +174,12 @@
 
 <script setup lang="ts">
 // Imports and script setup from artifact: flavorpal_scan_view_v4_zxing
-// (No changes to the script section for these specific UI requests, only template and store logic)
 import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { useScanStore } from '../store/scanStore';
 import { useHistoryStore } from '../store/historyStore';
 import { useRouter } from 'vue-router';
 import StarRating from '@/components/common/StarRating.vue';
-import type { AiHealthConclusion, ProductInteraction } from '../types'; // Ensure ProductInteraction is imported
+import type { AiHealthConclusion, ProductInteraction } from '../types'; 
 import { BrowserMultiFormatReader, NotFoundException, BarcodeFormat, Result } from '@zxing/library';
 
 const scanStore = useScanStore();
@@ -250,7 +242,7 @@ const attemptStartCameraScanWithZXing = async () => {
 
     if (videoElementRef.value && stream) {
       console.log('ZXing: Starting continuous scan from video stream...');
-      codeReader.decodeFromStream(stream, videoElementRef.value, (result: Result | undefined, err: any) => { // Type result as Result | undefined
+      codeReader.decodeFromStream(stream, videoElementRef.value, (result: Result | undefined, err: any) => { 
         if (result) {
           console.log('ZXing: Barcode detected -', result.getText());
           handleBarcodeDetected(result.getText());
@@ -312,22 +304,9 @@ const handleScanAnother = () => {
 
 const handleNavigateToProductDetail = () => {
     const productId = scanStore.prepareForProductDetail(); 
-    if (productId) { // Check if productId is not null
+    if (productId) { 
         router.push({ name: 'ProductDetail', params: { id: productId } });
-    }
-};
-
-const handleNavigateToAddReview = () => {
-    const productInfo = scanStore.prepareForAddReview(); 
-    if (productInfo) {
-        router.push({ 
-            name: 'AddReview', 
-            query: { 
-                scanId: productInfo.scanId, 
-                productName: productInfo.productName,
-                fromTitle: 'Scan Results' 
-            } 
-        });
+        // Do not reset scan view here, allow user to go back to the popup if they want
     }
 };
 
