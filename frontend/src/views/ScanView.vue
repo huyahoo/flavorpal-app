@@ -151,7 +151,7 @@ import { useHistoryStore } from '../store/historyStore';
 import { useRouter } from 'vue-router';
 import StarRating from '@/components/common/StarRating.vue';
 import type { AiHealthConclusion } from '../types';
-import { BrowserMultiFormatReader, NotFoundException, BarcodeFormat, Result } from '@zxing/library'; // Import ZXing
+import { BrowserMultiFormatReader, NotFoundException, BarcodeFormat, DecodeHintType, Result } from '@zxing/library'; // Import ZXing
 
 const scanStore = useScanStore();
 const historyStore = useHistoryStore();
@@ -161,8 +161,17 @@ const videoElementRef = ref<HTMLVideoElement | null>(null);
 const barcodeInputRef = ref<HTMLInputElement | null>(null);
 const isCameraActive = ref(false); 
 const cameraError = ref<string | null>(null);
+
+const hints = new Map();
+const formats = [
+  BarcodeFormat.EAN_13,    // Common for retail products
+  BarcodeFormat.JAN_13,    // Japanese Article Number
+];
+
+hints.set(DecodeHintType.POSSIBLE_FORMATS, formats);
+
 // let barcodeDetector: BarcodeDetector | null = null; // Replaced by ZXing reader
-const codeReader = new BrowserMultiFormatReader(); // ZXing reader instance
+const codeReader = new BrowserMultiFormatReader(hints); // ZXing reader instance
 let stream: MediaStream | null = null;
 // let animationFrameId: number | null = null; // Not directly needed with zxing's continuous scan
 
