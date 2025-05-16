@@ -45,7 +45,7 @@
         <div class="bg-gray-900/80 p-4 backdrop-blur-sm flex-shrink-0">
           <p class="text-center text-sm text-gray-300 mb-4">Choose scan method:</p>
           <div class="flex justify-around items-center">
-            <button @click="attemptStartCameraScan" class="flex flex-col items-center text-gray-200 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10 focus:outline-none focus:bg-white/10" aria-label="Scan Barcode with Camera">
+            <button @click="attemptStartCameraScanWithZXing" class="flex flex-col items-center text-gray-200 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10 focus:outline-none focus:bg-white/10" aria-label="Scan Barcode with Camera">
               <svg class="w-10 h-10 sm:w-12 sm:h-12 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
               <span class="text-xs font-medium">Scan Barcode</span>
             </button>
@@ -98,34 +98,17 @@
       <div v-if="scanStore.currentStage === 'result_reviewed' || scanStore.currentStage === 'result_new'" 
            class="absolute bottom-0 left-0 right-0 z-30 p-4 sm:p-6 max-w-md mx-auto"
            aria-live="polite">
-        <div class="bg-white text-flavorpal-gray-dark p-5 rounded-t-2xl sm:rounded-2xl shadow-2xl animate-slide-up space-y-3">
-          <div v-if="scanStore.productForDisplay" class="relative w-full aspect-[16/9] bg-flavorpal-gray-light rounded-lg overflow-hidden flex items-center justify-center">
-              <div 
-                v-if="scanStore.productForDisplay.isReviewed" 
-                class="absolute top-0 left-0 z-10"
-                aria-label="Item has been reviewed"
-              >
+        <div class="bg-white text-flavorpal-gray-dark p-5 rounded-t-2xl sm:rounded-2xl shadow-2xl animate-slide-up space-y-4">
+          <div v-if="scanStore.productForDisplay" class="relative w-full aspect-[16/9] bg-flavorpal-gray-light rounded-lg overflow-hidden flex items-center justify-center mb-3">
+              <div v-if="scanStore.productForDisplay.isReviewed" class="absolute top-0 left-0 z-10" aria-label="Item has been reviewed">
                 <div class="w-24 h-24 overflow-hidden">
                   <div class="absolute transform -rotate-45 bg-flavorpal-green text-white text-center shadow-md"
-                    style="left: -30px; top: 12px; width: 110px; font-size: 0.7rem; padding: 2px 0;" 
-                    > 
-                    Reviewed
-                  </div>
+                    style="left: -30px; top: 12px; width: 110px; font-size: 0.7rem; padding: 2px 0;" > Reviewed </div>
                 </div>
               </div>
-              <img 
-                v-if="scanStore.productForDisplay.imageUrl" 
-                :src="scanStore.productForDisplay.imageUrl" 
-                :alt="scanStore.productForDisplay.name" 
-                class="w-full min-h-screen object-contain" onerror="this.style.display='none'; this.nextSibling.style.display='flex';"
-              />
-              <svg 
-                v-else 
-                class="w-12 h-12 text-gray-400" 
-                style="display: flex;"
-                fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              <img v-if="scanStore.productForDisplay.imageUrl" :src="scanStore.productForDisplay.imageUrl" :alt="scanStore.productForDisplay.name" class="w-full min-h-screen object-contain" onerror="this.style.display='none'; this.nextSibling.style.display='flex';"/>
+              <svg v-else class="w-12 h-12 text-gray-400" style="display: flex;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
           </div>
-
           <div v-if="scanStore.currentStage === 'result_reviewed' && scanStore.productForDisplay">
             <h3 class="text-lg font-semibold mb-1">{{ scanStore.productForDisplay.name }}</h3>
             <StarRating v-if="typeof scanStore.productForDisplay.userRating === 'number'" :rating="scanStore.productForDisplay.userRating" starSize="w-5 h-5" class="mb-1"/>
@@ -133,26 +116,19 @@
             <p class="text-sm text-gray-600 line-clamp-3 mb-3">{{ scanStore.productForDisplay.userNotes || 'You have reviewed this item.' }}</p>
             <div class="flex flex-col sm:flex-row sm:justify-between items-center gap-3">
               <button @click="handleScanAnother" class="w-full sm:w-auto text-sm text-gray-500 hover:text-gray-700 py-2.5 px-4 rounded-lg hover:bg-gray-100 border border-gray-300 sm:border-transparent transition-colors">Scan Another</button>
-              <button @click="handleNavigateToProductDetail" class="w-full sm:w-auto bg-flavorpal-green hover:bg-flavorpal-green-dark text-white font-medium py-2.5 px-5 rounded-lg text-sm transition-colors">
-                View Full Review &rarr;
-              </button>
+              <button @click="handleNavigateToProductDetail" class="w-full sm:w-auto bg-flavorpal-green hover:bg-flavorpal-green-dark text-white font-medium py-2.5 px-5 rounded-lg text-sm transition-colors"> View Full Review &rarr; </button>
             </div>
           </div>
-
           <div v-if="scanStore.currentStage === 'result_new' && scanStore.productForDisplay">
             <h3 class="text-lg font-semibold mb-1">{{ scanStore.productForDisplay.name || 'New Product Discovered!' }}</h3>
             <p class="text-sm text-gray-600 mb-1 line-clamp-2">{{ scanStore.productForDisplay.aiHealthSummary || 'You discovered a new product!' }}</p>
              <div v-if="scanStore.productForDisplay.aiHealthConclusion" class="flex items-center mb-3">
                   <span class="w-2.5 h-2.5 rounded-full mr-1.5 flex-shrink-0" :class="getConclusionColor(scanStore.productForDisplay.aiHealthConclusion)" aria-hidden="true"></span>
-                  <span class="text-xs font-medium" :class="getConclusionTextColor(scanStore.productForDisplay.aiHealthConclusion)">
-                      {{ getConclusionText(scanStore.productForDisplay.aiHealthConclusion) }}
-                  </span>
+                  <span class="text-xs font-medium" :class="getConclusionTextColor(scanStore.productForDisplay.aiHealthConclusion)"> {{ getConclusionText(scanStore.productForDisplay.aiHealthConclusion) }} </span>
               </div>
             <div class="flex flex-col sm:flex-row sm:justify-between items-center gap-3">
               <button @click="handleScanAnother" class="w-full sm:w-auto text-sm text-gray-500 hover:text-gray-700 py-2.5 px-4 rounded-lg hover:bg-gray-100 border border-gray-300 sm:border-transparent transition-colors">Scan Another</button>
-              <button @click="handleNavigateToProductDetail" class="w-full sm:w-auto bg-flavorpal-orange hover:bg-flavorpal-orange-dark text-white font-medium py-2.5 px-5 rounded-lg text-sm transition-colors">
-                See Details &rarr; 
-              </button>
+              <button @click="handleNavigateToProductDetail" class="w-full sm:w-auto bg-flavorpal-orange hover:bg-flavorpal-orange-dark text-white font-medium py-2.5 px-5 rounded-lg text-sm transition-colors"> See Details &rarr; </button>
             </div>
           </div>
         </div>
@@ -162,9 +138,7 @@
           <svg class="w-12 h-12 text-red-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           <p class="text-xl font-semibold text-white mb-2">Scan Failed</p>
           <p class="text-sm text-gray-300 mb-6">{{ scanStore.analysisError || 'An unknown error occurred.' }}</p>
-          <button @click="scanStore.resetScanView()" class="bg-flavorpal-green hover:bg-flavorpal-green-dark text-white font-medium py-2.5 px-6 rounded-lg transition-colors">
-              Try Again
-          </button>
+          <button @click="scanStore.resetScanView()" class="bg-flavorpal-green hover:bg-flavorpal-green-dark text-white font-medium py-2.5 px-6 rounded-lg transition-colors"> Try Again </button>
       </div>
     </div>
   </div>
@@ -177,6 +151,7 @@ import { useHistoryStore } from '../store/historyStore';
 import { useRouter } from 'vue-router';
 import StarRating from '@/components/common/StarRating.vue';
 import type { AiHealthConclusion } from '../types';
+import { BrowserMultiFormatReader, NotFoundException, BarcodeFormat, Result } from '@zxing/library'; // Import ZXing
 
 const scanStore = useScanStore();
 const historyStore = useHistoryStore();
@@ -186,9 +161,10 @@ const videoElementRef = ref<HTMLVideoElement | null>(null);
 const barcodeInputRef = ref<HTMLInputElement | null>(null);
 const isCameraActive = ref(false); 
 const cameraError = ref<string | null>(null);
-let barcodeDetector: BarcodeDetector | null = null;
+// let barcodeDetector: BarcodeDetector | null = null; // Replaced by ZXing reader
+const codeReader = new BrowserMultiFormatReader(); // ZXing reader instance
 let stream: MediaStream | null = null;
-let animationFrameId: number | null = null;
+// let animationFrameId: number | null = null; // Not directly needed with zxing's continuous scan
 
 const goBack = () => {
   stopCameraScanAndReset(); 
@@ -223,78 +199,72 @@ const handlePhotoScan = () => {
     scanStore.initiateScanProcess('photo');
 };
 
-const attemptStartCameraScan = async () => {
-  if (!('BarcodeDetector' in window)) {
-    cameraError.value = 'Barcode Detector API is not supported. Try entering manually.';
-    scanStore.prepareBarcodeScan(); 
-    return;
-  }
+const attemptStartCameraScanWithZXing = async () => {
   cameraError.value = null;
   try {
+    // Request camera permissions and get the stream
     stream = await navigator.mediaDevices.getUserMedia({ 
       video: { 
         facingMode: 'environment',
-        width: { ideal: 1280 }, 
-        height: { ideal: 720 }
+        width: { ideal: 640 }, // ZXing works well with smaller resolutions too
+        height: { ideal: 480 }
       } 
     });
-    isCameraActive.value = true; 
-    await nextTick(); 
-    if (videoElementRef.value) {
-      videoElementRef.value.srcObject = stream;
-      videoElementRef.value.onloadedmetadata = () => {
-        videoElementRef.value?.play().catch(e => console.error("Video play failed:", e));
-        // @ts-ignore
-        barcodeDetector = new BarcodeDetector({ formats: ['ean_13', 'qr_code', 'upc_a', 'upc_e', 'code_128', 'itf', 'data_matrix'] });
-        detectBarcode(); 
-      };
-       videoElementRef.value.onerror = (e) => {
-        cameraError.value = "Video stream error.";
-        stopCameraScanAndReset();
-      };
+    isCameraActive.value = true; // Show camera feed
+    
+    await nextTick(); // Ensure video element is rendered
+
+    if (videoElementRef.value && stream) {
+      // No need to set srcObject directly if using decodeFrom ویڈیوStream
+      // videoElementRef.value.srcObject = stream; // ZXing handles the stream internally
+      // videoElementRef.value.play().catch(e => console.error("Video play failed:", e));
+
+      console.log('ZXing: Starting continuous scan from video stream...');
+      // Start decoding continuously from the video stream
+      codeReader.decodeFromStream(stream, videoElementRef.value, (result: Result, err: any) => {
+        if (result) {
+          console.log('ZXing: Barcode detected -', result.getText());
+          handleBarcodeDetected(result.getText());
+        }
+        if (err && !(err instanceof NotFoundException)) { // NotFoundException means no barcode found in frame, which is normal
+          console.error('ZXing: Decoding error -', err);
+          // cameraError.value = 'Error during barcode scanning.'; // Can be too noisy
+        }
+      }).catch((err: Error) => {
+        console.error('ZXing: Error starting video stream decoding -', err);
+        cameraError.value = `Camera scan error: ${err.message}. Try manual input.`;
+        stopCameraScanAndReset(); // Reset to idle if ZXing fails to start
+      });
+    } else {
+        throw new Error("Video element or stream not available for ZXing.");
     }
   } catch (err: any) {
+    console.error('Error accessing camera or starting ZXing:', err);
     cameraError.value = `Could not access camera: ${err.name}. Ensure permission or try manual input.`;
     isCameraActive.value = false;
     scanStore.resetScanView(); 
   }
 };
 
-const detectBarcode = async () => {
-  if (!isCameraActive.value || !barcodeDetector || !videoElementRef.value || videoElementRef.value.paused || videoElementRef.value.ended || videoElementRef.value.readyState < videoElementRef.value.HAVE_METADATA) {
-    if (isCameraActive.value) animationFrameId = requestAnimationFrame(detectBarcode);
-    return;
-  }
-  try {
-    // @ts-ignore
-    const barcodes = await barcodeDetector.detect(videoElementRef.value);
-    if (barcodes.length > 0) {
-      handleBarcodeDetected(barcodes[0].rawValue);
-    } else {
-      animationFrameId = requestAnimationFrame(detectBarcode); 
-    }
-  } catch (err) {
-    if (isCameraActive.value) animationFrameId = requestAnimationFrame(detectBarcode);
-  }
-};
 
 const handleBarcodeDetected = (barcodeValue: string) => {
-  stopCameraStream(); 
-  isCameraActive.value = false; 
-  scanStore.scannedBarcodeValue = barcodeValue; 
-  scanStore.initiateScanProcess('barcode', barcodeValue); 
+  // Only process if we are still in a state expecting a barcode (camera active or just detected)
+  if (isCameraActive.value || scanStore.currentStage === 'idle_choice') { 
+    console.log('Processing detected barcode:', barcodeValue);
+    stopCameraStream(); // Stop camera feed
+    isCameraActive.value = false; // Hide camera view
+    
+    scanStore.scannedBarcodeValue = barcodeValue; 
+    scanStore.initiateScanProcess('barcode', barcodeValue); 
+  }
 };
 
 const stopCameraStream = () => {
+  codeReader.reset(); // Reset ZXing reader, stops decoding
   if (stream) {
     stream.getTracks().forEach(track => track.stop());
     stream = null;
   }
-  if (animationFrameId) {
-    cancelAnimationFrame(animationFrameId);
-    animationFrameId = null;
-  }
-  barcodeDetector = null; 
   if (videoElementRef.value) {
     videoElementRef.value.srcObject = null; 
   }
@@ -309,21 +279,19 @@ const stopCameraScanAndReset = () => {
 const handleScanAnother = () => {
     scanStore.resetScanView(); 
     nextTick(() => { 
-        attemptStartCameraScan();
+        attemptStartCameraScanWithZXing(); // Use ZXing version
     });
 };
 
-// MODIFIED: Navigation handlers in the component
 const handleNavigateToProductDetail = () => {
-    const product = scanStore.prepareForProductDetail();
-    if (product?.id) {
+    const product = scanStore.prepareForProductDetail(); 
+    if (product && product.id) {
         router.push({ name: 'ProductDetail', params: { id: product.id } });
-        scanStore.resetScanView(); // Reset after preparing to navigate
     }
 };
 
 const handleNavigateToAddReview = () => {
-    const productInfo = scanStore.prepareForAddReview();
+    const productInfo = scanStore.prepareForAddReview(); 
     if (productInfo) {
         router.push({ 
             name: 'AddReview', 
@@ -333,10 +301,8 @@ const handleNavigateToAddReview = () => {
                 fromTitle: 'Scan Results' 
             } 
         });
-        scanStore.resetScanView(); // Reset after preparing to navigate
     }
 };
-
 
 onMounted(async () => {
   scanStore.resetScanView(); 
@@ -347,13 +313,13 @@ onMounted(async () => {
 
 onUnmounted(() => {
   stopCameraScanAndReset(); 
-  if (scanStore.isLoadingAnalysis && scanStore.currentStage === 'analyzing') { 
+  if (scanStore.isLoadingAnalysis && scanStore.currentStage === 'analyzing' && !isCameraActive.value) { 
     scanStore.cancelAnalysis();
   }
 });
 
 // --- AI Conclusion Styling Helpers ---
-const getConclusionColor = (conclusion?: AiHealthConclusion): string => {
+const getConclusionColor = (conclusion?: AiHealthConclusion): string => { /* ... */ 
   switch (conclusion) {
     case 'good': return 'bg-flavorpal-green';
     case 'caution': return 'bg-yellow-400';
@@ -363,7 +329,7 @@ const getConclusionColor = (conclusion?: AiHealthConclusion): string => {
     case 'neutral': default: return 'bg-gray-400';
   }
 };
-const getConclusionTextColor = (conclusion?: AiHealthConclusion): string => {
+const getConclusionTextColor = (conclusion?: AiHealthConclusion): string => { /* ... */ 
   switch (conclusion) {
     case 'good': return 'text-flavorpal-green-dark';
     case 'caution': return 'text-yellow-600';
@@ -373,7 +339,7 @@ const getConclusionTextColor = (conclusion?: AiHealthConclusion): string => {
     case 'neutral': default: return 'text-gray-600';
   }
 };
-const getConclusionText = (conclusion?: AiHealthConclusion): string => {
+const getConclusionText = (conclusion?: AiHealthConclusion): string => { /* ... */ 
   switch (conclusion) {
     case 'good': return 'Looks good for you';
     case 'caution': return 'Use with caution';
@@ -400,7 +366,7 @@ const getConclusionText = (conclusion?: AiHealthConclusion): string => {
 }
 .line-clamp-2 { -webkit-line-clamp: 2; }
 .line-clamp-3 { -webkit-line-clamp: 3; }
-.min-h-screen { height: 100%; }
+.min-h-screen { height: 100%; } 
 .aspect-\[16\/9\] { 
   aspect-ratio: 16 / 9;
 }
