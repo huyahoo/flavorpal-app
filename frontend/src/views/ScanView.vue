@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col min-h-screen bg-gray-800 text-white relative overflow-hidden">
+  <div class="flex flex-col h-full bg-gray-800 text-white relative overflow-hidden">
     <header 
       v-if="!isCameraActive && scanStore.currentStage !== 'analyzing'" 
       class="absolute top-0 left-0 z-30 p-3 sm:p-4"
@@ -18,7 +18,7 @@
 
     <div class="flex-grow flex flex-col">
       <div v-if="isCameraActive" class="flex-grow relative flex items-center justify-center bg-black">
-        <video ref="videoElementRef" autoplay playsinline class="w-full min-h-screen object-cover"></video>
+        <video ref="videoElementRef" autoplay playsinline class="w-full h-full object-cover"></video>
         <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[80%] aspect-[4/3] sm:w-[70%] sm:max-w-md pointer-events-none">
             <div class="absolute top-0 left-0 w-8 h-8 sm:w-10 sm:h-10 border-t-4 border-l-4 border-white rounded-tl-lg opacity-75"></div>
             <div class="absolute top-0 right-0 w-8 h-8 sm:w-10 sm:h-10 border-t-4 border-r-4 border-white rounded-tr-lg opacity-75"></div>
@@ -34,7 +34,7 @@
         </button>
       </div>
 
-      <div v-if="scanStore.currentStage === 'idle_choice' && !isCameraActive" class="flex flex-col min-h-screen">
+      <div v-if="scanStore.currentStage === 'idle_choice' && !isCameraActive" class="flex flex-col h-full">
         <div class="flex-grow bg-gray-700 flex items-center justify-center relative p-4">
           <div class="w-64 h-64 sm:w-80 sm:h-80 border-4 border-dashed border-gray-500/70 rounded-lg flex flex-col items-center justify-center p-4 text-center">
               <svg class="w-16 h-16 text-gray-500/80 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
@@ -55,7 +55,7 @@
         </div>
       </div>
 
-      <div v-if="scanStore.currentStage === 'inputting_barcode' && !isCameraActive" class="flex flex-col min-h-screen items-center justify-center p-6 bg-gray-700" :style="{ paddingBottom: `calc(env(safe-area-inset-bottom, 0px) + 1.5rem)` }">
+      <div v-if="scanStore.currentStage === 'inputting_barcode' && !isCameraActive" class="flex flex-col h-full items-center justify-center p-6 bg-gray-700" :style="{ paddingBottom: `calc(env(safe-area-inset-bottom, 0px) + 1.5rem)` }">
           <h2 class="text-xl font-semibold mb-4 text-white">Enter Barcode Manually</h2>
           <form @submit.prevent="submitBarcode" class="w-full max-w-sm">
               <input type="text" v-model="scanStore.scannedBarcodeValue" placeholder="Type or paste barcode" class="w-full px-4 py-3 mb-4 border border-gray-500 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-flavorpal-green" ref="barcodeInputRef" required />
@@ -78,7 +78,7 @@
            :style="{ paddingBottom: `env(safe-area-inset-bottom, 0px)` }" 
            aria-live="polite">
         <div class="bg-white text-flavorpal-gray-dark p-5 rounded-t-2xl sm:rounded-2xl shadow-2xl animate-slide-up space-y-4">
-          <div v-if="scanStore.productForDisplay" class="relative w-full aspect-[16/9] bg-flavorpal-gray-light rounded-lg overflow-hidden flex items-center justify-center mb-3"> <div v-if="scanStore.productForDisplay.isReviewed" class="absolute top-0 left-0 z-10" aria-label="Item has been reviewed"> <div class="w-24 h-24 overflow-hidden"> <div class="absolute transform -rotate-45 bg-flavorpal-green text-white text-center shadow-md" style="left: -30px; top: 12px; width: 110px; font-size: 0.7rem; padding: 2px 0;" > Reviewed </div> </div> </div> <img v-if="scanStore.productForDisplay.imageUrl" :src="scanStore.productForDisplay.imageUrl" :alt="scanStore.productForDisplay.name" class="w-full min-h-screen object-contain" onerror="this.style.display='none'; this.nextSibling.style.display='flex';"/> <svg v-else class="w-12 h-12 text-gray-400" style="display: flex;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> </div>
+          <div v-if="scanStore.productForDisplay" class="relative w-full aspect-[16/9] bg-flavorpal-gray-light rounded-lg overflow-hidden flex items-center justify-center mb-3"> <div v-if="scanStore.productForDisplay.isReviewed" class="absolute top-0 left-0 z-10" aria-label="Item has been reviewed"> <div class="w-24 h-24 overflow-hidden"> <div class="absolute transform -rotate-45 bg-flavorpal-green text-white text-center shadow-md" style="left: -30px; top: 12px; width: 110px; font-size: 0.7rem; padding: 2px 0;" > Reviewed </div> </div> </div> <img v-if="scanStore.productForDisplay.imageUrl" :src="scanStore.productForDisplay.imageUrl" :alt="scanStore.productForDisplay.name" class="w-full h-full object-contain" onerror="this.style.display='none'; this.nextSibling.style.display='flex';"/> <svg v-else class="w-12 h-12 text-gray-400" style="display: flex;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> </div>
           <div v-if="scanStore.currentStage === 'result_reviewed' && scanStore.productForDisplay"> <h3 class="text-lg font-semibold mb-1">{{ scanStore.productForDisplay.name }}</h3> <StarRating v-if="typeof scanStore.productForDisplay.userRating === 'number'" :rating="scanStore.productForDisplay.userRating" starSize="w-5 h-5" class="mb-1"/> <p v-if="scanStore.productForDisplay.dateReviewed" class="text-xs text-gray-500 mb-2">Reviewed on: {{ scanStore.productForDisplay.dateReviewed }}</p> <p class="text-sm text-gray-600 line-clamp-3 mb-3">{{ scanStore.productForDisplay.userNotes || 'You have reviewed this item.' }}</p> <div class="flex flex-col sm:flex-row sm:justify-between items-center gap-3"> <button @click="handleScanAnother" class="w-full sm:w-auto text-sm text-gray-500 hover:text-gray-700 py-2.5 px-4 rounded-lg hover:bg-gray-100 border border-gray-300 sm:border-transparent transition-colors">Scan Another</button> <button @click="handleNavigateToProductDetail" class="w-full sm:w-auto bg-flavorpal-green hover:bg-flavorpal-green-dark text-white font-medium py-2.5 px-5 rounded-lg text-sm transition-colors"> View Full Review &rarr; </button> </div> </div>
           <div v-if="scanStore.currentStage === 'result_new' && scanStore.productForDisplay"> <h3 class="text-lg font-semibold mb-1">{{ scanStore.productForDisplay.name || 'New Product Discovered!' }}</h3> <p class="text-sm text-gray-600 mb-1 line-clamp-2">{{ scanStore.productForDisplay.aiHealthSummary || 'You discovered a new product!' }}</p> <div v-if="scanStore.productForDisplay.aiHealthConclusion" class="flex items-center mb-3"> <span class="w-2.5 h-2.5 rounded-full mr-1.5 flex-shrink-0" :class="getConclusionColor(scanStore.productForDisplay.aiHealthConclusion)" aria-hidden="true"></span> <span class="text-xs font-medium" :class="getConclusionTextColor(scanStore.productForDisplay.aiHealthConclusion)"> {{ getConclusionText(scanStore.productForDisplay.aiHealthConclusion) }} </span> </div> <div class="flex flex-col sm:flex-row sm:justify-between items-center gap-3"> <button @click="handleScanAnother" class="w-full sm:w-auto text-sm text-gray-500 hover:text-gray-700 py-2.5 px-4 rounded-lg hover:bg-gray-100 border border-gray-300 sm:border-transparent transition-colors">Scan Another</button> <button @click="handleNavigateToProductDetail" class="w-full sm:w-auto bg-flavorpal-orange hover:bg-flavorpal-orange-dark text-white font-medium py-2.5 px-5 rounded-lg text-sm transition-colors"> See Details &rarr; </button> </div> </div>
         </div>
