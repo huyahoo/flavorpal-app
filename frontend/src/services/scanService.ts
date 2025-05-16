@@ -93,23 +93,45 @@ export const mockProcessScanOrPhoto = async (
     };
   }
 
-  // --- Fallback to MOCK logic for 'photo' or if barcode scan fails to call API ---
-  // This part simulates finding items already in the user's history or a brand new item
-  // For 'photo' scans, this mock logic will be used.
   console.log('Scan Service: Using mock logic for photo or fallback.');
-  await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000)); // Simulate analysis time
+  await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
 
   const historyStore = useHistoryStore();
-  if (historyStore.allProductInteractions.length === 0 && !historyStore.loading) {
+  if (historyStore.allProductInteractions.length === 0 && !historyStore.loadingInteractions) {
     await historyStore.loadProductInteractions(true); 
   }
 
   let scannedData: Partial<ProductInteraction> = {};
   const chance = Math.random();
 
-  // ... (The existing random mock logic for photo scans can remain here) ...
-  // For brevity, I'll keep the "new product" part of the mock for photos
-  console.log('Mock Photo Scan: Detected a new product.');
+  if (chance < 0.3 && historyStore.allProductInteractions.length > 0) {
+    const reviewedItems = historyStore.allProductInteractions.filter(item => item.isReviewed);
+    if (reviewedItems.length > 0) {
+        const existingItem = reviewedItems[Math.floor(Math.random() * reviewedItems.length)];
+        scannedData = { 
+            id: existingItem.id, 
+            name: existingItem.name,
+            barcode: existingItem.barcode || generateMockId('bc_'),
+            aiHealthSummary: existingItem.aiHealthSummary || "Re-analyzed: Still looks good!",
+            aiHealthConclusion: existingItem.aiHealthConclusion || 'good',
+        };
+        return scannedData;
+    }
+  } else if (chance < 0.6 && historyStore.allProductInteractions.length > 0) {
+    const scannedOnlyItems = historyStore.allProductInteractions.filter(item => !item.isReviewed);
+     if (scannedOnlyItems.length > 0) {
+        const existingItem = scannedOnlyItems[Math.floor(Math.random() * scannedOnlyItems.length)];
+        scannedData = {
+            id: existingItem.id, 
+            name: existingItem.name,
+            barcode: existingItem.barcode || generateMockId('bc_'),
+            aiHealthSummary: existingItem.aiHealthSummary || "This product was scanned before. Seems okay.",
+            aiHealthConclusion: existingItem.aiHealthConclusion || 'neutral',
+        };
+        return scannedData;
+    }
+  }
+
   const newProductNames = ["Exotic Berry Mix (Photo)", "Artisan Keto Crackers (Photo)", "Cold Brew Coffee (Photo)"];
   const randomName = newProductNames[Math.floor(Math.random() * newProductNames.length)];
   const conclusions: AiHealthConclusion[] = ['good', 'caution', 'avoid', 'neutral', 'info_needed'];
@@ -129,10 +151,9 @@ export const mockProcessScanOrPhoto = async (
   return scannedData;
 };
 
-// fetchScanStatisticsApi remains the same
 export const fetchScanStatisticsApi = async (): Promise<{ discoveredThisMonth: number; totalScanned: number }> => {
-    console.log('Mock API Call: Fetching Scan Statistics...');
-    await new Promise(resolve => setTimeout(resolve, 200));
+    console.log('Mock API Call: Fetching Scan Statistics from History Service...'); // Assuming this was moved or service renamed
+    await new Promise(resolve => setTimeout(resolve, 250));
     return {
         discoveredThisMonth: 7, 
         totalScanned: 42,       

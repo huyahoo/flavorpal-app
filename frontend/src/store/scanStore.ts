@@ -89,7 +89,7 @@ export const useScanStore = defineStore('scan', {
         }
         
         const historyStore = useHistoryStore();
-        if (historyStore.allProductInteractions.length === 0 && !historyStore.loading) {
+        if (historyStore.allProductInteractions.length === 0 && !historyStore.loadingInteractions) {
             await historyStore.loadProductInteractions(true); 
         }
 

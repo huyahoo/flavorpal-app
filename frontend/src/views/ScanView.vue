@@ -340,7 +340,7 @@ const handleNavigateToAddReview = () => {
 
 onMounted(async () => {
   scanStore.resetScanView(); 
-  if (historyStore.allProductInteractions.length === 0 && !historyStore.loading) {
+  if (historyStore.allProductInteractions.length === 0 && !historyStore.loadingInteractions) {
     await historyStore.loadProductInteractions();
   }
 });

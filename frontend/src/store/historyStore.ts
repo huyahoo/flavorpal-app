@@ -1,27 +1,43 @@
 // src/store/historyStore.ts
 import { defineStore } from 'pinia';
 import type { ProductInteraction, AiHealthConclusion } from '../types';
-// Import both service functions from historyService
 import { fetchProductInteractionsApi, fetchScanStatisticsApi } from '../services/historyService'; 
 
 export type ReviewedFilterStatus = 'all' | 'reviewed_only' | 'scanned_only';
 
+// Define a type for the filters object
+export interface HistoryFilters {
+  dateAfter?: string;
+  reviewedStatus?: ReviewedFilterStatus;
+  minRating?: number;
+  aiConclusion?: AiHealthConclusion | '';
+}
+
+// Define a type for the review data object
+export interface ReviewDataPayload {
+  productIdToUpdate?: string; 
+  productName: string;
+  userRating: number;
+  userNotes: string;
+  imageUrl?: string; 
+  barcode?: string; 
+  aiHealthSummary?: string;
+  aiHealthConclusion?: AiHealthConclusion;
+  // dateScanned is usually part of existing item or set when new
+}
+
+
 export interface HistoryStoreState {
   allProductInteractions: ProductInteraction[]; 
-  
-  // Scan Statistics - MOVED HERE
   discoveredThisMonth: number;
   totalScanned: number;
-  loadingStats: boolean; // Loading indicator for stats
-
-  // Filter states
+  loadingStats: boolean; 
   filterSearchQuery: string;
   filterDateAfter: string;           
   filterReviewedStatus: ReviewedFilterStatus; 
   filterMinRating: number;           
   filterAiConclusion?: AiHealthConclusion | ''; 
-
-  loadingInteractions: boolean; // Loading indicator for interactions list
+  loadingInteractions: boolean; // Specific loading for interactions list
   error: string | null;
 }
 
@@ -51,24 +67,20 @@ const generateInteractionId = (prefix: string = 'item_') => `${prefix}${Date.now
 export const useHistoryStore = defineStore('history', {
   state: (): HistoryStoreState => ({
     allProductInteractions: [],
-    
-    discoveredThisMonth: 0, // Initialize stats
+    discoveredThisMonth: 0,
     totalScanned: 0,
     loadingStats: false,
-
     filterSearchQuery: '',
     filterDateAfter: '',
     filterReviewedStatus: 'all', 
     filterMinRating: 0,
     filterAiConclusion: '',
-
-    loadingInteractions: false,
+    loadingInteractions: false, // Use this for loading the list
     error: null,
   }),
 
   getters: {
     processedHistoryItems: (state): ProductInteraction[] => {
-      // ... (filter logic remains the same) ...
       let items = [...state.allProductInteractions]; 
       if (state.filterSearchQuery.trim()) {
         const lowerCaseQuery = state.filterSearchQuery.toLowerCase();
@@ -108,7 +120,6 @@ export const useHistoryStore = defineStore('history', {
       });
     },
     activeFilterCount: (state): number => {
-      // ... (filter count logic remains the same) ...
       let count = 0;
       if (state.filterDateAfter) count++;
       if (state.filterReviewedStatus !== 'all') count++;
@@ -160,9 +171,6 @@ export const useHistoryStore = defineStore('history', {
       }
     },
 
-    /**
-     * NEW ACTION: Fetches the user's scanning statistics.
-     */
     async loadScanStatistics(forceReload: boolean = false) {
        if (this.totalScanned > 0 && !forceReload && !this.error && !this.loadingStats) {
         // return;
@@ -174,33 +182,37 @@ export const useHistoryStore = defineStore('history', {
         this.discoveredThisMonth = stats.discoveredThisMonth;
         this.totalScanned = stats.totalScanned;
       } catch (err: any) {
-        // Append to existing error or set new one specifically for stats
         const statsError = err.message || 'Failed to load scan statistics.';
         this.error = this.error ? `${this.error}; ${statsError}` : statsError;
-        console.error('Error loading scan statistics:', err);
       } finally {
         this.loadingStats = false;
       }
     },
 
-    setFilters(filters: { /* ... */ }) { /* ... remains the same ... */ 
+    setFilters(filters: Partial<HistoryFilters>) { 
         this.filterDateAfter = filters.dateAfter ?? this.filterDateAfter;
         this.filterReviewedStatus = filters.reviewedStatus ?? this.filterReviewedStatus;
+        
         if (this.filterReviewedStatus === 'reviewed_only') {
             this.filterMinRating = filters.minRating ?? 0;
-        } else { this.filterMinRating = 0; }
+        } else {
+            this.filterMinRating = 0; 
+        }
+
         if (this.filterReviewedStatus === 'scanned_only') {
             this.filterAiConclusion = filters.aiConclusion ?? '';
-        } else { this.filterAiConclusion = ''; }
+        } else {
+            this.filterAiConclusion = ''; 
+        }
     },
-    setInitialHistoryFilters(status: ReviewedFilterStatus) { /* ... remains the same ... */ 
+    setInitialHistoryFilters(status: ReviewedFilterStatus) {
         this.filterSearchQuery = ''; 
         this.filterDateAfter = '';   
         this.filterReviewedStatus = status;
         this.filterMinRating = 0;    
         this.filterAiConclusion = '';
     },
-    clearAllFilters() { /* ... remains the same ... */ 
+    clearAllFilters() { /* ... */ 
       this.filterSearchQuery = '';
       this.filterDateAfter = '';
       this.filterReviewedStatus = 'all';
@@ -214,6 +226,7 @@ export const useHistoryStore = defineStore('history', {
       this.discoveredThisMonth = 0; // Clear stats
       this.totalScanned = 0;        // Clear stats
       this.loadingStats = false;    // Reset loading state for stats
+      this.loadingInteractions = false;
       this.error = null;
       localStorage.removeItem(HISTORY_INTERACTIONS_STORAGE_KEY); 
     },
@@ -225,39 +238,26 @@ export const useHistoryStore = defineStore('history', {
      */
     addOrUpdateInteraction(interaction: ProductInteraction) {
         const index = this.allProductInteractions.findIndex(item => item.id === interaction.id);
-        let isNewToList = false;
+        let isNewItemToList = false;
         if (index !== -1) {
-            // Item exists, update it
             this.allProductInteractions[index] = { ...this.allProductInteractions[index], ...interaction };
-            console.log('HistoryStore: Updated interaction -', interaction.name);
         } else {
-            // Item is new, add it (typically to the beginning for recency before sort)
             this.allProductInteractions.unshift(interaction);
-            isNewToList = true; // Flag that this was a new addition by ID
-            console.log('HistoryStore: Added new interaction -', interaction.name);
+            isNewItemToList = true;
         }
-        
-        // Update totalScanned if it's a new item by ID.
-        // The discoveredThisMonth is harder to track client-side accurately without more date logic,
-        // so we'll rely on loadScanStatistics for that.
-        if (isNewToList) {
+        if (isNewItemToList) {
             this.totalScanned++; 
-            // For a more reactive discoveredThisMonth, you could check if interaction.dateScanned is in current month
         }
-
-        // Re-sort after add/update to maintain desired order (e.g., by most recent scan/review date)
         this.allProductInteractions.sort((a, b) => {
-            const dateA = new Date((a.isReviewed && a.dateReviewed) ? a.dateReviewed : a.dateScanned).getTime();
-            const dateB = new Date((b.isReviewed && b.dateReviewed) ? b.dateReviewed : b.dateScanned).getTime();
-            return dateB - dateA;
-        });
+          const dateA = new Date((a.isReviewed && a.dateReviewed) ? a.dateReviewed : a.dateScanned).getTime();
+          const dateB = new Date((b.isReviewed && b.dateReviewed) ? b.dateReviewed : b.dateScanned).getTime();
+          return dateB - dateA;
+      });
         saveInteractionsToStorage(this.allProductInteractions); 
     },
         
-    async saveOrUpdateUserReview(reviewData: { /* ... as before ... */ }): Promise<ProductInteraction | null> {
-        // ... (saveOrUpdateUserReview logic as before) ...
-        // Ensure it calls saveInteractionsToStorage(this.allProductInteractions) at the end.
-        this.loadingInteractions = true;
+    async saveOrUpdateUserReview(reviewData: ReviewDataPayload): Promise<ProductInteraction | null> {
+        this.loadingInteractions = true; 
         this.error = null;
         await new Promise(resolve => setTimeout(resolve, 400)); 
 
@@ -282,22 +282,19 @@ export const useHistoryStore = defineStore('history', {
                     isReviewed: true,
                     userRating: reviewData.userRating,
                     userNotes: reviewData.userNotes,
-                    dateReviewed: today, // Set/update review date
+                    dateReviewed: today,
                     imageUrl: reviewData.imageUrl || existingItem.imageUrl, 
                     barcode: reviewData.barcode || existingItem.barcode,
-                    // Preserve AI insights if they existed
                     aiHealthSummary: existingItem.aiHealthSummary || reviewData.aiHealthSummary,
                     aiHealthConclusion: existingItem.aiHealthConclusion || reviewData.aiHealthConclusion,
                 };
                 this.allProductInteractions[existingItemIndex] = interactionToSave;
             } else {
-                // This case is for a review being added to an item not previously in history,
-                // or a completely new manual review entry.
                 interactionToSave = {
                     id: reviewData.productIdToUpdate || generateInteractionId('review_'), 
                     name: reviewData.productName,
                     imageUrl: reviewData.imageUrl,
-                    dateScanned: today, // If new, scan date is today
+                    dateScanned: today, 
                     aiHealthSummary: reviewData.aiHealthSummary, 
                     aiHealthConclusion: reviewData.aiHealthConclusion,
                     isReviewed: true,
@@ -307,15 +304,14 @@ export const useHistoryStore = defineStore('history', {
                     barcode: reviewData.barcode,
                 };
                 this.allProductInteractions.unshift(interactionToSave); 
-                this.totalScanned++; // A new review for a new item is also a new "scanned" interaction
+                this.totalScanned++; 
             }
             
             this.allProductInteractions.sort((a, b) => {
-                const dateA = new Date((a.isReviewed && a.dateReviewed) ? a.dateReviewed : a.dateScanned).getTime();
-                const dateB = new Date((b.isReviewed && b.dateReviewed) ? b.dateReviewed : b.dateScanned).getTime();
-                return dateB - dateA;
-            });
-
+              const dateA = new Date((a.isReviewed && a.dateReviewed) ? a.dateReviewed : a.dateScanned).getTime();
+              const dateB = new Date((b.isReviewed && b.dateReviewed) ? b.dateReviewed : b.dateScanned).getTime();
+              return dateB - dateA;
+          });
             saveInteractionsToStorage(this.allProductInteractions);
             this.loadingInteractions = false;
             return interactionToSave; 

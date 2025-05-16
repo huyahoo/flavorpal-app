@@ -41,7 +41,7 @@
           <div class="flex justify-center">
             <StarRatingInput v-model="reviewData.userRating" starSize="w-10 h-10 sm:w-12 sm:h-12" />
           </div>
-           <p v-if="reviewData.userRating === 0" class="text-xs text-center text-red-500 mt-2">Please select a rating.</p>
+           <p v-if="reviewData.userRating === 0 && currentStep === 2 && triedToSubmitStep2" class="text-xs text-center text-red-500 mt-2">Please select a rating.</p>
         </div>
 
         <div v-if="currentStep === 3" class="animate-fade-in">
@@ -62,7 +62,7 @@
         <div v-if="currentStep === 4" class="animate-fade-in">
           <h2 class="text-lg font-semibold text-flavorpal-gray-dark mb-3 text-center">Almost there!</h2>
           <div v-if="productToReview?.aiHealthConclusion && productToReview.aiHealthConclusion !== 'good' && productToReview.aiHealthConclusion !== 'neutral'" 
-               class="p-3 mb-4 rounded-md"
+               class="p-3 mb-4 rounded-md border"
                :class="{
                     'bg-yellow-50 border-yellow-400 text-yellow-700': productToReview.aiHealthConclusion === 'caution',
                     'bg-red-50 border-red-400 text-red-700': productToReview.aiHealthConclusion === 'avoid',
@@ -81,7 +81,7 @@
           <p v-else class="text-sm text-flavorpal-gray text-center mb-4">
             You're about to {{ isEditing ? 'update' : 'add' }} your review for "{{ reviewData.productName }}".
           </p>
-          </div>
+        </div>
 
         <div class="flex pt-4" :class="currentStep === 1 ? 'justify-end' : 'justify-between'">
           <button
@@ -100,7 +100,7 @@
             {{ currentStep === totalSteps ? (isEditing ? 'UPDATE REVIEW' : 'DONE') : 'NEXT >' }}
           </button>
         </div>
-         <p v-if="historyStore.loading" class="text-xs text-center text-flavorpal-gray animate-pulse mt-2">Saving review...</p>
+         <p v-if="historyStore.loadingInteractions" class="text-xs text-center text-flavorpal-gray animate-pulse mt-2">Saving review...</p>
          <p v-if="historyStore.error" class="text-xs text-center text-red-500 mt-2">{{ historyStore.error }}</p>
       </form>
     </main>
@@ -122,13 +122,13 @@ const currentStep = ref(1);
 const totalSteps = 4; // Product Name, Rating, Notes, Confirmation
 
 const productNameInputRef = ref<HTMLInputElement | null>(null);
+const triedToSubmitStep2 = ref(false); // To show rating error only after trying to proceed
 
 const reviewData = reactive({
   productIdToUpdate: route.query.editProductId as string || route.query.scanId as string || undefined,
   productName: (route.query.productName as string) || '',
   userRating: 0,
   userNotes: '',
-  // Fields to carry over if editing or reviewing a scanned item
   imageUrl: '', 
   barcode: '',
   aiHealthSummary: '',
@@ -137,10 +137,10 @@ const reviewData = reactive({
 });
 
 const isEditing = computed(() => !!route.query.editProductId);
-const productToReview = ref<ProductInteraction | null>(null); // To hold original item for AI summary
+const productToReview = ref<ProductInteraction | null>(null);
 
 onMounted(async () => {
-  if (historyStore.allProductInteractions.length === 0) {
+  if (historyStore.allProductInteractions.length === 0 && !historyStore.loadingInteractions) {
     await historyStore.loadProductInteractions();
   }
 
@@ -150,9 +150,9 @@ onMounted(async () => {
     if (existingItem) {
       productToReview.value = existingItem; // Store for AI summary display
       reviewData.productName = existingItem.name;
-      reviewData.imageUrl = existingItem.imageUrl;
-      reviewData.barcode = existingItem.barcode;
-      reviewData.aiHealthSummary = existingItem.aiHealthSummary;
+      reviewData.imageUrl = existingItem.imageUrl || '';
+      reviewData.barcode = existingItem.barcode || '';
+      reviewData.aiHealthSummary = existingItem.aiHealthSummary || '';
       reviewData.aiHealthConclusion = existingItem.aiHealthConclusion;
       reviewData.dateScanned = existingItem.dateScanned; // Preserve original scan date
 
@@ -178,6 +178,12 @@ const isNextDisabled = computed(() => {
 });
 
 const nextStep = () => {
+  if (currentStep.value === 2 && reviewData.userRating === 0) {
+    triedToSubmitStep2.value = true; // Mark that user tried to proceed from step 2
+    return; // Don't proceed if rating is 0
+  }
+  triedToSubmitStep2.value = false; // Reset if proceeding
+
   if (currentStep.value < totalSteps) {
     currentStep.value++;
   }
@@ -190,6 +196,10 @@ const prevStep = () => {
 };
 
 const handleNextOrSubmit = async () => {
+  if (currentStep.value === 2 && reviewData.userRating === 0) {
+    triedToSubmitStep2.value = true;
+    return;
+  }
   if (isNextDisabled.value && currentStep.value < totalSteps) {
     // This case should ideally not be reached if button is disabled, but as a safeguard
     if (currentStep.value === 1) alert("Product name is required.");

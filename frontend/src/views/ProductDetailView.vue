@@ -162,7 +162,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch, onBeforeMount } from 'vue'; 
 import { useRoute, useRouter } from 'vue-router';
-import { useHistoryStore } from '../store/historyStore'; 
+import { useHistoryStore } from '../store/historyStore';
 import type { ProductInteraction, AiHealthConclusion } from '../types';
 import StarRating from '@/components/common/StarRating.vue'; 
 
@@ -278,11 +278,12 @@ const navigateToAddReview = () => {
 };
 
 const markAsNewProductUserChoice = (isNew: boolean) => {
-  if (product.value) {
-    const updatedProduct = { ...product.value, isNewForUser: isNew };
-    product.value = updatedProduct; 
-    historyStore.updateProductInteraction(updatedProduct);
-  }
+  // if (product.value) {
+  //   const updatedProduct = { ...product.value, isNewForUser: isNew };
+  //   product.value = updatedProduct; 
+  //   historyStore.updateProductInteraction(updatedProduct);
+  // }
+  console.log(`Marking product ${product.value?.id} as ${isNew ? 'new' : 'not new'}`);
 };
 
 const viewRelatedItemDetail = (itemId: string) => { // itemId is now guaranteed to be string by the template check

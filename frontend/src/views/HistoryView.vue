@@ -44,7 +44,7 @@
     </header>
 
     <main class="flex-grow p-4 sm:p-6">
-      <div v-if="historyStore.loading" class="text-center py-12">
+      <div v-if="historyStore.loadingInteractions" class="text-center py-12">
         <svg class="animate-spin h-10 w-10 text-flavorpal-green mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -67,7 +67,7 @@
         <p v-if="historyStore.filterSearchQuery || historyStore.activeFilterCount > 0" class="text-flavorpal-gray mt-1">Try adjusting your search or filters.</p>
         <p v-else class="text-flavorpal-gray mt-1">Start scanning or reviewing products to build your history!</p>
       </div>
-      <p v-if="historyStore.error && !historyStore.loading" class="text-sm text-red-500 mt-4 text-center">
+      <p v-if="historyStore.error && !historyStore.loadingInteractions" class="text-sm text-red-500 mt-4 text-center">
         Error loading history: {{ historyStore.error }}
       </p>
     </main>
