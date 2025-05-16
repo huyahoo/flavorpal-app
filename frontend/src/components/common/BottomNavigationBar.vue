@@ -1,5 +1,8 @@
 <template>
-  <nav class="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200 shadow-top-nav z-50">
+  <nav 
+    class="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200 shadow-top-nav z-50"
+    :style="{ paddingBottom: `env(safe-area-inset-bottom)` }"
+  >
     <div class="flex justify-around items-center h-18 sm:h-20"> 
       <router-link
         to="/"
@@ -68,53 +71,31 @@
 import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-const route = useRoute(); // Get current route information
-const router = useRouter(); // Get router instance for programmatic navigation
+const route = useRoute(); 
+const router = useRouter(); 
 
-// Reactive variable to keep track of the currently active tab's path
 const activeTab = ref(route.path);
 
-// Watch for changes in the route path (e.g., when user navigates)
-// and update the activeTab accordingly.
 watch(() => route.path, (newPath) => {
   activeTab.value = newPath;
 });
 
-// Function to determine if a given navigation path is currently active.
-// This is used to apply active styling (e.g., text color) to the navigation items.
 const isActive = (path: string): boolean => {
-  // For the home tab ('/'), it's active if the path is exactly '/' or starts with '/?' (to handle query parameters).
   if (path === '/') {
     return activeTab.value === '/' || activeTab.value.startsWith('/?');
   }
-  // For other tabs, it's active if the current route's path starts with the tab's path.
-  // This allows for nested routes under a main tab to still highlight the parent tab.
-  // Example: If current path is '/account/profile', the '/account' tab will be considered active.
   return activeTab.value.startsWith(path);
 };
 
-// Handles navigation and updates the active tab state.
-// While <router-link> handles navigation, this function ensures activeTab is updated
-// immediately on click, which can be useful for more complex scenarios or if
-// we wanted to add other logic on tab click. For simple cases, it might seem redundant
-// with the watcher, but it ensures immediate visual feedback if needed.
 const handleNavigation = (path: string) => {
-  // Note: <router-link> will handle the actual navigation.
-  // This click handler is mostly for explicitly setting the activeTab if needed,
-  // though the watcher on route.path is the primary mechanism for keeping it in sync.
-  // For this setup, it's somewhat optional but doesn't hurt.
-  // activeTab.value = path; // Can be set here, or rely on watcher
+  // The <router-link> handles actual navigation.
+  // This can be used if additional logic is needed on click.
 };
 </script>
 
 <style scoped>
 /* Custom shadow for the top of the navigation bar to give it a slight "lifted" appearance. */
 .shadow-top-nav {
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05); /* Subtle shadow on the top edge */
-}
-
-/* Additional styling for the prominent scan button's ring, if needed */
-.dark\:ring-gray-50 {
-    /* Example for dark mode, if you implement it */
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
 }
 </style>
