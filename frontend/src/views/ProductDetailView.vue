@@ -256,12 +256,25 @@ const goBack = () => {
 
 const editNotes = () => {
   if (!product.value) return;
-  router.push({ name: 'AddReview', query: { editProductId: product.value.id, fromTitle: previousRouteName.value || 'Details' } });
+  router.push({ 
+    name: 'AddReview', 
+    query: { 
+      editProductId: product.value.id, // ID of the product to edit
+      fromTitle: previousRouteName.value || product.value.name // Pass current product name as 'from' context
+    } 
+  });
 };
 
 const navigateToAddReview = () => {
-    if (!product.value) return;
-    router.push({ name: 'AddReview', query: { scanId: product.value.id, productName: product.value.name, fromTitle: previousRouteName.value || 'Details' } });
+  if (!product.value) return;
+  router.push({ 
+    name: 'AddReview', 
+    query: { 
+      scanId: product.value.id, // ID from the scan (could be new or existing)
+      productName: product.value.name, // Pre-fill product name
+      fromTitle: previousRouteName.value || 'Scan Results' // Context for back button
+    } 
+  });
 };
 
 const markAsNewProductUserChoice = (isNew: boolean) => {
