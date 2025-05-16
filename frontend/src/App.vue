@@ -1,18 +1,15 @@
 <template>
   <div 
     id="flavorpal-app-container" 
-    class="max-w-md mx-auto min-h-screen bg-flavorpal-gray-light font-sans overflow-x-hidden relative flex flex-col"
+    class="max-w-md mx-auto min-h-screen bg-flavorpal-gray-light font-sans overflow-hidden relative flex flex-col"
     :style="{ 
       paddingTop: 'env(safe-area-inset-top)', 
-      paddingBottom: showBottomNavComputed ? '0px' : 'env(safe-area-inset-bottom)' /* Only add bottom padding if nav is hidden */
+      paddingBottom: !showBottomNavComputed ? 'env(safe-area-inset-bottom)' : '0px' 
     }"
   >
     <main 
       class="flex-grow overflow-y-auto" 
       :class="{ 'pb-20': showBottomNavComputed }" 
-      :style="{ 
-        paddingBottom: showBottomNavComputed ? '' : 'env(safe-area-inset-bottom)' 
-      }"
     > 
       <router-view v-slot="{ Component }">
         <transition name="page-fade" mode="out-in">
@@ -46,6 +43,7 @@ onMounted(async () => {
 </script>
 
 <style>
+/* Global styles for body are in src/assets/main.css */
 .page-fade-enter-active {
   transition: opacity 0.3s ease-out;
 }

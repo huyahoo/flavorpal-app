@@ -2,7 +2,8 @@
   <div class="flex flex-col min-h-screen bg-gray-800 text-white relative overflow-hidden">
     <header 
       v-if="!isCameraActive && scanStore.currentStage !== 'analyzing'" 
-      class="absolute top-0 left-0 z-30 p-3 sm:p-4"
+      class="absolute top-0 left-0 z-30 p-3 sm:p-4 w-full"
+      :style="{ paddingTop: `calc(env(safe-area-inset-top, 0px) + 0.75rem)` }"
     >
       <button 
         @click="goBack" 
@@ -25,24 +26,30 @@
             <div class="absolute bottom-0 left-0 w-8 h-8 sm:w-10 sm:h-10 border-b-4 border-l-4 border-white rounded-bl-lg opacity-75"></div>
             <div class="absolute bottom-0 right-0 w-8 h-8 sm:w-10 sm:h-10 border-b-4 border-r-4 border-white rounded-br-lg opacity-75"></div>
         </div>
-         <p v-if="cameraError" class="absolute top-16 left-1/2 -translate-x-1/2 z-10 bg-red-600/80 text-white text-xs px-3 py-1.5 rounded-md shadow-lg">{{ cameraError }}</p>
-        <button @click="stopCameraScanAndReset" class="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-8 rounded-xl transition-colors shadow-lg text-base">
+        <p v-if="cameraError" 
+            class="absolute left-1/2 -translate-x-1/2 z-10 bg-red-600/80 text-white text-xs px-3 py-1.5 rounded-md shadow-lg"
+            :style="{ top: `calc(env(safe-area-inset-top, 0px) + 1rem)` }"
+         >{{ cameraError }}</p>
+        <button @click="stopCameraScanAndReset" 
+          class="absolute left-1/2 -translate-x-1/2 z-10 bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-8 rounded-xl transition-colors shadow-lg text-base"
+          :style="{ bottom: `calc(env(safe-area-inset-bottom, 0px) + 1.5rem)` }"
+        >
             Cancel Scan
         </button>
       </div>
 
-      <div v-if="scanStore.currentStage === 'idle_choice' && !isCameraActive" class="flex flex-col min-h-screen">
+      <div v-if="scanStore.currentStage === 'idle_choice' && !isCameraActive" class="flex flex-col flex-grow">
         <div class="flex-grow bg-gray-700 flex items-center justify-center relative p-4">
           <div class="w-64 h-64 sm:w-80 sm:h-80 border-4 border-dashed border-gray-500/70 rounded-lg flex flex-col items-center justify-center p-4 text-center">
-              <svg class="w-16 h-16 text-gray-500/80 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
-              </svg>
+              <svg class="w-16 h-16 text-gray-500/80 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
               <p v-if="cameraError" class="text-red-400 text-sm mb-2">{{ cameraError }}</p>
               <p class="text-gray-400/90 text-sm">Ready to scan or take a photo.</p>
           </div>
         </div>
-        <div class="bg-gray-900/80 p-4 backdrop-blur-sm flex-shrink-0">
+        <div 
+          class="bg-gray-900/80 p-4 backdrop-blur-sm flex-shrink-0"
+          :style="{ paddingBottom: `calc(env(safe-area-inset-bottom, 0px) + 1rem)` }"
+        >
           <p class="text-center text-sm text-gray-300 mb-4">Choose scan method:</p>
           <div class="flex justify-around items-center">
             <button @click="attemptStartCameraScanWithZXing" class="flex flex-col items-center text-gray-200 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10 focus:outline-none focus:bg-white/10" aria-label="Scan Barcode with Camera">
@@ -61,7 +68,7 @@
         </div>
       </div>
 
-      <div v-if="scanStore.currentStage === 'inputting_barcode' && !isCameraActive" class="flex flex-col min-h-screen items-center justify-center p-6 bg-gray-700">
+      <div v-if="scanStore.currentStage === 'inputting_barcode' && !isCameraActive" class="flex flex-col flex-grow items-center justify-center p-6 bg-gray-700" :style="{ paddingBottom: `calc(env(safe-area-inset-bottom, 0px) + 1.5rem)` }">
           <h2 class="text-xl font-semibold mb-4 text-white">Enter Barcode Manually</h2>
           <form @submit.prevent="submitBarcode" class="w-full max-w-sm">
               <input 
@@ -95,9 +102,8 @@
           </button>
       </div>
 
-      <div v-if="scanStore.currentStage === 'result_reviewed' || scanStore.currentStage === 'result_new'" 
-           class="absolute bottom-0 left-0 right-0 z-30 p-4 sm:p-6 max-w-md mx-auto"
-           aria-live="polite">
+      <div v-if="scanStore.currentStage === 'result_reviewed' || scanStore.currentStage === 'result_new'" class="absolute bottom-0 left-0 right-0 z-30 p-4 sm:p-6 max-w-md mx-auto" :style="{ paddingBottom: `env(safe-area-inset-bottom, 0px)` }" 
+        aria-live="polite">
         <div class="bg-white text-flavorpal-gray-dark p-5 rounded-t-2xl sm:rounded-2xl shadow-2xl animate-slide-up space-y-4">
           <div v-if="scanStore.productForDisplay" class="relative w-full aspect-[16/9] bg-flavorpal-gray-light rounded-lg overflow-hidden flex items-center justify-center mb-3">
               <div 
@@ -173,7 +179,7 @@
 </template>
 
 <script setup lang="ts">
-// Imports and script setup from artifact: flavorpal_scan_view_v4_zxing
+// ... (script setup remains the same as flavorpal_scan_view_v4_zxing)
 import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { useScanStore } from '../store/scanStore';
 import { useHistoryStore } from '../store/historyStore';
@@ -306,7 +312,6 @@ const handleNavigateToProductDetail = () => {
     const productId = scanStore.prepareForProductDetail(); 
     if (productId) { 
         router.push({ name: 'ProductDetail', params: { id: productId } });
-        // Do not reset scan view here, allow user to go back to the popup if they want
     }
 };
 
@@ -325,7 +330,7 @@ onUnmounted(() => {
 });
 
 // --- AI Conclusion Styling Helpers ---
-const getConclusionColor = (conclusion?: AiHealthConclusion): string => { 
+const getConclusionColor = (conclusion?: AiHealthConclusion): string => { /* ... */ 
   switch (conclusion) {
     case 'good': return 'bg-flavorpal-green';
     case 'caution': return 'bg-yellow-400';
@@ -335,7 +340,7 @@ const getConclusionColor = (conclusion?: AiHealthConclusion): string => {
     case 'neutral': default: return 'bg-gray-400';
   }
 };
-const getConclusionTextColor = (conclusion?: AiHealthConclusion): string => { 
+const getConclusionTextColor = (conclusion?: AiHealthConclusion): string => { /* ... */ 
   switch (conclusion) {
     case 'good': return 'text-flavorpal-green-dark';
     case 'caution': return 'text-yellow-600';
@@ -345,7 +350,7 @@ const getConclusionTextColor = (conclusion?: AiHealthConclusion): string => {
     case 'neutral': default: return 'text-gray-600';
   }
 };
-const getConclusionText = (conclusion?: AiHealthConclusion): string => { 
+const getConclusionText = (conclusion?: AiHealthConclusion): string => { /* ... */ 
   switch (conclusion) {
     case 'good': return 'Looks good for you';
     case 'caution': return 'Use with caution';
@@ -372,8 +377,18 @@ const getConclusionText = (conclusion?: AiHealthConclusion): string => {
 }
 .line-clamp-2 { -webkit-line-clamp: 2; }
 .line-clamp-3 { -webkit-line-clamp: 3; }
-.min-h-screen { height: 100%; } 
+/* Using min-h-screen on the root div of this component */
+.min-h-screen { 
+    min-height: 100vh; 
+} 
 .aspect-\[16\/9\] { 
   aspect-ratio: 16 / 9;
+}
+/* Ensure video element in camera view attempts to fill its container */
+.flex-grow.relative.flex.items-center.justify-center.bg-black video {
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
 }
 </style>
