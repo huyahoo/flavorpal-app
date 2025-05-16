@@ -27,17 +27,17 @@ export default defineConfig({
         start_url: '/', // Start URL should also respect the base path
         icons: [
           {
-            src: 'icon-192x192.png', // You'll need to create these icons
+            src: 'icon-192.png', // You'll need to create these icons
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: 'icon-512x512.png',
+            src: 'icon-512.png',
             sizes: '512x512',
             type: 'image/png',
           },
           {
-            src: 'icon-512x512.png', // Maskable icon
+            src: 'icon-512.png', // Maskable icon
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
