@@ -104,7 +104,7 @@
             </button>
 
             <button 
-              @click="confirmDeleteProduct" 
+              @click="openDeleteConfirmModal" 
               class="w-full flex items-center justify-center py-3 px-4 bg-flavorpal-red hover:bg-flavorpal-red-dark text-white font-medium rounded-xl transition-colors duration-150 ease-in-out"
               aria-label="Delete this product interaction"
             >
@@ -168,6 +168,13 @@
             Go back to History
         </router-link>
       </div>
+      <ConfirmationModal
+        :is-open="showDeleteConfirmModal"
+        title="Confirm Deletion"
+        :message="`Are you sure you want to delete your history for '${product?.name || 'this item'}'? This action cannot be undone.`"
+        @confirm="executeDelete"
+        @cancel="showDeleteConfirmModal = false"
+      />
     </main>
   </div>
 </template>
@@ -178,7 +185,8 @@ import { ref, onMounted, computed, watch, onBeforeMount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useHistoryStore } from '../store/historyStore'; 
 import type { ProductInteraction, AiHealthConclusion } from '../types';
-import StarRating from '@/components/common/StarRating.vue'; 
+import StarRating from '@/components/common/StarRating.vue';
+import ConfirmationModal from '@/components/common/ConfirmationModal.vue';
 
 const props = defineProps<{
   id: string; 
@@ -193,6 +201,7 @@ const relatedProducts = ref<Partial<ProductInteraction & {isReviewed?: boolean, 
 const loadingProduct = ref<boolean>(true);
 const previousRouteName = ref<string | null>(null);
 
+const showDeleteConfirmModal = ref(false);
 
 const loadProductData = async (productId: string) => {
   loadingProduct.value = true;
@@ -279,29 +288,32 @@ const navigateToAddReview = () => {
 };
 
 const markAsNewProductUserChoice = (isNew: boolean) => {
-  if (product.value) {
-    const updatedProduct = { ...product.value, isNewForUser: isNew };
-    product.value = updatedProduct; 
-    historyStore.updateProductInteraction(updatedProduct); 
-  }
+  // if (product.value) {
+  //   const updatedProduct = { ...product.value, isNewForUser: isNew };
+  //   product.value = updatedProduct; 
+  //   historyStore.updateProductInteraction(updatedProduct); 
+  // }
 };
 
 const viewRelatedItemDetail = (itemId: string) => { 
   router.push({ name: 'ProductDetail', params: { id: itemId } });
 };
 
-const confirmDeleteProduct = async () => {
+const executeDelete = async () => {
     if (!product.value) return;
-    const confirmed = window.confirm(`Are you sure you want to delete your history for "${product.value.name}"? This action cannot be undone.`);
-    if (confirmed) {
-        const success = await historyStore.deleteProductInteraction(product.value.id);
-        if (success) {
-            alert(`"${product.value.name}" has been removed from your history.`);
-            router.push({ name: 'History' }); 
-        } else {
-            alert(`Failed to delete "${product.value.name}". ${historyStore.error || ''}`);
-        }
+    const success = await historyStore.deleteProductInteraction(product.value.id);
+    showDeleteConfirmModal.value = false; // Close modal
+    if (success) {
+        // alert(`"${product.value.name}" has been removed from your history.`);
+        router.push({ name: 'History' }); 
+    } else {
+        alert(`Failed to delete "${product.value.name}". ${historyStore.error || ''}`);
     }
+};
+
+const openDeleteConfirmModal = () => {
+    if (!product.value) return;
+    showDeleteConfirmModal.value = true;
 };
 
 // --- AI Conclusion Styling Helpers (remain the same) ---

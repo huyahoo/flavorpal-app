@@ -231,7 +231,11 @@ export const useHistoryStore = defineStore('history', {
         if (isNewToList) {
             this.totalScanned++; 
         }
-        this.allProductInteractions.sort((a, b) => { /* ... */ });
+        this.allProductInteractions.sort((a, b) => {
+          const dateA = new Date((a.isReviewed && a.dateReviewed) ? a.dateReviewed : a.dateScanned).getTime();
+          const dateB = new Date((b.isReviewed && b.dateReviewed) ? b.dateReviewed : b.dateScanned).getTime();
+          return dateB - dateA;
+        });
         saveInteractionsToStorage(this.allProductInteractions); 
     },
         
