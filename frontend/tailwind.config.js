@@ -25,7 +25,17 @@ export default {
           light: '#F3F4F6',    // Cool Gray 100 (Backgrounds)
           DEFAULT: '#6B7280',  // Cool Gray 500 (Text)
           dark: '#374151',     // Cool Gray 700 (Headings)
-        }
+        },
+        'flavorpal-blue': {
+          light: '#BFDBFE',    // Sky 300
+          DEFAULT: '#3B82F6',  // Sky 500 (Links)
+          dark: '#1E40AF',     // Sky 700
+        },
+        'flavorpal-red': {
+          light: '#FCA5A1',    // Red 300
+          DEFAULT: '#EF4444',  // Red 500 (Error)
+          dark: '#B91C1C',     // Red 700
+        },
       },
       fontFamily: {
         // Example: Using Inter as the primary sans-serif font

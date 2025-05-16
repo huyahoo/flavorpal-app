@@ -7,7 +7,7 @@
       <h1 class="text-xl font-semibold text-flavorpal-gray-dark ml-2 truncate">
         {{ previousRouteName || 'Back' }}
       </h1>
-    </header>
+      </header>
 
     <main class="flex-grow p-4 sm:p-6 space-y-6">
       <div v-if="loadingProduct" class="text-center py-10">
@@ -21,7 +21,7 @@
       <div v-else-if="product" class="space-y-6">
         <section class="bg-white p-5 rounded-xl shadow-lg">
           <h2 class="text-2xl sm:text-3xl font-bold text-flavorpal-gray-dark mb-3">{{ product.name }}</h2>
-          <div class="mb-4 relative w-full aspect-[4/3] bg-flavorpal-gray-light rounded-lg overflow-hidden flex items-center justify-center">
+          <div class="mb-4 relative w-full aspect-[16/9] bg-flavorpal-gray-light rounded-lg overflow-hidden flex items-center justify-center">
               <div 
                 v-if="product.isReviewed" 
                 class="absolute top-0 left-0 z-10"
@@ -93,15 +93,26 @@
             </div>
         </section>
         
-        <section v-if="!product.isReviewed" class="mt-6">
+        <section class="mt-6">
             <button 
+                v-if="!product.isReviewed"
                 @click="navigateToAddReview"
-                class="w-full bg-flavorpal-orange hover:bg-flavorpal-orange-dark text-white font-semibold py-3 px-4 rounded-xl text-base transition-colors duration-150 ease-in-out shadow-md hover:shadow-lg active:scale-95"
+                class="w-full flex items-center justify-center bg-flavorpal-orange hover:bg-flavorpal-orange-dark text-white font-semibold py-3 px-4 mb-3 rounded-xl text-base transition-colors duration-150 ease-in-out shadow-md hover:shadow-lg active:scale-95"
             >
-                Add My Review
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+              Add Review
+            </button>
+
+            <button 
+              @click="confirmDeleteProduct" 
+              class="w-full flex items-center justify-center py-3 px-4 bg-flavorpal-red hover:bg-flavorpal-red-dark text-white font-medium rounded-xl transition-colors duration-150 ease-in-out"
+              aria-label="Delete this product interaction"
+            >
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              Delete
             </button>
         </section>
-
+        
         <section v-if="!product.isReviewed" class="bg-white p-5 rounded-xl shadow-lg">
           <h3 class="text-lg font-semibold text-flavorpal-gray-dark mb-3">Is this a new product for you?</h3>
           <div class="flex space-x-3">
@@ -131,11 +142,13 @@
               v-for="related in relatedProducts" 
               :key="related.id"
               class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
-              @click="related.id ? viewRelatedItemDetail(related.id) : null" role="button" tabindex="0" 
-              @keypress.enter="related.id ? viewRelatedItemDetail(related.id) : null" :aria-label="`View details for ${related.name}`"
+              @click="related.id ? viewRelatedItemDetail(related.id) : null"
+              role="button" tabindex="0" 
+              @keypress.enter="related.id ? viewRelatedItemDetail(related.id) : null" 
+              :aria-label="`View details for ${related.name}`"
             >
               <div class="flex-shrink-0 w-12 h-12 bg-flavorpal-gray-light rounded-full flex items-center justify-center mr-3 overflow-hidden">
-                 <img v-if="related.imageUrl" :src="related.imageUrl" :alt="related.name" class="w-full h-full object-contain" onerror="this.style.display='none'; this.nextSibling.style.display='flex';"/>
+                 <img v-if="related.imageUrl" :src="related.imageUrl" :alt="related.name" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextSibling.style.display='flex';"/>
                  <svg v-else class="w-6 h-6 text-gray-400" style="display:flex;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
               </div>
               <div class="min-w-0">
@@ -160,9 +173,10 @@
 </template>
 
 <script setup lang="ts">
+// ... (imports remain the same as flavorpal_product_detail_view_v3_final)
 import { ref, onMounted, computed, watch, onBeforeMount } from 'vue'; 
 import { useRoute, useRouter } from 'vue-router';
-import { useHistoryStore } from '../store/historyStore';
+import { useHistoryStore } from '../store/historyStore'; 
 import type { ProductInteraction, AiHealthConclusion } from '../types';
 import StarRating from '@/components/common/StarRating.vue'; 
 
@@ -175,14 +189,14 @@ const route = useRoute();
 const historyStore = useHistoryStore();
 
 const product = ref<(ProductInteraction & { isNewForUser?: boolean }) | null>(null); 
-const relatedProducts = ref<Partial<ProductInteraction & {isReviewed?: boolean, id?: string}>[]>([]); // Ensure id is potentially part of Partial
+const relatedProducts = ref<Partial<ProductInteraction & {isReviewed?: boolean, id?: string}>[]>([]); 
 const loadingProduct = ref<boolean>(true);
 const previousRouteName = ref<string | null>(null);
 
 
 const loadProductData = async (productId: string) => {
   loadingProduct.value = true;
-  if (historyStore.allProductInteractions.length === 0) {
+  if (historyStore.allProductInteractions.length === 0 && !historyStore.loadingInteractions) {
     await historyStore.loadProductInteractions(); 
   }
   
@@ -256,76 +270,79 @@ const goBack = () => {
 
 const editNotes = () => {
   if (!product.value) return;
-  router.push({ 
-    name: 'AddReview', 
-    query: { 
-      editProductId: product.value.id, // ID of the product to edit
-      fromTitle: previousRouteName.value || product.value.name // Pass current product name as 'from' context
-    } 
-  });
+  router.push({ name: 'AddReview', query: { editProductId: product.value.id, fromTitle: previousRouteName.value || 'Details' } });
 };
 
 const navigateToAddReview = () => {
-  if (!product.value) return;
-  router.push({ 
-    name: 'AddReview', 
-    query: { 
-      scanId: product.value.id, // ID from the scan (could be new or existing)
-      productName: product.value.name, // Pre-fill product name
-      fromTitle: previousRouteName.value || 'Scan Results' // Context for back button
-    } 
-  });
+    if (!product.value) return;
+    router.push({ name: 'AddReview', query: { scanId: product.value.id, productName: product.value.name, fromTitle: previousRouteName.value || 'Details' } });
 };
 
 const markAsNewProductUserChoice = (isNew: boolean) => {
-  // if (product.value) {
-  //   const updatedProduct = { ...product.value, isNewForUser: isNew };
-  //   product.value = updatedProduct; 
-  //   historyStore.updateProductInteraction(updatedProduct);
-  // }
-  console.log(`Marking product ${product.value?.id} as ${isNew ? 'new' : 'not new'}`);
+  if (product.value) {
+    const updatedProduct = { ...product.value, isNewForUser: isNew };
+    product.value = updatedProduct; 
+    historyStore.updateProductInteraction(updatedProduct); 
+  }
 };
 
-const viewRelatedItemDetail = (itemId: string) => { // itemId is now guaranteed to be string by the template check
+const viewRelatedItemDetail = (itemId: string) => { 
   router.push({ name: 'ProductDetail', params: { id: itemId } });
 };
 
-const getConclusionColor = (conclusion?: AiHealthConclusion): string => {
+const confirmDeleteProduct = async () => {
+    if (!product.value) return;
+    const confirmed = window.confirm(`Are you sure you want to delete your history for "${product.value.name}"? This action cannot be undone.`);
+    if (confirmed) {
+        const success = await historyStore.deleteProductInteraction(product.value.id);
+        if (success) {
+            alert(`"${product.value.name}" has been removed from your history.`);
+            router.push({ name: 'History' }); 
+        } else {
+            alert(`Failed to delete "${product.value.name}". ${historyStore.error || ''}`);
+        }
+    }
+};
+
+// --- AI Conclusion Styling Helpers (remain the same) ---
+const getConclusionColor = (conclusion?: AiHealthConclusion): string => { /* ... */ 
   switch (conclusion) {
     case 'good': return 'bg-flavorpal-green';
     case 'caution': return 'bg-yellow-400';
     case 'avoid': return 'bg-red-500';
     case 'info_needed': return 'bg-blue-400';
+    case 'error_analyzing': return 'bg-purple-500';
     case 'neutral': default: return 'bg-gray-400';
   }
 };
-const getConclusionTextColor = (conclusion?: AiHealthConclusion): string => {
+const getConclusionTextColor = (conclusion?: AiHealthConclusion): string => { /* ... */ 
   switch (conclusion) {
     case 'good': return 'text-flavorpal-green-dark';
     case 'caution': return 'text-yellow-600';
     case 'avoid': return 'text-red-700';
     case 'info_needed': return 'text-blue-600';
+    case 'error_analyzing': return 'text-purple-700';
     case 'neutral': default: return 'text-gray-600';
   }
 };
-const getConclusionText = (conclusion?: AiHealthConclusion): string => {
+const getConclusionText = (conclusion?: AiHealthConclusion): string => { /* ... */ 
   switch (conclusion) {
     case 'good': return 'Looks good for you';
     case 'caution': return 'Use with caution';
     case 'avoid': return 'Best to avoid';
     case 'info_needed': return 'More info needed';
+    case 'error_analyzing': return 'Analysis Error';
     case 'neutral': return 'Neutral';
     default: return 'Analysis pending';
   }
 };
-
 </script>
 
 <style scoped>
 .whitespace-pre-wrap {
   white-space: pre-wrap; 
 }
-.aspect-\[4\/3\] { 
-  aspect-ratio: 4 / 3;
+.aspect-\[16\/9\] { 
+  aspect-ratio: 16 / 9;
 }
 </style>

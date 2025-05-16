@@ -24,9 +24,9 @@
         aria-label="Item has been reviewed"
       >
         <div class="w-16 h-16 sm:w-20 sm:h-20 overflow-hidden">
-           <div class="absolute transform -rotate-45 bg-flavorpal-green text-white text-center shadow-md"
-             style="left: -28px; top: 8px; width: 90px; font-size: 0.6rem; padding: 1px 0; sm:left: -32px; sm:top: 10px; sm:width: 100px; sm:font-size: 0.65rem;"
-             >
+          <div class="absolute transform -rotate-45 bg-flavorpal-green text-white text-center shadow-md"
+            style="left: -28px; top: 8px; width: 90px; font-size: 0.6rem; padding: 1px 0; sm:left: -32px; sm:top: 10px; sm:width: 100px; sm:font-size: 0.65rem;"
+            >
             Reviewed
           </div>
         </div>
@@ -54,31 +54,17 @@
     </div>
 
     <div 
-      class="flex-grow min-w-0"
-      :class="{
-        'p-3 sm:p-4 flex flex-col': viewMode === 'grid' 
+      class="flex-grow min-w-0 flex flex-col" :class="{
+        'p-3 sm:p-4': viewMode === 'grid' 
       }"
     >
-      <div 
-        class="flex items-start"
-        :class="viewMode === 'list' ? 'justify-between' : 'flex-col sm:flex-row sm:justify-between'"
+      <h3 
+        :id="`historyItemName-${item.id}`"
+        class="font-semibold text-flavorpal-gray-dark truncate group-hover:text-flavorpal-green transition-colors"
+        :class="viewMode === 'list' ? 'text-lg' : 'text-base mb-1'"
       >
-        <h3 
-          :id="`historyItemName-${item.id}`"
-          class="font-semibold text-flavorpal-gray-dark truncate group-hover:text-flavorpal-green transition-colors"
-          :class="viewMode === 'list' ? 'text-lg pr-2' : 'text-base mb-1 sm:mb-0 sm:pr-2'"
-        >
-          {{ item.name }}
-        </h3>
-        <div 
-            class="flex items-center flex-shrink-0"
-            :class="viewMode === 'grid' ? 'w-full justify-end mt-0.5 sm:mt-0 sm:w-auto' : ''" 
-        >
-            <span class="text-xs text-gray-400 whitespace-nowrap">
-                {{ item.isReviewed && item.dateReviewed ? item.dateReviewed : item.dateScanned }}
-            </span>
-        </div>
-      </div>
+        {{ item.name }}
+      </h3>
 
       <div v-if="item.isReviewed" class="my-1">
         <StarRating 
@@ -102,7 +88,7 @@
         >
           {{ item.aiHealthSummary }}
         </p>
-        <div v-if="item.aiHealthConclusion" class="flex items-center mt-1.5">
+        <div v-show="item.aiHealthConclusion" class="flex items-center mt-1.5">
           <span 
             class="w-2.5 h-2.5 rounded-full mr-1.5 flex-shrink-0"
             :class="getConclusionColor(item.aiHealthConclusion)"
@@ -116,12 +102,18 @@
           </span>
         </div>
       </div>
-       <div v-if="viewMode === 'grid'" class="flex-grow"></div>
+      
+      <div v-if="viewMode === 'list'" class="flex-grow"></div>
+
+      <div class="text-xs text-gray-400 mt-2" :class="viewMode === 'list' ? 'self-end' : 'text-right'">
+          {{ item.isReviewed && item.dateReviewed ? item.dateReviewed : item.dateScanned }}
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+// ... (script setup remains the same as flavorpal_history_list_item)
 import type { ProductInteraction, AiHealthConclusion } from '../../types';
 import StarRating from '@/components/common/StarRating.vue'; 
 import { useRouter } from 'vue-router';
@@ -133,7 +125,6 @@ const props = defineProps<{
 
 const router = useRouter();
 
-// --- AI Conclusion Styling Helpers ---
 const getConclusionColor = (conclusion?: AiHealthConclusion): string => {
   switch (conclusion) {
     case 'good': return 'bg-flavorpal-green';
@@ -164,7 +155,6 @@ const getConclusionText = (conclusion?: AiHealthConclusion): string => {
 };
 
 const handleItemClick = () => {
-  console.log('History item clicked, navigating to ProductDetail with ID:', props.item.id);
   router.push({ name: 'ProductDetail', params: { id: props.item.id } });
 };
 </script>
@@ -176,8 +166,4 @@ const handleItemClick = () => {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
-/* Additional styling for the reviewed mark if needed, e.g., responsiveness */
-/* The inline styles for the reviewed mark are a quick way for positioning. 
-   For more complex scenarios or better maintainability, dedicated CSS classes might be preferred.
-*/
 </style>
