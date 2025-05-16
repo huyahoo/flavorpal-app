@@ -39,7 +39,7 @@
                 v-if="product.imageUrl" 
                 :src="product.imageUrl" 
                 :alt="product.name" 
-                class="w-full h-full object-cover"
+                class="w-full h-full object-contain"
                 onerror="this.style.display='none'; this.nextSibling.style.display='flex';"
               />
               <svg 
@@ -135,7 +135,7 @@
               @keypress.enter="related.id ? viewRelatedItemDetail(related.id) : null" :aria-label="`View details for ${related.name}`"
             >
               <div class="flex-shrink-0 w-12 h-12 bg-flavorpal-gray-light rounded-full flex items-center justify-center mr-3 overflow-hidden">
-                 <img v-if="related.imageUrl" :src="related.imageUrl" :alt="related.name" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextSibling.style.display='flex';"/>
+                 <img v-if="related.imageUrl" :src="related.imageUrl" :alt="related.name" class="w-full h-full object-contain" onerror="this.style.display='none'; this.nextSibling.style.display='flex';"/>
                  <svg v-else class="w-6 h-6 text-gray-400" style="display:flex;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
               </div>
               <div class="min-w-0">

@@ -12,7 +12,7 @@
         v-if="item.imageUrl" 
         :src="item.imageUrl" 
         :alt="item.name" 
-        class="w-full h-full object-cover"
+        class="w-full h-full object-contain"
         loading="lazy"
         onerror="this.style.display='none'; this.nextSibling.style.display='flex';" 
       />

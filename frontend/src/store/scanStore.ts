@@ -1,22 +1,22 @@
 // src/store/scanStore.ts
 import { defineStore } from 'pinia';
-import { useRouter } from 'vue-router';
+// REMOVED: import { useRouter } from 'vue-router'; 
 import type { ProductInteraction, AiHealthConclusion } from '../types';
 import { mockProcessScanOrPhoto } from '../services/scanService';
 import { useHistoryStore } from './historyStore';
+import { useAuthStore } from './auth';
 
-export type ScanViewStage = 'idle_choice' | 'analyzing' | 'result_reviewed' | 'result_new' | 'error';
+export type ScanViewStage = 'idle_choice' | 'inputting_barcode' | 'analyzing' | 'result_reviewed' | 'result_new' | 'error';
 
 export interface ScanStoreState {
   currentStage: ScanViewStage;
-  productForDisplay: ProductInteraction | null; // Holds the fully resolved product for UI
+  productForDisplay: ProductInteraction | null;
   isLoadingAnalysis: boolean;
   analysisError: string | null;
+  scannedBarcodeValue: string; 
 }
 
-// Helper to generate a new mock ID if one isn't found from scanService
 const generateInteractionId = (prefix: string = 'item_') => `${prefix}${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-
 
 export const useScanStore = defineStore('scan', {
   state: (): ScanStoreState => ({
@@ -24,89 +24,143 @@ export const useScanStore = defineStore('scan', {
     productForDisplay: null,
     isLoadingAnalysis: false,
     analysisError: null,
+    scannedBarcodeValue: '',
   }),
 
   actions: {
-    async initiateScanProcess(inputType: 'barcode' | 'photo') {
+    prepareBarcodeScan() {
+      this.currentStage = 'inputting_barcode';
+      this.scannedBarcodeValue = ''; 
+      this.productForDisplay = null;
+      this.analysisError = null;
+    },
+
+    async initiateScanProcess(inputType: 'barcode' | 'photo', barcode?: string) {
       this.currentStage = 'analyzing';
       this.isLoadingAnalysis = true;
       this.analysisError = null;
       this.productForDisplay = null;
 
-      try {
-        const scannedData = await mockProcessScanOrPhoto(inputType);
-        const historyStore = useHistoryStore();
+      const effectiveBarcode = inputType === 'barcode' ? barcode || this.scannedBarcodeValue : undefined;
 
-        // Ensure history is loaded to check against
-        if (historyStore.allProductInteractions.length === 0) {
-            await historyStore.loadProductInteractions(true); // Force load if empty
+      if (inputType === 'barcode' && !effectiveBarcode) {
+        this.analysisError = "Barcode value is missing.";
+        this.currentStage = 'error';
+        this.isLoadingAnalysis = false;
+        return;
+      }
+
+      try {
+        const scannedDataPartial = await mockProcessScanOrPhoto(inputType, effectiveBarcode);
+
+        if (!scannedDataPartial || !scannedDataPartial.name) {
+            throw new Error(scannedDataPartial.aiHealthSummary || "Could not retrieve product information.");
+        }
+
+        const authStore = useAuthStore();
+        let finalAiSummary = scannedDataPartial.aiHealthSummary || "No specific health insights generated.";
+        let finalAiConclusion = scannedDataPartial.aiHealthConclusion || 'neutral';
+
+        if (scannedDataPartial.ingredientsText && authStore.healthFlags.length > 0) {
+          const ingredientsLower = scannedDataPartial.ingredientsText.toLowerCase();
+          const foundFlags: string[] = [];
+          authStore.healthFlags.forEach(flag => {
+            const flagLower = flag.toLowerCase();
+            if (ingredientsLower.includes(flagLower)) {
+              foundFlags.push(flag);
+            }
+          });
+
+          if (foundFlags.length > 0) {
+            finalAiSummary = `Caution: Contains ${foundFlags.join(', ')}. ${scannedDataPartial.aiHealthSummary || ''}`.trim();
+            finalAiConclusion = 'caution';
+            if (foundFlags.some(f => authStore.healthFlags.some(hf => hf.toLowerCase().includes("avoid") && f.includes(hf.replace("avoid","").trim())))) {
+                 finalAiConclusion = 'avoid';
+            }
+          } else {
+            finalAiSummary = `No flagged ingredients found based on your profile. ${scannedDataPartial.aiHealthSummary || ''}`.trim();
+            if (scannedDataPartial.aiHealthConclusion !== 'error_analyzing' && scannedDataPartial.aiHealthConclusion !== 'info_needed') {
+                 finalAiConclusion = 'good';
+            }
+          }
+        } else if (authStore.healthFlags.length > 0 && !scannedDataPartial.ingredientsText && scannedDataPartial.aiHealthConclusion !== 'error_analyzing') {
+            finalAiSummary = "Ingredient information not available for detailed analysis against your health flags.";
+            finalAiConclusion = 'info_needed';
+        }
+        
+        const historyStore = useHistoryStore();
+        if (historyStore.allProductInteractions.length === 0 && !historyStore.loading) {
+            await historyStore.loadProductInteractions(true); 
         }
 
         let existingHistoryItem: ProductInteraction | undefined = undefined;
+        const idToSearch = scannedDataPartial.id || effectiveBarcode; 
 
-        // Try to find by ID (if scanService returned one) or by barcode
-        if (scannedData.id) {
-            existingHistoryItem = historyStore.getProductInteractionById(scannedData.id);
+        if (idToSearch) {
+            existingHistoryItem = historyStore.getProductInteractionById(idToSearch);
         }
-        if (!existingHistoryItem && scannedData.barcode) {
+        if (!existingHistoryItem && effectiveBarcode && effectiveBarcode !== idToSearch) {
             existingHistoryItem = historyStore.allProductInteractions.find(
-                item => item.barcode === scannedData.barcode
+                item => item.barcode === effectiveBarcode
             );
         }
-        // More sophisticated matching could be added (e.g., by name, if OCR is good)
+
+        let productToDisplayAndSave: ProductInteraction;
 
         if (existingHistoryItem) {
-          console.log('Scan matched existing item in history:', existingHistoryItem.name);
-          this.productForDisplay = { ...existingHistoryItem }; // Use the full item from history
-
-          // Potentially update the matched item with fresh AI insights or new scan date
-          const updatedInteraction = {
-            ...existingHistoryItem,
-            dateScanned: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), // Update scan date
-            aiHealthSummary: scannedData.aiHealthSummary || existingHistoryItem.aiHealthSummary, // Prefer fresh AI summary
-            aiHealthConclusion: scannedData.aiHealthConclusion || existingHistoryItem.aiHealthConclusion,
+          productToDisplayAndSave = {
+            ...existingHistoryItem, 
+            name: scannedDataPartial.name || existingHistoryItem.name, 
+            imageUrl: scannedDataPartial.imageUrl || existingHistoryItem.imageUrl,
+            ingredientsText: scannedDataPartial.ingredientsText || existingHistoryItem.ingredientsText,
+            categories: scannedDataPartial.categories || existingHistoryItem.categories,
+            brands: scannedDataPartial.brands || existingHistoryItem.brands,
+            genericName: scannedDataPartial.genericName || existingHistoryItem.genericName,
+            dateScanned: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), 
+            aiHealthSummary: finalAiSummary,
+            aiHealthConclusion: finalAiConclusion,
           };
-          historyStore.updateProductInteraction(updatedInteraction); // Update in history
-          this.productForDisplay = updatedInteraction; // Display the updated one
-
-          if (existingHistoryItem.isReviewed) {
-            this.currentStage = 'result_reviewed';
-          } else {
-            this.currentStage = 'result_new'; // It's known but not reviewed by user
-          }
         } else {
-          // Product is new or not found by ID/barcode in current history
-          console.log('Scan resulted in a new product:', scannedData.name);
-          const newProductInteraction: ProductInteraction = {
-            id: scannedData.id || generateInteractionId('prod_'), // Use scanned ID or generate new
-            name: scannedData.name || 'Unknown Product',
-            imageUrl: scannedData.imageUrl,
+          productToDisplayAndSave = {
+            id: idToSearch || generateInteractionId('prod_'),
+            name: scannedDataPartial.name || 'Unknown Product',
+            imageUrl: scannedDataPartial.imageUrl,
             dateScanned: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-            aiHealthSummary: scannedData.aiHealthSummary,
-            aiHealthConclusion: scannedData.aiHealthConclusion,
-            barcode: scannedData.barcode,
-            isReviewed: false, // Definitely not reviewed yet
-            // userRating, userNotes, dateReviewed will be undefined
+            barcode: effectiveBarcode,
+            ingredientsText: scannedDataPartial.ingredientsText,
+            categories: scannedDataPartial.categories,
+            brands: scannedDataPartial.brands,
+            genericName: scannedDataPartial.genericName,
+            aiHealthSummary: finalAiSummary,
+            aiHealthConclusion: finalAiConclusion,
+            isReviewed: false, 
           };
-          historyStore.updateProductInteraction(newProductInteraction); // Add to history
-          this.productForDisplay = newProductInteraction;
+        }
+        
+        historyStore.addOrUpdateInteraction(productToDisplayAndSave);
+        this.productForDisplay = productToDisplayAndSave;
+
+        if (productToDisplayAndSave.isReviewed) {
+          this.currentStage = 'result_reviewed';
+        } else {
           this.currentStage = 'result_new';
         }
 
       } catch (err: any) {
-        console.error('Error during scan analysis:', err);
         this.analysisError = err.message || 'Analysis failed. Please try again.';
         this.currentStage = 'error';
       } finally {
         this.isLoadingAnalysis = false;
+        this.scannedBarcodeValue = ''; 
       }
     },
 
     cancelAnalysis() {
       this.isLoadingAnalysis = false;
-      this.currentStage = 'idle_choice';
+      this.currentStage = 'idle_choice'; 
       this.analysisError = null;
       this.productForDisplay = null;
+      this.scannedBarcodeValue = '';
     },
 
     resetScanView() {
@@ -114,27 +168,30 @@ export const useScanStore = defineStore('scan', {
       this.productForDisplay = null;
       this.isLoadingAnalysis = false;
       this.analysisError = null;
+      this.scannedBarcodeValue = '';
     },
 
-    navigateToProductDetail() {
+    // MODIFIED: These actions now just prepare state or return data.
+    // Navigation will be handled by the component.
+    prepareForProductDetail(): ProductInteraction | null {
+      // This action could do more if needed, e.g., logging, analytics
+      // For now, it just confirms the productForDisplay is ready.
       if (this.productForDisplay?.id) {
-        const router = useRouter(); 
-        router.push({ name: 'ProductDetail', params: { id: this.productForDisplay.id } });
+        return this.productForDisplay;
       }
+      console.error('Cannot prepare for product detail: productForDisplay or its ID is null.');
+      return null;
     },
 
-    navigateToAddReview() {
+    prepareForAddReview(): { id: string, name: string } | null {
       if (this.productForDisplay) {
-        const router = useRouter(); 
-        router.push({ 
-            name: 'AddReview', 
-            query: { 
-                scanId: this.productForDisplay.id, 
-                productName: this.productForDisplay.name,
-                fromTitle: 'Scan Results' 
-            } 
-        });
+        return {
+            id: this.productForDisplay.id, 
+            name: this.productForDisplay.name,
+        };
       }
+      console.error('Cannot prepare for add review: productForDisplay is null.');
+      return null;
     },
 
     clearScanDataOnLogout() {
