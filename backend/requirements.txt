@@ -5,3 +5,4 @@ psycopg2-binary
 pgvector
 python-dotenv
 alembic
+pydantic[email]
