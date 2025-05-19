@@ -8,7 +8,6 @@ import datetime
 class Product(Base):
     __tablename__ = "products"
 
-    # id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True, nullable=False)
     barcode = Column(String, unique=True, index=True)
     image_url = Column(String)

@@ -5,14 +5,13 @@ from sqlalchemy.orm import relationship
 class HealthFlag(Base):
     __tablename__ = "health_flags"
 
-    # id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, nullable=False)
 
     user_health_flags = relationship(
         "UserHealthFlag", back_populates="health_flag")
 
 
-class UserHealthFlag(Base):  # 关联表
+class UserHealthFlag(Base):  
     __tablename__ = "user_health_flags"
 
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
