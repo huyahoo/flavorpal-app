@@ -1,10 +1,10 @@
 <template>
   <div 
     id="flavorpal-app-container" 
-    class="max-w-md mx-auto min-h-screen bg-flavorpal-gray-light font-sans overflow-hidden relative flex flex-col"
+    class="max-w-md mx-auto h-dvh bg-flavorpal-gray-light font-sans overflow-hidden relative flex flex-col"
     :style="{ 
-      paddingTop: 'env(safe-area-inset-top)', 
-      paddingBottom: !showBottomNavComputed ? 'env(safe-area-inset-bottom)' : '0px' 
+      // paddingTop: 'env(safe-area-inset-top)', 
+      // paddingBottom: !showBottomNavComputed ? 'env(safe-area-inset-bottom)' : '0px' 
     }"
   >
     <main 
