@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-flavorpal-green to-emerald-400 p-4 sm:p-6 antialiased">
+  <div class="flex flex-col items-center justify-center h-full bg-gradient-to-br from-flavorpal-green to-emerald-400 p-4 sm:p-6 antialiased">
     <div class="w-full max-w-md bg-white p-6 sm:p-10 rounded-2xl shadow-2xl transform transition-all hover:scale-105 duration-300 ease-in-out">
       <div class="text-center mb-8">
         <div class="inline-block p-3 bg-flavorpal-green rounded-full mb-4 shadow-lg">
