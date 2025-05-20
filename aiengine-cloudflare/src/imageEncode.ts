@@ -28,13 +28,7 @@ If there are multiple products in the scene, describe the ones that are:
 const descriptionModel = "gpt-4.1-mini";
 const textEmbeddingModel = "text-embedding-3-small";
 
-export const getImageEmbedding = async (image: File, client: OpenAI) => {
-  const arrayBuffer = await image.arrayBuffer();
-  const base64Image = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-
-  // MIME type
-  const mimeType = image.type || "image/jpeg";
-
+export const getImageEmbedding = async (imageBase64: string, client: OpenAI) => {
   // Retrieve the text description of the image
   const textDescriptionResponse = await client.responses.create({
     model: descriptionModel,
@@ -52,7 +46,7 @@ export const getImageEmbedding = async (image: File, client: OpenAI) => {
           },
           {
             type: "input_image",
-            image_url: `data:${mimeType};base64,${base64Image}`,
+            image_url: imageBase64,
             detail: "auto",
           },
         ],
