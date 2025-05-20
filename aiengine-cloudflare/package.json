@@ -1,0 +1,16 @@
+{
+  "name": "aiengine-cloudflare",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+  },
+  "dependencies": {
+    "@types/node": "^22.15.18",
+    "hono": "^4.7.9",
+    "openai": "^4.100.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.4.0"
+  }
+}
