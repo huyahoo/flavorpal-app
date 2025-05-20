@@ -7,8 +7,9 @@ import datetime
 class Review(Base):
     __tablename__ = "reviews"
 
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    product_id = Column(Integer, ForeignKey("products.id"))
     rating = Column(Integer, nullable=False)  
     note = Column(Text)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)

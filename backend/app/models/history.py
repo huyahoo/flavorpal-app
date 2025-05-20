@@ -7,9 +7,10 @@ import datetime
 class History(Base):
     __tablename__ = "history"
 
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    product_id = Column(Integer, ForeignKey("products.id"))
     scanned_at = Column(DateTime, default=datetime.datetime.utcnow)
 
-    user = relationship("User", back_populates="history_entries")
-    product = relationship("Product", back_populates="history_entries")
+    user = relationship("User", back_populates="history")
+    product = relationship("Product", back_populates="history")

@@ -1,18 +1,17 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
-class BadgeBase(BaseModel):
+class Badge(BaseModel):
     id: str
     name: str
     description: Optional[str] = None
     earned_at: Optional[datetime] = None
 
-class BadgeCreate(BadgeBase):
+class BadgeCreate(Badge):
     pass
-class BadgeUpdate(BadgeBase):
+class BadgeUpdate(Badge):
     pass
-class BadgeOut(BadgeBase):
+class BadgeOut(Badge):
     id: int
     class Config:
         orm_mode = True
-

@@ -5,13 +5,43 @@ from app.db.db import get_db
 from typing import List
 router = APIRouter(prefix="/users", tags=["users"])
 
+@router.get("/", response_model=List[schemas.UserProfile])
+def get_users(db: Session = Depends(get_db)):
+    users = db.query(models.User).all()
+    return users
+
 @router.post("/", response_model=schemas.UserProfile)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = models.User(**user.dict())
+    db_user = models.User(
+        name=user.name,
+        email=user.email,
+        password=user.password
+    )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+    
+    for flag_name in user.health_flags:
+        flag = db.query(models.HealthFlag).filter(models.HealthFlag.name == flag_name).first()
+        if not flag:
+            raise HTTPException(status_code=404, detail="Health flag not found")
+        db.add(models.UserHealthFlag(user_id=db_user.id, health_flag_id=flag.id))
+    for badge_name in user.badges:
+        badge = db.query(models.Badge).filter(models.Badge.name == badge_name).first()
+        if not badge:
+            badge = models.Badge(name=badge_name, description=badge_name)
+            db.add(badge)
+            db.flush()
+        db.add(models.UserBadge(user_id=db_user.id, badge_id=badge.id))
+    db.commit()
     return db_user
+
+@router.delete("/", response_model=List[schemas.UserProfile])
+def delete_users(db: Session = Depends(get_db)):
+    users = db.query(models.User).all() 
+    db.query(models.User).delete()
+    db.commit()
+    return users
 
 @router.get("/{user_id}", response_model=schemas.UserProfile)
 def get_user(user_id: int, db: Session = Depends(get_db)):
