@@ -1,5 +1,5 @@
 const projectConstants = {
-  directImageUploadSizeLimit: 1024 * 1024 // 1MB
+  directImageUploadSizeLimit: 5 * 1024 * 1024 // 5MB
 }
 
 export default projectConstants;

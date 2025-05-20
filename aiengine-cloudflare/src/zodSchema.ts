@@ -2,24 +2,25 @@ import { z } from "zod";
 import projectConstants from "./constants";
 
 // Zod validation schemas
-export const directImageUploadSchema = z.instanceof(File, {
-  message: "Expected a File object",
-}).refine(
-  // File must be PNG, JPEG, WEBP
-  (file) => {
-    const validTypes = ["image/png", "image/jpeg", "image/webp"];
-    return validTypes.includes(file.type);
-  },
-  {
-    message: "Invalid file type. Only PNG, JPEG, and WEBP are allowed.",
-  }
-).refine(
-  // File size must be less than or equal to 1MB
-  (file) => file.size <= projectConstants.directImageUploadSizeLimit,
-  {
-    message: `File size must be less than or equal to ${projectConstants.directImageUploadSizeLimit / (1024 * 1024)}MB.`,
-  }
-)
+export const directImageUploadSchema = z.object({
+  file: z.instanceof(File, {
+    message: "Expected a File object",
+  }).refine(
+    // File must be PNG, JPEG, WEBP
+    (file) => {
+      const validTypes = ["image/png", "image/jpeg", "image/webp"];
+      return validTypes.includes(file.type);
+    },
+    {
+      message: "Invalid file type. Only PNG, JPEG, and WEBP are allowed.",
+    })
+    .refine(
+    // File size must be less than or equal to 1MB
+    (file) => file.size <= projectConstants.directImageUploadSizeLimit,
+    {
+      message: `File size must be less than or equal to ${projectConstants.directImageUploadSizeLimit / (1024 * 1024)}MB.`,
+    }),
+});
 
 
 export const base64ImageUploadSchema = z.object({
