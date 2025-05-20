@@ -69,6 +69,7 @@ export const getImageEmbedding = async (imageBase64: string, client: OpenAI) => 
   return {
     descriptionModel,
     textEmbeddingModel,
+    textDescriptionEmbeddingDimensions: textDescriptionEmbedding.length,
     textDesciription: textDescription,
     textDescriptionEmbedding: textDescriptionEmbedding,
   };
