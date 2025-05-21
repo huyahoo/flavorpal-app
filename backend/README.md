@@ -395,9 +395,8 @@ http://localhost:8000/docs
 ## Database
 ![Database](static/picture/database.jpg)
 
-
 ## Supabase
-![Supabase](static/picture/supabase-schema.jpg)
+![Supabase](static/picture/supabase-schema.png)
 > See `./app/db/schema.sql` for more details
 
 - `db_helper`: provides functions that help interact with supabase
