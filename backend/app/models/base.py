@@ -5,7 +5,7 @@ import datetime
 
 @as_declarative()
 class Base:
-    id = Column(Integer, primary_key=True, index=True)
+   # id = Column(Integer, primary_key=True, index=True)
     __name__: str
 
     # Generate __tablename__ automatically
