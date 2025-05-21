@@ -62,8 +62,26 @@ export interface ProductInteraction {
   isReviewed: boolean;           
   userRating?: number;           
   userNotes?: string;            
-  dateReviewed?: string;         
+  dateReviewed?: string;
   
   // For local UI state in ProductDetailView for "Is this a new product for you?"
   isNewForUser?: boolean; 
+}
+
+export interface PublicReviewItem {
+  reviewId: string;          // Unique ID for this public review entry
+  productId: string;         // ID of the product being reviewed
+  productName: string;
+  productImageUrl?: string;
+
+  reviewerId: string;        // ID of the user who wrote the review
+  reviewerUsername: string;
+  reviewerAvatarUrl?: string; // Optional
+
+  userRating: number;        // The rating given by this reviewer
+  userNotes: string;         // The review notes from this reviewer
+  dateReviewed: string;      // ISO date string
+
+  likeCount: number;
+  // Potentially other fields like comments count, etc.
 }

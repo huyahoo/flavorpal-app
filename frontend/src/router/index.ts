@@ -10,6 +10,7 @@ import ScanView from '../views/ScanView.vue';
 import DiscoverView from '../views/DiscoverView.vue';
 import AccountView from '../views/AccountView.vue';
 import ProductDetailView from '../views/ProductDetailView.vue';
+import PublicReviewDetailView from '../views/PublicReviewDetailView.vue';
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -62,6 +63,13 @@ const routes: Array<RouteRecordRaw> = [
     name: 'Discover',
     component: DiscoverView, 
     meta: { requiresAuth: true, title: 'FlavorPal - Discover', showBottomNav: true }
+  },
+  { // New Route for Public Review Detail
+    path: '/discover/review/:reviewId',
+    name: 'PublicReviewDetail',
+    component: PublicReviewDetailView,
+    props: true, // Pass route.params.reviewId as prop
+    meta: { requiresAuth: true, title: 'FlavorPal - Review', showBottomNav: true } // Or false if it's a focused view
   },
   {
     path: '/account',
