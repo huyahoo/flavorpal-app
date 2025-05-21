@@ -17,6 +17,9 @@ backend/
 │   ├── schemas/           # Pydantic schemas for request/response validation
 │   ├── utils/             # Utility functions (e.g., hashing, common tools)
 │   └── main.py            # FastAPI application entry point        
+│
+├── postman/
+│   ├── versions/          # Postman collection for FlavorPal API.
 
 ## Running the backend
 Make sure you have Docker installed.
@@ -35,6 +38,8 @@ The API documentation is available at:
 
 http://localhost:8000/docs
 
+## Base URL
+http://0.0.0.0:8000/
 
 * `POST /users`
      - Create a new user

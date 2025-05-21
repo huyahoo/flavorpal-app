@@ -1,0 +1,387 @@
+{
+	"info": {
+		"_postman_id": "COLLECTION_ID_V2", 
+		"name": "FlavorPal API (v2 - Corrected Base URL)",
+		"description": "API collection for the FlavorPal application. Base URL set to http://0.0.0.0:8000 for Docker.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Users",
+			"description": "User management endpoints",
+			"item": [
+				{
+					"name": "Create New User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"health_flags\": [\"gluten-free\", \"low-sugar\"],\n    \"badges\": [\"newbie-reviewer\"],\n    \"password\": \"securepassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users"
+							]
+						},
+						"description": "Creates a new user. Replace example values in the body."
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{{user_id}}"
+							]
+						},
+						"description": "Retrieves a specific user by their ID. Set `{{user_id}}` environment variable or replace it manually."
+					},
+					"response": []
+				},
+				{
+					"name": "Update User by ID",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Johnathan Doe\",\n    \"email\": \"johnathan.doe@example.com\",\n    \"health_flags\": [\"gluten-free\", \"low-sugar\", \"dairy-free\"],\n    \"badges\": [\"newbie-reviewer\", \"explorer\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{{user_id}}"
+							]
+						},
+						"description": "Updates an existing user's details. Set `{{user_id}}` and modify the request body."
+					},
+					"response": []
+				},
+                {
+					"name": "Add Badge to User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"badge_id\": \"badge_explorer_001\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/{{user_id}}/badges",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{{user_id}}",
+                                "badges"
+							]
+						},
+						"description": "Adds a badge to a specific user. Set `{{user_id}}` and `badge_id` in the body."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"description": "Product management endpoints",
+			"item": [
+				{
+					"name": "Get All Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/products",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"products"
+							]
+						},
+						"description": "Retrieves a list of all products."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Product by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/products/{{product_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"products",
+								"{{product_id}}"
+							]
+						},
+						"description": "Retrieves a specific product by its ID. Set `{{product_id}}`."
+					},
+					"response": []
+				},
+                {
+					"name": "Get Product by Barcode",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/products/barcode/{{barcode}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"products",
+                                "barcode",
+								"{{barcode}}"
+							]
+						},
+						"description": "Retrieves a specific product by its barcode. Set `{{barcode}}`."
+					},
+					"response": []
+				},
+				{
+					"name": "Create New Product",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Organic Green Tea\",\n    \"image_url\": \"https://example.com/images/green_tea.jpg\",\n    \"barcode\": \"1234567890123\",\n    \"generic_name\": \"Japanese Green Tea\",\n    \"ingredients\": \"Organic green tea leaves\",\n    \"categories\": \"beverages,tea,green-tea\",\n    \"brands\": \"FlavorPal Organics\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/products",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"products"
+							]
+						},
+						"description": "Creates a new product entry."
+					},
+					"response": []
+				},
+                {
+					"name": "Update Product by ID",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Premium Organic Green Tea\",\n    \"description\": \"An updated description for the premium green tea.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/products/{{product_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"products",
+								"{{product_id}}"
+							]
+						},
+						"description": "Updates an existing product. Set `{{product_id}}` and modify body."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reviews",
+			"description": "Review management endpoints",
+			"item": [
+                {
+					"name": "Get All Reviews for a Product",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/reviews/products/{{product_id}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reviews",
+                                "products",
+								"{{product_id}}",
+                                ""
+							]
+						},
+						"description": "Retrieves all reviews for a specific product. Set `{{product_id}}`."
+					},
+					"response": []
+				},
+				{
+					"name": "Create New Review for a Product",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"rating\": 5,\n    \"note\": \"This is an amazing product! Highly recommended.\",\n    \"created_at\": \"2025-05-21T10:00:00Z\",\n    \"updated_at\": \"2025-05-21T10:00:00Z\",\n    \"likes_count\": 0\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/reviews/products/{{product_id}}/users/{{user_id}}/", 
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reviews",
+                                "products",
+								"{{product_id}}",
+                                "users",
+                                "{{user_id}}",
+                                ""
+							]
+						},
+						"description": "Creates a new review for a product by a user. Set `{{product_id}}` and `{{user_id}}`. Ensure `user_id` in path is intended if using auth tokens."
+					},
+					"response": []
+				},
+                {
+					"name": "Get All Reviews by a User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/{{user_id}}/reviews",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{{user_id}}",
+                                "reviews"
+							]
+						},
+						"description": "Retrieves all reviews written by a specific user. Set `{{user_id}}`."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Review by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/reviews/{{review_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reviews",
+								"{{review_id}}"
+							]
+						},
+						"description": "Retrieves a specific review by its ID. Set `{{review_id}}`."
+					},
+					"response": []
+				},
+                {
+					"name": "Like a Review",
+					"request": {
+						"method": "POST",
+						"header": [], 
+						"url": {
+							"raw": "{{base_url}}/reviews/{{review_id}}/like",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reviews",
+								"{{review_id}}",
+                                "like"
+							]
+						},
+						"description": "Increments the like count for a specific review. Set `{{review_id}}`."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://0.0.0.0:8000",
+			"type": "string",
+            "description": "Base URL for the API when running in Docker and accessing from host."
+		},
+        {
+            "key": "user_id",
+            "value": "user_id_here",
+            "type": "string",
+            "description": "Replace with an actual user ID after creating/fetching a user."
+        },
+        {
+            "key": "product_id",
+            "value": "product_id_here",
+            "type": "string",
+            "description": "Replace with an actual product ID after creating/fetching a product."
+        },
+        {
+            "key": "review_id",
+            "value": "review_id_here",
+            "type": "string",
+            "description": "Replace with an actual review ID after creating/fetching a review."
+        },
+        {
+            "key": "barcode",
+            "value": "barcode_here",
+            "type": "string",
+            "description": "Replace with an actual product barcode."
+        }
+	]
+}

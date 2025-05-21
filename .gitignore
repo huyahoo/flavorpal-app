@@ -136,5 +136,9 @@ dev-dist
 .yarn/install-state.gz
 .pnp.*
 
-# pycache
+# python
 __pycache__
+
+
+# Mac system files
+.DS_Store
