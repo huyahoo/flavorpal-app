@@ -4,7 +4,6 @@ from sqlalchemy.orm import relationship
 
 class HealthFlag(Base):
     __tablename__ = "health_flags"
-
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, nullable=False)
 

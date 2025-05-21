@@ -35,11 +35,13 @@ The API documentation is available at:
 
 http://localhost:8000/docs
 
+
 * `POST /users`
      - Create a new user
      - Request Body:
         ```json
-        {
+        {   
+            
             "name": "John Doe",
             "email": "john.doe@example.com",
             "health_flags": ["flag1", "flag2"],
@@ -50,14 +52,17 @@ http://localhost:8000/docs
      - Response:
         ```json
         {
-            "id": "ID",
-            "name": "NAME",
-            "email": "EMAIL",
-            "health_flags": ["flag1", "flag2"],
-            "badges": ["badge1", "badge2"]
+            "code": 200,
+            "data": {
+                "id": "ID",
+                "name": "NAME",
+                "email": "EMAIL",
+                "health_flags": ["flag1", "flag2"],
+                "badges": ["badge1", "badge2"]
+            },
+            "msg": "User created successfully"
         }
         ``` 
-
 * `GET /users/{user_id}`
     - Test Success in FastAPI Swagger
     - Get a user by ID
@@ -70,10 +75,17 @@ http://localhost:8000/docs
      - Response:
         ```json
         {
-            "id": "ID",
-            "name": "NAME",
-            "email": "EMAIL",
-            "health_flags": ["flag1", "flag2"],
+            "code": 200,
+            "data": {
+                "id": "ID",
+                "name": "NAME",
+                "email": "EMAIL",
+                "health_flags": ["flag1", "flag2"],
+                "badges": ["badge1", "badge2"],
+                "created_at": "2021-01-01T00:00:00Z",
+                "updated_at": "2021-01-01T00:00:00Z"
+            },
+            "msg": "User fetched successfully"
         }
         ```
 
@@ -90,14 +102,26 @@ http://localhost:8000/docs
         ```json
         {   
             "name": "NAME",
+            "email": "EMAIL",
+            "health_flags": ["flag1", "flag2"],
+            "badges": ["badge1", "badge2"]
         }
         ```
      - Response:
         ```json
         {
+            "code": 200,
+            "data": {
+                "id": "ID",
+                "name": "NAME",
+                "email": "EMAIL",
+                "health_flags": ["flag1", "flag2"],
+                "badges": ["badge1", "badge2"]
+            },
             "msg": "User updated successfully"
         }
-        ```
+          ```
+
 * `POST/user/{user_id}/badges`
      - Add a badge to a user
      - Path Parameters:
@@ -115,46 +139,23 @@ http://localhost:8000/docs
      - Response:
         ```json
         {
+            "code": 200,
+            "data": {
+                "badges": ["badge1", "badge2"]
+            },
             "msg": "Badge added successfully"
         }
         ```
-* `GET/users/{user_id}/history`
-     - Get the history of a user
-     - Path Parameters:
-        ```json
-        {
-            "user_id": "ID"
-        }
-        ```
-     - Response:
-        ```json
-        {
-            "history": [
-                {
 
-                }
-            ]
-        }
-* `POST/users/{user_id}/histoty`
-     - Add a history item to a user
-     - Path Parameters:
-        ```json
-        {
-            "user_id": "ID"
-        }
-        ```
-     - Request Body:
-        ```json
-        {
-            "history": "HISTORY"
-        }
-        ```
+
+
 * `GET/products `
      - Get all products
      - Response:
         ```json
         {
-            "products": [
+            "code": 200,
+            "data": [
                 {
                     "id": "ID",
                     "name": "NAME",
@@ -166,7 +167,10 @@ http://localhost:8000/docs
                     "description": "DESCRIPTION"
                 }
             ]
+        },
+        "msg": "Products fetched successfully"
         }
+        ```
 * `GET/products/{product_id}`
      - Get a product by ID
      - Path Parameters:
@@ -178,7 +182,16 @@ http://localhost:8000/docs
      - Response:
         ```json
         {
-            "product": "PRODUCT"
+            "code": 200,
+            "data": {
+                "id": "ID",
+                "name": "NAME",
+                "generic_name": "GENERIC_NAME",
+                "ingredients": "INGREDIENTS",
+                "categories": "CATEGORIES",
+                "brands": "BRANDS"
+            },
+            "msg": "Product fetched successfully"
         }
         ``` 
 * `POST/products`
@@ -187,12 +200,23 @@ http://localhost:8000/docs
         ```json
         {
             "name": "NAME",
-            "description": "DESCRIPTION"
+            "image_url": "IMAGE_URL",
+            "barcode": "BARCODE",
+            "generic_name": "GENERIC_NAME",
+            "ingredients": "INGREDIENTS",
+            "categories": "CATEGORIES",
+            "brands": "BRANDS"
         }
         ```
      - Response:
         ```json
         {
+            "code": 200,
+            "data": {
+                "id": "ID",
+                "name": "NAME",
+                "generic_name": "GENERIC_NAME",
+                "ingredients": "INGREDIENTS",
             "msg": "Product created successfully"
         }
         ```
@@ -207,7 +231,13 @@ http://localhost:8000/docs
      - Response:
         ```json
         {
-            "product": "PRODUCT"
+            "code": 200,
+            "data": {
+                "id": "ID",
+                "name": "NAME",
+                "generic_name": "GENERIC_NAME",
+                "ingredients": "INGREDIENTS",
+            "msg": "Product fetched successfully"
         }   
         ```
 * `PATCH/products/{product_id}`
@@ -227,53 +257,70 @@ http://localhost:8000/docs
      - Response:
         ```json
         {
+            "code": 200,
+            "data": {
+                "id": "ID",
+                "name": "NAME",
+                "generic_name": "GENERIC_NAME",
+                "ingredients": "INGREDIENTS",
             "msg": "Product updated successfully"
         }  
         ```
-* `GET/products/{product_id}/reviews`
+* `GET reviews/products/{product_id}/`
      - Get all reviews for a product
-     - Path Parameters:
-        ```json
-        {
-            "product_id": "ID"
-        }   
-        ```
-     - Response:
-        ```json
-        {
-            "reviews": [
-                {
-                    "id": "ID",
-                    "name": "NAME",
-                    "description": "DESCRIPTION"
-                },
-                {
-                    "id": "ID",
-                    "name": "NAME",
-                    "description": "DESCRIPTION"
-                }
-            ]
-        }     
-        ```
-* `POST/products/{product_id}/reviews`
-     - Create a new review for a product
      - Path Parameters:
         ```json
         {
             "product_id": "ID"
         }
         ```
-     - Request Body:
-        ```json
-        {
-            "review": "REVIEW"
-        }   
-        ```
      - Response:
         ```json
         {
+            "code": 200,
+            "data": [
+                {
+                    "id": "ID",
+                    "name": "NAME",
+                    "generic_name": "GENERIC_NAME",
+                    "ingredients": "INGREDIENTS",
+                    "categories": "CATEGORIES",
+                    "brands": "BRANDS",
+
+                }
+            ],
+            "msg": "Reviews fetched successfully"
+        }
+* `POST reviews/products/{product_id}/`
+     - Create a new review for a product
+     - Path Parameters:
+        ```json
+        {
+            "product_id": "ID",
+            "user_id": "ID",
+        }
+        ```
+     - Request Body:
+        ```json
+        {
+            "rating": 5,
+            "note": "NOTE",
+            "created_at": "2021-01-01T00:00:00Z",
+            "updated_at": "2021-01-01T00:00:00Z",
+            "likes_count": 0
+        }
+     - Response:
+        ```json
+            {
+            "code": 200,
+            "data": {
+                "id": "ID",
+                "name": "NAME",
+                "generic_name": "GENERIC_NAME",
+                "ingredients": "INGREDIENTS",
+                    },
             "msg": "Review created successfully"
-        } 
+            }   
         ```
 * `GET/users/{user_id}/reviews      `
      - Get all reviews for a user
@@ -281,27 +328,46 @@ http://localhost:8000/docs
         ```json
         {
             "user_id": "ID"
-        }   
+        }
         ```
      - Response:
         ```json
         {
-            "reviews": "REVIEWS"
-        }    
-        ```
+            "code": 200,
+            "data": [
+                {
+                    "id": "ID",
+                    "name": "NAME",
+                    "generic_name": "GENERIC_NAME",
+                    "ingredients": "INGREDIENTS",
+                }   
+            ],
+            "msg": "Reviews fetched successfully"
+        }
 * `GET/reviews/{review_id}`
      - Get a review by ID
      - Path Parameters:
         ```json
         {
             "review_id": "ID"
-        }   
-        ```
+        }
+        ``` 
      - Response:
         ```json
         {
-            "review": "REVIEW"
-        }   
+            "code": 200,
+            "data": {
+                "id": "ID",
+                "user_id": "ID",
+                "product_id": "ID",
+                "rating": 5,
+                "note": "NOTE",
+                "created_at": "2021-01-01T00:00:00Z",
+                "updated_at": "2021-01-01T00:00:00Z",
+                "likes_count": 0
+            },  
+            "msg": "Review fetched successfully"
+        }
         ```
 * `POST/reviews/{review_id}/like`
      - Like a review
@@ -309,13 +375,22 @@ http://localhost:8000/docs
         ```json
         {
             "review_id": "ID"
-        }   
+        }
         ```
      - Response:
         ```json
         {
+            "code": 200,
+            "data": {
+                "rating": 5,
+                "note": "NOTE",
+                "created_at": "2021-01-01T00:00:00Z",
+                "updated_at": "2021-01-01T00:00:00Z",
+                "likes_count": 1
+            },
             "msg": "Review liked successfully"
-        }  
+        }
         ```
+        
 ## Database
 ![Database](static/picture/database.jpg)
