@@ -1,26 +1,29 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from datetime import datetime
-from app.models.healthflag import HealthFlag
-from app.schemas.badge import BadgeOut
-
+from app.schemas.healthflag import *
+from app.schemas.badge import *
 
 class UserBase(BaseModel):
-    id: str
+    id: int
     name: str
     email: EmailStr
-    health_flags: List[str]
-    badges: List[str]
-    
+
+  
 class UserCreate(UserBase):
-    password: str
+    health_flags: List[str]
+    badges: List[Badge]
+    password:str
 
 class UserUpdate(UserBase):
     name: Optional[str] = None
     email: Optional[EmailStr] = None
 
 class UserProfile(UserBase):
-    pass
+    created_at: datetime
+    updated_at: datetime
+    health_flags: List[HealthFlagOut] 
+    badges: List[BadgeOut]
     class Config:
         orm_mode = True
 class UserWithBadges(UserProfile):

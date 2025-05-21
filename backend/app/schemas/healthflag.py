@@ -1,7 +1,10 @@
+
 from pydantic import BaseModel
-class HealthFlagBase(BaseModel):
-    name:str
-class HealthFlagOut(HealthFlagBase):
+class HealthFlag(BaseModel):
     id:int
+    name:str
+    
+class HealthFlagOut(HealthFlag):
+    pass
     class Config:
         orm_mode = True
