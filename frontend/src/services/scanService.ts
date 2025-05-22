@@ -1,52 +1,78 @@
 // src/services/scanService.ts
-import type { ProductInteraction, AiHealthConclusion } from '../types';
-import { useHistoryStore } from '../store/historyStore'; 
-import axios from 'axios'; 
+import type { ProductInteraction, AiHealthConclusion, ApiProductResult, FetchStatus } from '../types';
+import apiClient from './apiClient'; // Your FastAPI backend client
+import axios from 'axios'; // For Open Food Facts
 
-// Add a status to the return type of fetchProductDataFromOpenFoodFacts
-export interface OpenFoodFactsResult extends Partial<ProductInteraction> {
-  fetchStatus: 'found' | 'not_found_in_db' | 'api_error';
-}
-
-const generateMockId = (prefix: string = 'scan_') => `${prefix}${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+const generateMockId = (prefix: string = 'item_') => `${prefix}${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
 /**
- * Fetches product data from the Open Food Facts API using a barcode.
+ * Fetches product data, trying backend first, then Open Food Facts.
  * @param barcode - The product barcode.
- * @returns A Promise resolving to an OpenFoodFactsResult object.
+ * @returns A Promise resolving to an ApiProductResult object.
  */
-export const fetchProductDataFromOpenFoodFacts = async (barcode: string): Promise<OpenFoodFactsResult> => {
+export const fetchProductDataViaBarcode = async (barcode: string): Promise<ApiProductResult> => {
+  console.log(`ScanService: Fetching data for barcode: ${barcode}`);
+  
+  // 1. Try backend API first
+  try {
+    const backendResponse = await apiClient.get(`/products/barcode/${barcode}`);
+    if (backendResponse.data && backendResponse.data.code === 200 && backendResponse.data.data) {
+      const productData = backendResponse.data.data;
+      console.log('FlavorPal API: Product found -', productData.name);
+      return {
+        id: productData.id.toString(), // Use backend's product ID
+        barcode: barcode,
+        name: productData.name || 'Unknown Product Name',
+        genericName: productData.generic_name,
+        ingredientsText: productData.ingredients,
+        imageUrl: productData.image_url, // Add if backend returns these
+        categories: productData.categories ? productData.categories.split(',') : [],
+        brands: productData.brands ? productData.brands.split(',') : [],
+        dateScanned: new Date().toISOString(),
+        isReviewed: false, // This will be checked against historyStore later
+        fetchStatus: 'found_in_own_db',
+      };
+    }
+  } catch (error: any) {
+    if (error.response && error.response.status === 404) {
+      console.log('FlavorPal API: Product not found by barcode, trying Open Food Facts.');
+    } else {
+      console.error('FlavorPal API: Error fetching product by barcode:', error);
+      // Don't immediately return api_error, try Open Food Facts as a fallback
+    }
+  }
+
+  // 2. If not found in backend or if backend call failed for non-404 reasons, try Open Food Facts
   console.log(`Open Food Facts API: Fetching data for barcode: ${barcode}`);
   try {
-    const response = await axios.get(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`);
-    
-    if (response.data && response.data.status === 1 && response.data.product) {
-      const productData = response.data.product;
+    const offResponse = await axios.get(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`);
+    if (offResponse.data && offResponse.data.status === 1 && offResponse.data.product) {
+      const productData = offResponse.data.product;
       console.log('Open Food Facts API: Product found -', productData.product_name);
-
-      const interactionData: Partial<ProductInteraction> = {
-        id: barcode, 
-        name: productData.product_name_en || productData.product_name || productData.generic_name_en || productData.generic_name || 'Unknown Product Name',
-        imageUrl: productData.image_front_url || productData.image_url,
+      return {
+        id: barcode, // Use barcode as ID for items only found on OFF initially
         barcode: barcode,
-        ingredientsText: productData.ingredients_text_en || productData.ingredients_text,
-        categories: productData.categories_tags?.map((tag: string) => tag.replace(/^[a-z]{2}:/, '')), // More robust tag cleaning
-        brands: productData.brands_tags?.map((tag: string) => tag), 
+        name: productData.product_name_en || productData.product_name || productData.generic_name_en || productData.generic_name || 'Unknown Product Name',
+        imageUrl: productData.image_front_small_url || productData.image_front_url || productData.image_url,
+        ingredientsText: productData.ingredients_text_en || productData.ingredients_text_ja || productData.ingredients_text,
+        categories: productData.categories_tags?.map((tag: string) => tag.replace(/^[a-z]{2}:/, '')),
+        brands: productData.brands_tags || (productData.brands ? productData.brands.split(',') : []),
         genericName: productData.generic_name_en || productData.generic_name,
-        // dateScanned will be set by the store
-        isReviewed: false, 
+        dateScanned: new Date().toISOString(),
+        isReviewed: false,
+        fetchStatus: 'found_in_off',
       };
-      return { ...interactionData, fetchStatus: 'found' };
     } else {
       console.log('Open Food Facts API: Product not found for barcode:', barcode);
       return { 
-        id: barcode,
-        name: `Product (Barcode: ${barcode})`, // Indicate it's an unrecognized barcode
+        id: barcode, // Still return barcode so user can manually review if they wish
+        name: `Product (Barcode: ${barcode})`,
         barcode: barcode,
-        aiHealthSummary: 'This barcode was not found in the Open Food Facts database.',
+        dateScanned: new Date().toISOString(),
+        aiHealthSummary: 'Product not found in public databases.',
         aiHealthConclusion: 'info_needed',
         isReviewed: false,
-        fetchStatus: 'not_found_in_db',
+        fetchStatus: 'not_found_anywhere',
       };
     }
   } catch (error) {
@@ -55,7 +81,8 @@ export const fetchProductDataFromOpenFoodFacts = async (barcode: string): Promis
         id: barcode, 
         name: `Product (Barcode: ${barcode})`,
         barcode: barcode,
-        aiHealthSummary: 'Could not connect to product database. Please check your internet connection or try again later.',
+        dateScanned: new Date().toISOString(),
+        aiHealthSummary: 'Error connecting to product databases. Please check internet or try again.',
         aiHealthConclusion: 'error_analyzing',
         isReviewed: false,
         fetchStatus: 'api_error',
@@ -64,53 +91,37 @@ export const fetchProductDataFromOpenFoodFacts = async (barcode: string): Promis
 };
 
 /**
- * Simulates processing a scan (barcode or photo).
- * If barcode is provided, it attempts a lookup using Open Food Facts API.
- * If photo, uses mock logic.
+ * Processes a scan (barcode or photo).
  * @param inputType - 'barcode' or 'photo'.
  * @param barcodeValue - Optional: The scanned barcode string.
- * @returns A Promise resolving to an OpenFoodFactsResult object (for barcode) or Partial<ProductInteraction> (for photo).
+ * @returns A Promise resolving to an ApiProductResult.
  */
-export const mockProcessScanOrPhoto = async (
+export const processScanOrPhoto = async (
   inputType: 'barcode' | 'photo',
   barcodeValue?: string 
-): Promise<OpenFoodFactsResult | Partial<ProductInteraction>> => { // Return type updated
-  console.log(`Scan Service: Processing ${inputType}${barcodeValue ? ' for barcode: ' + barcodeValue : ''}...`);
+): Promise<ApiProductResult> => { 
   
   if (inputType === 'barcode' && barcodeValue) {
-    return await fetchProductDataFromOpenFoodFacts(barcodeValue);
+    return await fetchProductDataViaBarcode(barcodeValue);
   }
 
-  // Fallback to MOCK logic for 'photo'
+  // MOCK logic for 'photo'
   console.log('Scan Service: Using mock logic for photo.');
-  await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000)); 
+  await new Promise(resolve => setTimeout(resolve, 1000)); 
 
-  // ... (existing mock logic for photo scan remains the same, returning Partial<ProductInteraction>)
-  // For consistency, you might want it to also return an object with a fetchStatus if it makes sense.
-  // For now, the photo scan will just return Partial<ProductInteraction> as before.
-  const historyStore = useHistoryStore();
-  if (historyStore.allProductInteractions.length === 0 && !historyStore.loadingInteractions) {
-    await historyStore.loadProductInteractions(true); 
-  }
-
-  let scannedData: Partial<ProductInteraction> = {};
-  // ... (rest of photo mock logic from artifact flavorpal_scan_service_barcode)
-  const newProductNames = ["Exotic Berry Mix (Photo)", "Artisan Keto Crackers (Photo)", "Cold Brew Coffee (Photo)"];
+  const newProductNames = ["Mystery Snack Box (Photo)", "Artisan Drink (Photo)"];
   const randomName = newProductNames[Math.floor(Math.random() * newProductNames.length)];
-  const conclusions: AiHealthConclusion[] = ['good', 'caution', 'avoid', 'neutral', 'info_needed'];
+  const conclusions: AiHealthConclusion[] = ['good', 'caution', 'info_needed'];
   const randomConclusion = conclusions[Math.floor(Math.random() * conclusions.length)];
 
-  scannedData = {
+  const photoData: Partial<ProductInteraction> = {
+    id: generateMockId('photo_'), 
     name: randomName,
-    dateScanned: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-    aiHealthSummary: `Photo analysis suggests this is ${randomName}. Our AI thinks this is generally ${randomConclusion} for you.`,
+    dateScanned: new Date().toISOString(),
+    aiHealthSummary: `Photo analysis suggests: ${randomName}. Ingredients are unclear from photo.`,
     aiHealthConclusion: randomConclusion,
-    barcode: generateMockId('photo_bc_'), 
     isReviewed: false,
-    ingredientsText: randomConclusion === 'caution' ? 'Contains sugar, almonds, wheat flour.' : 'Water, natural flavors, citric acid.',
+    ingredientsText: "Ingredients not available from photo scan.", // Mock
   };
-  // To make it compatible with the expected return type for the store, add a status for photo
-  return { ...scannedData, fetchStatus: 'found' } as OpenFoodFactsResult; // Assume photo "finds" something to analyze
+  return { ...photoData, fetchStatus: 'photo_mock', id: photoData.id! } as ApiProductResult;
 };
-
-// fetchScanStatisticsApi remains in historyService.ts

@@ -118,6 +118,15 @@ export interface ProductInteraction {
   isNewForUser?: boolean; 
 }
 
+export type FetchStatus = 'found_in_own_db' | 'found_in_off' | 'not_found_anywhere' | 'api_error' | 'photo_mock';
+
+export interface ApiProductResult extends Partial<ProductInteraction> { // Can be Partial as not all fields might be present initially
+  fetchStatus: FetchStatus;
+  // This 'id' from ApiProductResult should be the one to use for historyStore.
+  // For OFF results, it might be the barcode. For your backend results, it's your DB product ID.
+  id: string; // Make ID non-optional in the result from service if possible
+}
+
 export interface PublicReviewItem {
   reviewId: string;          // Unique ID for this public review entry
   productId: string;         // ID of the product being reviewed
