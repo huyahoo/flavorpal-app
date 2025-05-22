@@ -19,17 +19,22 @@ backend/
 │   └── main.py            # FastAPI application entry point        
 │
 ├── certs/
-│   ├── cert.pem/          # Postman collection for FlavorPal API.
-│   ├── key.pem/           # Postman collection for FlavorPal API.
+│   ├── cert.pem/          # The Certificate enable HTTPS for dev env
+│   ├── key.pem/           # The Private Key enable HTTPS for dev env
 │
 ├── postman/
-│   ├── versions/          # Postman collection for FlavorPal API.
+│   ├── FlavorPal_API_v1.postman_collection.json          # Postman collection for FlavorPal API.
 
 ## Running the backend
 Make sure you have Docker installed.
 
 ```bash
 docker compose up --build
+```
+
+## Create .env file
+``` bash
+cp .env.example .env
 ```
 
 ## Configure FastAPI/Uvicorn to use HTTPS
@@ -43,6 +48,12 @@ openssl genpkey -algorithm RSA -out key.pem
 openssl req -new -key key.pem -x509 -days 365 -out cert.pem
 ```
 - This will ask you for some information (Country Name, Organization, etc.). You can fill these as you like for a development certificate. This creates key.pem (your private key) and cert.pem (your certificate).
+
+## JWT Configuration
+- Example using OpenSSL to generate JWT SECRET KEY
+``` bash
+openssl rand -base64 32
+```
 
 ## Comments
 My apologies — the current comments for individual methods are insufficient. I’ll be adding detailed explanations tomorrow.
