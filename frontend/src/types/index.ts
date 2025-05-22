@@ -4,7 +4,7 @@
  * Represents a user object, aligning with the backend schema.
  */
 export interface User {
-  id: string;
+  id: number;
   name: string;
   email: string;
   health_flags: string[];

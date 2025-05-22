@@ -47,20 +47,17 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.flush()
 
     if user.health_flags: 
-            for flag_name_in in user.health_flags: 
-                flag_db = db.query(models.HealthFlag).filter(models.HealthFlag.name == flag_name_in).first()
-                if not flag_db:
-                    flag_db = models.HealthFlag(
-                        name=flag_name_in, 
-                        description=f"Health flag for {flag_name_in}"
-                    )
-                    db.add(flag_db)
-                    db.flush() 
-                
-                existing_user_flag = db.query(models.UserHealthFlag).filter_by(user_id=db_user.id, health_flag_id=flag_db.id).first()
-                if not existing_user_flag:
-                    user_health_flag_assoc = models.UserHealthFlag(user_id=db_user.id, health_flag_id=flag_db.id)
-                    db.add(user_health_flag_assoc)
+        for flag_name_in in user.health_flags: 
+            flag_db = db.query(models.HealthFlag).filter(models.HealthFlag.name == flag_name_in).first()
+            if not flag_db:
+                flag_db = models.HealthFlag(name=flag_name_in) 
+                db.add(flag_db)
+                db.flush() 
+            
+            existing_user_flag = db.query(models.UserHealthFlag).filter_by(user_id=db_user.id, health_flag_id=flag_db.id).first()
+            if not existing_user_flag:
+                user_health_flag_assoc = models.UserHealthFlag(user_id=db_user.id, health_flag_id=flag_db.id)
+                db.add(user_health_flag_assoc)
     
     if user.badges:
         for badge_obj_in in user.badges:
@@ -115,26 +112,39 @@ def get_user_health_flags(user_id: int, db: Session = Depends(get_db)):
     return Response(code=200, data=user.user_health_flags, msg="User health flags fetched successfully")
 
 @router.patch("/{user_id}", response_model=Response[schemas.UserProfileOut])
-def update_user(user_id: int, user: schemas.UserUpdate, db: Session = Depends(get_db)):
+def update_user(user_id: int, payload: schemas.UserUpdate, db: Session = Depends(get_db)):
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
     if not db_user:
-        raise response.not_found(msg="User not found",code=404)
-    if user.name is not None:
-        db_user.name = user.name
-    if user.email is not None:
-        db_user.email = user.email
-    if user.health_flags is not None:
-        for flag_obj in user.health_flags:
-            flag = db.query(models.HealthFlag).filter(models.HealthFlag.name == flag_obj.name).first()
-            if not flag:
-                flag = models.HealthFlag(name=flag_obj.name)
-                db.add(flag)
-    if user.badges is not None:
-        for badge_obj in user.badges:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    update_data = payload.model_dump(exclude_unset=True)
+
+    if "name" in update_data:
+        db_user.name = update_data["name"]
+    # if "email" in update_data:
+    #     existing_email_user = db.query(models.User).filter(models.User.email == update_data["email"]).first()
+    #     if existing_email_user and existing_email_user.id != user_id:
+    #         raise HTTPException(status_code=400, detail="Email already registered by another user.")
+    #     db_user.email = update_data["email"]
+    
+    if payload.health_flags is not None:
+        db.query(models.UserHealthFlag).filter(models.UserHealthFlag.user_id == user_id).delete()
+        for flag_name_in in payload.health_flags:
+            flag_db = db.query(models.HealthFlag).filter(models.HealthFlag.name == flag_name_in).first()
+            if not flag_db:
+                flag_db = models.HealthFlag(name=flag_name_in)
+                db.add(flag_db)
+                db.flush()
+            user_health_flag_assoc = models.UserHealthFlag(user_id=db_user.id, health_flag_id=flag_db.id)
+            db.add(user_health_flag_assoc)
+
+    if payload.badges is not None:
+        for badge_obj in payload.badges:
             badge = db.query(models.Badge).filter(models.Badge.name == badge_obj.name).first()
             if not badge:
                 badge = models.Badge(name=badge_obj.name, description=badge_obj.description)
                 db.add(badge)
+
     db.commit()
     db.refresh(db_user)
     return Response(code=200, data=db_user, msg="User updated successfully")

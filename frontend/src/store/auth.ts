@@ -34,7 +34,7 @@ export const useAuthStore = defineStore('auth', {
     healthFlags: (state): string[] => {
         return state.user?.health_flags || [];
     },
-    userId: (state): string | null => state.user?.id || null, // Backend ID is integer
+    userId: (state): number => state.user?.id || -1,
   },
 
   actions: {
@@ -165,10 +165,10 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async updateUsername(newUsername: string): Promise<boolean> {
-      if (!this.user || !this.token) { return false; }
+      if (!this.user || !this.token || this.userId === null) { return false; }
       this.loading = true; this.error = null;
       try {
-        const response = await updateUserApi(Number(this.user.id), { name: newUsername });
+        const response = await updateUserApi(this.userId, { name: newUsername });
         if (response.code === 200 && response.data) {
           this.user = response.data;
           localStorage.setItem(USER_DATA_KEY, JSON.stringify(this.user));
@@ -182,7 +182,7 @@ export const useAuthStore = defineStore('auth', {
       if (!this.user || !this.token) { return false; }
       this.loading = true; this.error = null;
       try {
-        const response = await updateUserApi(Number(this.user.id), { health_flags: flags });
+        const response = await updateUserApi(this.userId, { health_flags: flags });
          if (response.code === 200 && response.data) {
           this.user = response.data;
           localStorage.setItem(USER_DATA_KEY, JSON.stringify(this.user));
