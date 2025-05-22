@@ -1,11 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app import schemas, models
 from app.db.db import get_db
 from typing import List
-router = APIRouter(prefix="/users", tags=["users"])
 from app.utils import response
 from app.utils.ResponseResult import Response
+from app.utils.security import get_password_hash
+from app.utils.dependencies import get_current_user
+from app.schemas.user import UserProfileOut
+from app.models import User as UserModel
+
+router = APIRouter(prefix="/users", tags=["users"])
+
 @router.get("/",response_model=Response[List[schemas.UserProfileOut]])
 def get_users(db: Session = Depends(get_db)):
     users = db.query(models.User).all()
@@ -14,35 +20,64 @@ def get_users(db: Session = Depends(get_db)):
     print(users)
     return Response(code=200, data=users, msg="Users Found successfully")
 
+@router.get("/me", response_model=Response[UserProfileOut])
+async def read_users_me(current_user: UserModel = Depends(get_current_user)):
+    """
+    Get current logged-in user's profile.
+    Requires authentication.
+    """
+    return Response(code=200, data=current_user, msg="Current user data fetched successfully")
 
-@router.post("/",response_model=Response[schemas.UserProfileOut])
+@router.post("/", response_model=Response[schemas.UserProfileOut], status_code=status.HTTP_201_CREATED)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    db_user_check = db.query(models.User).filter(models.User.email == user.email).first()
+    if db_user_check:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="Email already registered"
+        )
+
+    hashed_password = get_password_hash(user.password)
     db_user = models.User(
         name=user.name,
         email=user.email,
-        password=user.password
+        hashed_password=hashed_password
     )
     db.add(db_user)
+    db.flush()
+
+    if user.health_flags: 
+            for flag_name_in in user.health_flags: 
+                flag_db = db.query(models.HealthFlag).filter(models.HealthFlag.name == flag_name_in).first()
+                if not flag_db:
+                    flag_db = models.HealthFlag(
+                        name=flag_name_in, 
+                        description=f"Health flag for {flag_name_in}"
+                    )
+                    db.add(flag_db)
+                    db.flush() 
+                
+                existing_user_flag = db.query(models.UserHealthFlag).filter_by(user_id=db_user.id, health_flag_id=flag_db.id).first()
+                if not existing_user_flag:
+                    user_health_flag_assoc = models.UserHealthFlag(user_id=db_user.id, health_flag_id=flag_db.id)
+                    db.add(user_health_flag_assoc)
+    
+    if user.badges:
+        for badge_obj_in in user.badges:
+            badge_db = db.query(models.Badge).filter(models.Badge.name == badge_obj_in.name).first()
+            if not badge_db:
+                badge_db = models.Badge(name=badge_obj_in.name, description=badge_obj_in.description if hasattr(badge_obj_in, 'description') else "Default badge description")
+                db.add(badge_db)
+                db.flush()
+            existing_user_badge = db.query(models.UserBadge).filter_by(user_id=db_user.id, badge_id=badge_db.id).first()
+            if not existing_user_badge:
+                user_badge_assoc = models.UserBadge(user_id=db_user.id, badge_id=badge_db.id)
+                db.add(user_badge_assoc)
+
     db.commit()
     db.refresh(db_user)
-    for flag_obj in user.health_flags:
-        print(flag_obj)
-        flag = db.query(models.HealthFlag).filter(models.HealthFlag.name == flag_obj.name).first()
-        if not flag:
-            flag = models.HealthFlag(name=flag_obj.name)
-            db.add(flag)
-            db.flush()
-        db.add(models.UserHealthFlag(user_id=db_user.id, health_flag_id=flag.id))
-    for badge_obj in user.badges:
-        badge = db.query(models.Badge).filter(models.Badge.name == badge_obj.name).first()
-        if not badge:
-            badge = models.Badge(name=badge_obj.name, description=badge_obj.description)
-            db.add(badge)
-            db.flush()
-        db.add(models.UserBadge(user_id=db_user.id, badge_id=badge.id))
-    db.commit()
 
-    return Response(code=200, data=db_user, msg="User created successfully")
+    return Response(code=201, data=db_user, msg="User created successfully")
 
 
 

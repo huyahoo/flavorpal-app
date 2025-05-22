@@ -18,6 +18,10 @@ backend/
 │   ├── utils/             # Utility functions (e.g., hashing, common tools)
 │   └── main.py            # FastAPI application entry point        
 │
+├── certs/
+│   ├── cert.pem/          # Postman collection for FlavorPal API.
+│   ├── key.pem/           # Postman collection for FlavorPal API.
+│
 ├── postman/
 │   ├── versions/          # Postman collection for FlavorPal API.
 
@@ -28,6 +32,18 @@ Make sure you have Docker installed.
 docker compose up --build
 ```
 
+## Configure FastAPI/Uvicorn to use HTTPS
+- You can use OpenSSL for this. Run these commands in terminal
+``` bash
+cd flavorpal-app/backend/certs
+# Generate a private key
+openssl genpkey -algorithm RSA -out key.pem
+
+# Generate a self-signed certificate using the private key
+openssl req -new -key key.pem -x509 -days 365 -out cert.pem
+```
+- This will ask you for some information (Country Name, Organization, etc.). You can fill these as you like for a development certificate. This creates key.pem (your private key) and cert.pem (your certificate).
+
 ## Comments
 My apologies — the current comments for individual methods are insufficient. I’ll be adding detailed explanations tomorrow.
 
@@ -36,10 +52,10 @@ My apologies — the current comments for individual methods are insufficient. I
 
 The API documentation is available at:
 
-http://localhost:8000/docs
+https://localhost:8000/docs
 
 ## Base URL
-http://0.0.0.0:8000/
+https://localhost:8000/
 
 * `POST /users`
      - Create a new user

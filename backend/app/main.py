@@ -1,9 +1,26 @@
 from fastapi import FastAPI
-from app.routers import users, history, products, reviews
+from fastapi.middleware.cors import CORSMiddleware
+from app.routers import auth, users, history, products, reviews
 
-app = FastAPI()
+app = FastAPI(title="FlavorPal API")
 
-# 注册路由模块
+# --- CORS Middleware ---
+origins = [
+    "http://localhost:5173",
+    "https://localhost:5173",
+    "https://flavor-pal.netlify.app",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,       # List of origins that are allowed to make requests
+    allow_credentials=True,    # Allow cookies to be included in requests
+    allow_methods=["*"],         # Allow all methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],         # Allow all headers
+)
+
+# Routers
+app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(history.router)
 app.include_router(products.router)

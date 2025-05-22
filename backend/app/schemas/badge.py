@@ -1,11 +1,10 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 class Badge(BaseModel):
     name: str
     description: Optional[str] = None
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class BadgeCreate(Badge):
     pass
@@ -14,10 +13,8 @@ class BadgeUpdate(Badge):
 class BadgeOut(BaseModel):
     id:int
     badge:Badge
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class UserBadgeOut(BaseModel):
     badge:Badge
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

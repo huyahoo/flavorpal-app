@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 from app.schemas.review import ReviewOut
@@ -14,8 +14,7 @@ class ProductCreate(ProductBase):
     ingredients: Optional[str] = None
     categories: Optional[str] = None
     brands: Optional[str] = None
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ProductOut(ProductBase):
     id: int
@@ -24,8 +23,7 @@ class ProductOut(ProductBase):
     ingredients: Optional[str] = None
     categories: Optional[str] = None
     brands: Optional[str] = None
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
         
 class ProductUpdate(ProductBase):
     image_url: Optional[str] = None
@@ -34,16 +32,13 @@ class ProductUpdate(ProductBase):
     ingredients: Optional[str] = None
     categories: Optional[str] = None
     brands: Optional[str] = None
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 class ProductReview(ProductBase):
     is_reviewed_by_current_user: bool
     current_user_review: Optional[ReviewOut] = None
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ProductAiGenerated(ProductBase):
     ai_health_summary: Optional[str] = None
     ai_health_conclusion: Optional[str] = None
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
