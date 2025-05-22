@@ -4,7 +4,6 @@ import type { User, UserCreatePayload, UserUpdatePayload, LoginCredentials } fro
 import { registerUserApi, loginUserApi, fetchCurrentUserApi, updateUserApi } from '../services/authService';
 import apiClient from '../services/apiClient';
 
-// Import other stores if needed for clearing data on logout
 import { useUserProfileStore } from './userProfileStore';
 import { useHistoryStore } from './historyStore';
 import { useScanStore } from './scanStore';
@@ -33,11 +32,9 @@ export const useAuthStore = defineStore('auth', {
     isAuthenticated: (state): boolean => !!state.token && !!state.user,
     currentUsername: (state): string | null => state.user?.name || null, // Use 'name'
     healthFlags: (state): string[] => {
-        // Assuming health_flags in User type is List[UserHealthFlagOut]
-        // and UserHealthFlagOut is { id: number, name: string }
-        return state.user?.health_flags.map(flag => flag.name) || [];
+        return state.user?.health_flags || [];
     },
-    userId: (state): number | null => state.user?.id || null, // Backend ID is integer
+    userId: (state): string | null => state.user?.id || null, // Backend ID is integer
   },
 
   actions: {
@@ -84,7 +81,7 @@ export const useAuthStore = defineStore('auth', {
         this.error = err.response.data.detail || err.message || err.msg || err.detail ||'An unknown registration error occurred.';
         console.error('Registration error in store:', err);
         this.loading = false;
-        return { success: false, message: this.error };
+        return { success: false, message: this.error ?? undefined };
       }
     },
 
@@ -110,7 +107,6 @@ export const useAuthStore = defineStore('auth', {
             userProfileStore.loadUserProfile();
             historyStore.loadInitialData(); // Loads interactions and stats
 
-            router.push({ name: 'Home' });
             return true;
           } else {
             throw new Error(userResponse.msg || "Failed to fetch user details after login.");
@@ -153,8 +149,6 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async logout(): Promise<void> {
-      console.log('Logging out user...');
-
       // Clear other stores' data
       const userProfileStore = useUserProfileStore();
       const historyStore = useHistoryStore();
@@ -168,17 +162,13 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem(AUTH_TOKEN_KEY);
       localStorage.removeItem(USER_DATA_KEY);
       this.setAuthHeader(null); // Clear auth header in apiClient
-
-      if (router.currentRoute.value.name !== 'Login') {
-        router.push({ name: 'Login' });
-      }
     },
 
     async updateUsername(newUsername: string): Promise<boolean> {
-      if (!this.user || !this.token) { /* ... */ return false; }
+      if (!this.user || !this.token) { return false; }
       this.loading = true; this.error = null;
       try {
-        const response = await updateUserApi(this.user.id, { name: newUsername });
+        const response = await updateUserApi(Number(this.user.id), { name: newUsername });
         if (response.code === 200 && response.data) {
           this.user = response.data;
           localStorage.setItem(USER_DATA_KEY, JSON.stringify(this.user));
@@ -189,10 +179,10 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async updateHealthFlags(flags: string[]): Promise<boolean> {
-      if (!this.user || !this.token) { /* ... */ return false; }
+      if (!this.user || !this.token) { return false; }
       this.loading = true; this.error = null;
       try {
-        const response = await updateUserApi(this.user.id, { health_flags: flags });
+        const response = await updateUserApi(Number(this.user.id), { health_flags: flags });
          if (response.code === 200 && response.data) {
           this.user = response.data;
           localStorage.setItem(USER_DATA_KEY, JSON.stringify(this.user));
