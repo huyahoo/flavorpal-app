@@ -1,14 +1,64 @@
 // src/types/index.ts
 
 /**
- * Interface for a mock user for the FlavorPal application.
+ * Represents a user object, aligning with the backend schema.
  */
-export interface MockUser {
+export interface User {
   id: string;
-  username: string;
+  name: string;
   email: string;
+  health_flags: string[];
+  badges: string[];
+  created_at?: string; // Optional, from GET response
+  updated_at?: string; // Optional, from GET response
+}
+
+/**
+ * Payload for creating a new user (matches backend's UserCreate schema).
+ */
+export interface UserCreatePayload {
+  name: string;
+  email: string;
+  health_flags: string[]; // Sending simple strings as per last backend update
+  badges: string[];       // Sending simple strings
+  password: string;
+}
+
+/**
+ * Payload for updating an existing user (matches backend's UserUpdate schema).
+ * Note: Fields are optional to allow partial updates.
+ */
+export interface UserUpdatePayload {
+  name?: string;
+  email?: string;
+  health_flags?: string[]; // Sending simple strings as per last backend update
+  badges?: string[];       // Sending simple strings
   password?: string;
-  healthFlags: string[];
+} 
+
+/**
+ * Credentials for user login.
+ */
+export interface LoginCredentials {
+    username: string; // FastAPI's OAuth2PasswordRequestForm expects 'username' (which will be our email)
+    password: string;
+}
+
+/**
+ * Expected response data from the /auth/token endpoint.
+ */
+export interface TokenResponse {
+    access_token: string;
+    token_type: string;
+}
+
+/**
+ * Generic API response structure from backend.
+ */
+export interface ApiResponse<T = any> { // Ensure T is typed if possible
+    code: number;
+    data: T;
+    msg: string;
 }
 
 /**

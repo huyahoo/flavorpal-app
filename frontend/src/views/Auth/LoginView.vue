@@ -99,9 +99,13 @@ const handleLogin = async () => {
     authStore.error = 'Please enter both email and password.'; // Set error message in the store
     return;
   }
-  // Call the login action from the authentication store
-  await authStore.login(email.value, password.value);
-  // Navigation on success or error display is handled by the store action or router guards
+
+  const credentials: LoginCredentials = {
+    username: email.value.trim(),
+    password: password.value,
+  };
+
+  await authStore.login(credentials);
 };
 </script>
 
