@@ -27,13 +27,6 @@ def create_product_review(user_id: int,product_id: int, review: schemas.ReviewPr
     return Response(code=200, data=db_review, msg="Review created successfully")
 
 
-@router.get("/reviews/users/{user_id}/", response_model=Response[List[schemas.ReviewUserOut]])
-def get_user_reviews(user_id: int,review:schemas.ReviewUserCreate, db: Session = Depends(get_db)):
-    db_review = models.Review(**review.dict(), user_id=user_id)
-    db.add(db_review)
-    db.commit()
-    return Response(code=200, data=db_review, msg="Review created successfully")
-
 @router.patch("/reviews/products/{review_id}", response_model=Response[schemas.ReviewOut])
 def update_review(review_id: int, review: schemas.ReviewUpdate, db: Session = Depends(get_db)):
     db_review = db.query(models.Review).filter(models.Review.id == review_id).first()
