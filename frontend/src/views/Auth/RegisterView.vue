@@ -11,7 +11,7 @@
 
       <form @submit.prevent="handleRegister" class="space-y-5">
         <div class="relative">
-          <label for="nameRegister" class="block text-sm font-medium text-flavorpal-gray-dark mb-1">Name</label>
+          <label for="nameRegister" class="block text-sm font-medium text-flavorpal-gray-dark mb-1">Username</label>
           <div class="relative rounded-lg shadow-sm">
              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -23,7 +23,7 @@
               id="nameRegister"
               v-model="nameInput"
               required
-              autocomplete="name"
+              autocomplete="username"
               class="appearance-none block w-full px-3 py-3 pl-10 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-flavorpal-green focus:border-flavorpal-green sm:text-sm transition-shadow"
               placeholder="e.g., John"
             />
@@ -197,7 +197,7 @@ const handleRegister = async () => {
 
   // Construct the payload according to UserCreatePayload
   const payload: UserCreatePayload = {
-    name: nameInput.value.trim(),
+    username: nameInput.value.trim(),
     email: email.value.trim(),
     password: password.value, // Password is sent plain, backend should hash it
     health_flags: flagsArray,

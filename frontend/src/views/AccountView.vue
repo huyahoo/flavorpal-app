@@ -21,9 +21,9 @@
           <div v-if="!isEditingUsername" class="flex items-center space-x-2">
             <h2 
               class="text-xl sm:text-2xl font-bold text-flavorpal-gray-dark truncate" 
-              :title="authStore.user?.name || 'Username'"
+              :title="authStore.user?.username || 'Username'"
             >
-              {{ authStore.user?.name || 'Username' }}
+              {{ authStore.user?.username || 'Username' }}
             </h2>
             <button 
               @click="startEditUsername" 
@@ -223,7 +223,7 @@ interface Badge {
 // --- Username Editing Functions ---
 const startEditUsername = () => {
   isEditingUsername.value = true;
-  newUsernameInput.value = authStore.user?.name || '';
+  newUsernameInput.value = authStore.user?.username || '';
   usernameEditError.value = null;
   nextTick(() => {
     usernameInputRef.value?.focus();
@@ -253,7 +253,7 @@ const saveUsername = async () => {
 const cancelEditUsername = () => {
   isEditingUsername.value = false;
   usernameEditError.value = null;
-  newUsernameInput.value = authStore.user?.name || '';
+  newUsernameInput.value = authStore.user?.username || '';
 };
 
 // --- Keywords Editing Functions ---
