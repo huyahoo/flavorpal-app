@@ -16,13 +16,13 @@ export interface AuthState {
   isAuthenticatedInitiallyChecked: boolean; // To track if initial auth check is done
 }
 
-const AUTH_TOKEN_KEY = 'flavorpal_auth_token_v1'; // Use a new key if structure changes
+const AUTH_TOKEN_KEY = 'flavorpal_auth_token_v1';
 const USER_DATA_KEY = 'flavorpal_user_data_v1';
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
-    user: JSON.parse(localStorage.getItem(USER_DATA_KEY) || 'null'),
-    token: localStorage.getItem(AUTH_TOKEN_KEY),
+    user: null, 
+    token: null, 
     loading: false,
     error: null,
     isAuthenticatedInitiallyChecked: false,
@@ -30,7 +30,7 @@ export const useAuthStore = defineStore('auth', {
 
   getters: {
     isAuthenticated: (state): boolean => !!state.token && !!state.user,
-    currentUsername: (state): string | null => state.user?.name || null, // Use 'name'
+    currentUsername: (state): string | null => state.user?.username || null,
     healthFlags: (state): string[] => {
         return state.user?.health_flags || [];
     },
@@ -47,28 +47,27 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async initializeAuth() {
-      const token = localStorage.getItem(AUTH_TOKEN_KEY);
-      const userDataJson = localStorage.getItem(USER_DATA_KEY);
+      this.loading = true;
+      this.isAuthenticatedInitiallyChecked = false;
 
-      if (token && userDataJson) {
-        try {
-          this.token = token;
-          this.user = JSON.parse(userDataJson);
-          this.setAuthHeader(token); // Set auth header for subsequent API calls
-          console.log('AuthStore: Session initialized from localStorage.');
-          // Optional: Validate token with backend by fetching current user
-          // await this.fetchCurrentUser(); // This would also update user data
-        } catch (e) {
-          console.error("Error initializing auth from localStorage", e);
-          await this.logout(); // Clear corrupted data
-        }
+      const response = await fetchCurrentUserApi(); 
+      
+      if (response.code === 200 && response.data) {
+        this.user = response.data;
+        this.token = localStorage.getItem('flavorpal_app_auth_token_v11'); // Service's key
+      } else {
+        this.user = null;
+        this.token = null;
       }
+
       this.isAuthenticatedInitiallyChecked = true;
+      this.loading = false;
     },
 
     async register(payload: UserCreatePayload): Promise<{ success: boolean; message?: string }> {
       this.loading = true;
       this.error = null;
+
       try {
         const response = await registerUserApi(payload);
         if (response.code === 201 && response.data) {
@@ -88,25 +87,28 @@ export const useAuthStore = defineStore('auth', {
     async login(credentials: LoginCredentials): Promise<boolean> {
       this.loading = true;
       this.error = null;
+
       try {
-        const tokenResponse = await loginUserApi(credentials); // API call for token
+        const tokenResponse = await loginUserApi(credentials);
+
         if (tokenResponse.code === 200 && tokenResponse.data.access_token) {
           this.token = tokenResponse.data.access_token;
-          localStorage.setItem(AUTH_TOKEN_KEY, this.token);
+
           this.setAuthHeader(this.token);
 
           // After getting token, fetch user details
           const userResponse = await fetchCurrentUserApi();
+          console.log('User response:', userResponse);
           if (userResponse.code === 200 && userResponse.data) {
             this.user = userResponse.data;
+
             localStorage.setItem(USER_DATA_KEY, JSON.stringify(this.user));
 
             // Load data for other stores now that user is authenticated
             const userProfileStore = useUserProfileStore();
             const historyStore = useHistoryStore();
-            userProfileStore.loadUserProfile();
-            historyStore.loadInitialData(); // Loads interactions and stats
-
+            userProfileStore.loadUserProfile(); 
+            historyStore.loadInitialData(); 
             return true;
           } else {
             throw new Error(userResponse.msg || "Failed to fetch user details after login.");
@@ -117,35 +119,13 @@ export const useAuthStore = defineStore('auth', {
       } catch (err: any) {
         this.error = err.msg || err.detail || err.message || 'Login error.';
         console.error('Login error:', err);
-        this.token = null; // Clear token on error
+        this.token = null;
         this.user = null;
-        localStorage.removeItem(AUTH_TOKEN_KEY);
-        localStorage.removeItem(USER_DATA_KEY);
         this.setAuthHeader(null);
         return false;
       } finally {
         this.loading = false;
       }
-    },
-
-    async fetchCurrentUser() { // Action to refresh user data if needed
-        if (!this.token) return; // No token, can't fetch
-        this.loading = true;
-        try {
-            const response = await fetchCurrentUserApi();
-            if (response.code === 200 && response.data) {
-                this.user = response.data;
-                localStorage.setItem(USER_DATA_KEY, JSON.stringify(this.user));
-            } else {
-                throw new Error(response.msg || "Failed to fetch current user.");
-            }
-        } catch (error) {
-            console.error("Error fetching current user, possibly invalid token:", error);
-            // If token is invalid, logout
-            await this.logout();
-        } finally {
-            this.loading = false;
-        }
     },
 
     async logout(): Promise<void> {
@@ -168,7 +148,7 @@ export const useAuthStore = defineStore('auth', {
       if (!this.user || !this.token || this.userId === null) { return false; }
       this.loading = true; this.error = null;
       try {
-        const response = await updateUserApi(this.userId, { name: newUsername });
+        const response = await updateUserApi(this.userId, { username: newUsername });
         if (response.code === 200 && response.data) {
           this.user = response.data;
           localStorage.setItem(USER_DATA_KEY, JSON.stringify(this.user));
