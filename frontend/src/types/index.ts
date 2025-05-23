@@ -34,7 +34,7 @@ export interface UserUpdatePayload {
   health_flags?: string[]; // Sending simple strings as per last backend update
   badges?: string[];       // Sending simple strings
   password?: string;
-} 
+}
 
 /**
  * Credentials for user login.
@@ -93,11 +93,11 @@ export interface ProductInteraction {
   id: string;                    // Unique identifier (can be barcode for scanned items from OFF)
   name: string;                  // Name of the product
   imageUrl?: string;             // Optional URL for the product image
-  
+
   // Scanning-related data
   dateScanned: string;           // Date when the product was first scanned/encountered
   barcode?: string;              // Barcode if scanned
-  
+
   // Data from Open Food Facts (or similar API)
   ingredientsText?: string;      // Raw ingredients string
   categories?: string[];         // Product categories
@@ -105,17 +105,17 @@ export interface ProductInteraction {
   genericName?: string;          // Generic name from OFF
 
   // AI-generated insights (can be client-side mock based on ingredientsText and healthFlags)
-  aiHealthSummary?: string;      
-  aiHealthConclusion?: AiHealthConclusion; 
+  aiHealthSummary?: string;
+  aiHealthConclusion?: AiHealthConclusion;
 
   // User Review Details
-  isReviewed: boolean;           
-  userRating?: number;           
-  userNotes?: string;            
+  isReviewed: boolean;
+  userRating?: number;
+  userNotes?: string;
   dateReviewed?: string;
-  
+
   // For local UI state in ProductDetailView for "Is this a new product for you?"
-  isNewForUser?: boolean; 
+  isNewForUser?: boolean;
 }
 
 export interface PublicReviewItem {
@@ -134,4 +134,12 @@ export interface PublicReviewItem {
 
   likeCount: number;
   // Potentially other fields like comments count, etc.
+}
+
+export interface Badge {
+  id: string;
+  title: string
+  description: string
+  imageUrl: string
+  achievedAt: string | null
 }
