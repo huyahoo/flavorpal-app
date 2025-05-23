@@ -11,10 +11,10 @@ import type {
 
 // --- Temporary localStorage Persistence Logic ---
 // TODO: Remove this block when backend is live and localStorage is not needed
-const USERS_STORAGE_KEY = 'flavorpal_app_users_v11';    
-const TOKEN_STORAGE_KEY = 'flavorpal_app_auth_token_v11'; 
-const CURRENT_USER_STORAGE_KEY = 'flavorpal_app_current_user_v11'; 
-const USER_ID_COUNTER_KEY = 'flavorpal_app_user_id_counter_v11';
+const USERS_STORAGE_KEY = 'flavorpal_users';    
+const TOKEN_STORAGE_KEY = 'flavorpal_auth_token'; 
+const CURRENT_USER_STORAGE_KEY = 'flavorpal_current_user'; 
+const USER_ID_COUNTER_KEY = 'flavorpal_user_id_counter';
 
 interface StoredUserForDummyDb extends User {
     _dummyHashedPassword?: string; 
@@ -29,20 +29,20 @@ const saveStoredUsers = (users: StoredUserForDummyDb[]) => {
   localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
 };
 
-const dummyHashPassword = (password: string): string => `dummyhashed_${password}_flavorpal_v2`;
+const getNextUserId = (): number => {
+  let counter = parseInt(localStorage.getItem(USER_ID_COUNTER_KEY) || '0', 10);
+  counter++;
+  localStorage.setItem(USER_ID_COUNTER_KEY, counter.toString());
+  return counter;
+};
+
+const dummyHashPassword = (password: string): string => `dummyhashed_${password}_flavorpal_v5`;
 const dummyVerifyPassword = (plainPassword: string, storedHashedPassword?: string): boolean => {
   if (!storedHashedPassword) return false;
   return storedHashedPassword === dummyHashPassword(plainPassword);
 };
-
-const getNextUserId = (): number => {
-  const counter = localStorage.getItem(USER_ID_COUNTER_KEY);
-  const newId = counter ? parseInt(counter, 10) + 1 : 1;
-  localStorage.setItem(USER_ID_COUNTER_KEY, newId.toString());
-  return newId;
-};
-
 // --- End of Temporary localStorage Persistence Logic ---
+
 
 /**
  * Registers a new user by calling the backend API.
@@ -88,7 +88,9 @@ export const registerUserApi = async (userData: UserCreatePayload): Promise<ApiR
     data: userToReturn,
     msg: "User created successfully. Please login."
   };
+  console.log("SERVICE (registerUserApi): Returning success:", successResponse);
   return successResponse;
+  // --- END OF TEMPORARY DUMMY RESPONSE LOGIC ---
 };
 
 /**
@@ -112,9 +114,7 @@ export const loginUserApi = async (credentials: LoginCredentials): Promise<ApiRe
   // TODO: Remove this block when backend is live and localStorage is not needed
   await new Promise(resolve => setTimeout(resolve, 300));
   const users = getStoredUsers();
-  // Login uses email, which is passed in credentials.username
   const foundUserInternal = users.find(u => u.email.toLowerCase() === credentials.username.toLowerCase());
-  console.log("Found user for login (dummy logic):", foundUserInternal);
 
   if (foundUserInternal && dummyVerifyPassword(credentials.password, foundUserInternal._dummyHashedPassword)) {
     const dummyToken = `dummy_jwt_for_${foundUserInternal.email}_${Date.now()}`;
@@ -204,10 +204,6 @@ export const updateUserApi = async (userId: number, userData: UserUpdatePayload)
     if (userData.username !== undefined) {
       users[userIndex].username = userData.username; // Update 'name' field for username
     }
-    if (userData.email !== undefined) { // If email updates are allowed
-        // Add email uniqueness check if necessary
-        users[userIndex].email = userData.email;
-    }
     if (userData.health_flags !== undefined) {
       users[userIndex].health_flags = userData.health_flags;
     }
@@ -218,19 +214,13 @@ export const updateUserApi = async (userId: number, userData: UserUpdatePayload)
 
     saveStoredUsers(users);
     
-    // Update the MOCK_CURRENT_USER_KEY if the updated user is the current user
-    const currentUserJson = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
-    if (currentUserJson) {
-        try {
-          const currentUser = JSON.parse(currentUserJson) as User;
-            if (currentUser.id === userId) {
-                const { _dummyHashedPassword, ...updatedCurrentUser } = users[userIndex];
-                localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(updatedCurrentUser));
-            }
-        } catch (e) { console.error("Error updating current user in localStorage during PATCH:", e); }
-    }
-    
     const { _dummyHashedPassword, ...userToReturn } = users[userIndex];
+    if (localStorage.getItem(CURRENT_USER_STORAGE_KEY)) {
+        const currentUser = JSON.parse(localStorage.getItem(CURRENT_USER_STORAGE_KEY)!) as User;
+        if (currentUser.id === userId) {
+            localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(userToReturn));
+        }
+    }
     const successResponse: ApiResponse<User> = {
       code: 200,
       data: userToReturn,
@@ -239,7 +229,6 @@ export const updateUserApi = async (userId: number, userData: UserUpdatePayload)
     console.log("SERVICE (updateUserApi): Returning success:", successResponse);
     return successResponse;
   }
-
   const errorResponse: ApiResponse<User> = {
     code: 404, // Not Found
     data: {} as User,
@@ -247,4 +236,5 @@ export const updateUserApi = async (userId: number, userData: UserUpdatePayload)
   };
   console.log("SERVICE (updateUserApi): Returning error:", errorResponse);
   return errorResponse;
+  // --- END OF TEMPORARY DUMMY RESPONSE LOGIC ---
 };

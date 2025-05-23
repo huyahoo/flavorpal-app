@@ -9,15 +9,15 @@ import { useHistoryStore } from './historyStore';
 import { useScanStore } from './scanStore';
 
 export interface AuthState {
-  user: User | null;          // Holds the authenticated user object from the backend
-  token: string | null;       // Holds the JWT or session token
+  user: User | null;
+  token: string | null;
   loading: boolean;
-  error: string | null;       // Stores API error messages
-  isAuthenticatedInitiallyChecked: boolean; // To track if initial auth check is done
+  error: string | null;
+  isAuthenticatedInitiallyChecked: boolean;
 }
 
-const AUTH_TOKEN_KEY = 'flavorpal_auth_token_v1';
-const USER_DATA_KEY = 'flavorpal_user_data_v1';
+const TOKEN_STORAGE_KEY_FROM_SERVICE = 'flavorpal_auth_token';
+const CURRENT_USER_STORAGE_KEY_FROM_SERVICE = 'flavorpal_current_user';
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
@@ -47,21 +47,51 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async initializeAuth() {
-      this.loading = true;
-      this.isAuthenticatedInitiallyChecked = false;
-
-      const response = await fetchCurrentUserApi(); 
+      if (this.isAuthenticatedInitiallyChecked && this.user) {
+        console.log('AuthStore: Already initialized and user exists.');
+        return;
+      }
       
-      if (response.code === 200 && response.data) {
-        this.user = response.data;
-        this.token = localStorage.getItem('flavorpal_app_auth_token_v11'); // Service's key
+      console.log('AuthStore: Attempting to initialize session from localStorage...');
+      this.loading = true;
+
+      const tokenFromStorage = localStorage.getItem(TOKEN_STORAGE_KEY_FROM_SERVICE);
+      const userJsonFromStorage = localStorage.getItem(CURRENT_USER_STORAGE_KEY_FROM_SERVICE);
+
+      if (tokenFromStorage && userJsonFromStorage) {
+        try {
+          const user = JSON.parse(userJsonFromStorage) as User;
+          if (user && user.email && tokenFromStorage.startsWith("dummy_jwt_for_") && tokenFromStorage.includes(user.email)) {
+            this.user = user;
+            this.token = tokenFromStorage;
+            this.setAuthHeader(this.token);
+            console.log('AuthStore: Session successfully restored from localStorage for user:', user.email);
+          } else {
+            console.warn('AuthStore: Invalid token or user data in localStorage. Clearing session.');
+            this.user = null;
+            this.token = null;
+            localStorage.removeItem(TOKEN_STORAGE_KEY_FROM_SERVICE);
+            localStorage.removeItem(CURRENT_USER_STORAGE_KEY_FROM_SERVICE);
+            this.setAuthHeader(null);
+          }
+        } catch(e) {
+            console.error("AuthStore: Error parsing user data from localStorage during init:", e);
+            this.user = null;
+            this.token = null;
+            localStorage.removeItem(TOKEN_STORAGE_KEY_FROM_SERVICE);
+            localStorage.removeItem(CURRENT_USER_STORAGE_KEY_FROM_SERVICE);
+            this.setAuthHeader(null);
+        }
       } else {
+        console.log('AuthStore: No session found in localStorage.');
         this.user = null;
         this.token = null;
+        this.setAuthHeader(null);
       }
-
+      
       this.isAuthenticatedInitiallyChecked = true;
       this.loading = false;
+      console.log('AuthStore: Initialization complete. isAuthenticated:', this.isAuthenticated);
     },
 
     async register(payload: UserCreatePayload): Promise<{ success: boolean; message?: string }> {
@@ -102,7 +132,7 @@ export const useAuthStore = defineStore('auth', {
           if (userResponse.code === 200 && userResponse.data) {
             this.user = userResponse.data;
 
-            localStorage.setItem(USER_DATA_KEY, JSON.stringify(this.user));
+            this.isAuthenticatedInitiallyChecked = true;
 
             // Load data for other stores now that user is authenticated
             const userProfileStore = useUserProfileStore();
@@ -139,9 +169,8 @@ export const useAuthStore = defineStore('auth', {
 
       this.user = null;
       this.token = null;
-      localStorage.removeItem(AUTH_TOKEN_KEY);
-      localStorage.removeItem(USER_DATA_KEY);
-      this.setAuthHeader(null); // Clear auth header in apiClient
+      this.isAuthenticatedInitiallyChecked = false;
+      this.setAuthHeader(null); 
     },
 
     async updateUsername(newUsername: string): Promise<boolean> {
@@ -151,7 +180,6 @@ export const useAuthStore = defineStore('auth', {
         const response = await updateUserApi(this.userId, { username: newUsername });
         if (response.code === 200 && response.data) {
           this.user = response.data;
-          localStorage.setItem(USER_DATA_KEY, JSON.stringify(this.user));
           return true;
         } else { throw new Error(response.msg); }
       } catch (err: any) { this.error = err.msg || "Update username failed."; return false; }
@@ -165,7 +193,6 @@ export const useAuthStore = defineStore('auth', {
         const response = await updateUserApi(this.userId, { health_flags: flags });
          if (response.code === 200 && response.data) {
           this.user = response.data;
-          localStorage.setItem(USER_DATA_KEY, JSON.stringify(this.user));
           return true;
         } else { throw new Error(response.msg); }
       } catch (err: any) { this.error = err.msg || "Update health flags failed."; return false; }
