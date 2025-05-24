@@ -64,9 +64,8 @@ import BarcodeInput from './components/BarcodeInput.vue'
 import Analyzing from './components/Analyzing.vue'
 import ResultPanel from './components/ResultPanel.vue'
 import ErrorDisplay from './components/ErrorDisplay.vue'
-import { fetchProductDataFromOpenFoodFacts } from '@/services/scanService'
+import { fetchProductDataFromOpenFoodFacts, mockPhotoAnalyze } from '@/services/scanService'
 
-const historyStore = useHistoryStore()
 const router = useRouter()
 
 const state = ref<ScanViewStage>('idle_choice')
@@ -109,13 +108,21 @@ const handleBarcodeSubmission = async (barcodeValue: string) => {
 
 const handleNavigateToProductDetail = () => {
   const productId = productForDisplay.value?.id
+  handleResetView()
   if (productId) {
     router.push({ name: 'ProductDetail', params: { id: productId } })
   }
 }
 
 const handlePhotoCapture = async (photo: CapturedPhoto) => {
-  console.log('Captured photo:', photo)
+  console.log('Processing captured photo:', photo)
+  state.value = 'analyzing'
+  const result = await mockPhotoAnalyze(photo.data) // This line always returns the same mock result
+  console.log('Photo analysis result:', result)
+  if (result) {
+    productForDisplay.value = result
+  }
+  state.value = 'result_display'
 }
 
 
