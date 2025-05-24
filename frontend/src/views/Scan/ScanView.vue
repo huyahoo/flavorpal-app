@@ -53,7 +53,6 @@
 <script setup lang="ts">
 // ... (script setup remains the same as flavorpal_scan_view_v4_zxing)
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useHistoryStore } from '../../store/historyStore'
 import { useRouter } from 'vue-router'
 import type { AiHealthConclusion, ProductInteraction } from '../../types'
 import PhotoCapturer, { type CapturedPhoto } from './components/PhotoCapturer.vue'
@@ -65,6 +64,11 @@ import Analyzing from './components/Analyzing.vue'
 import ResultPanel from './components/ResultPanel.vue'
 import ErrorDisplay from './components/ErrorDisplay.vue'
 import { fetchProductDataFromOpenFoodFacts, mockPhotoAnalyze } from '@/services/scanService'
+
+// DELETE AFTER BACKEND INTEGRATION
+import { useHistoryStore } from '../../store/historyStore'
+const historyStore = useHistoryStore()
+//////////////////////////////////////
 
 const router = useRouter()
 
@@ -103,6 +107,9 @@ const handleBarcodeSubmission = async (barcodeValue: string) => {
   if (productInteraction) {
     productForDisplay.value = productInteraction as ProductInteraction
   }
+  // DELETE AFTER BACKEND INTEGRATION
+  historyStore.addOrUpdateInteraction(productForDisplay.value as ProductInteraction)
+  //////////////////////////////////////
   state.value = 'result_display'
 }
 
