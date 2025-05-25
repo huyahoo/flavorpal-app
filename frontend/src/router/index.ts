@@ -11,6 +11,7 @@ import DiscoverView from '../views/DiscoverView.vue';
 import AccountView from '../views/AccountView.vue';
 import ProductDetailView from '../views/ProductDetailView.vue';
 import PublicReviewDetailView from '../views/PublicReviewDetailView.vue';
+import TastePointConversionView from '@/views/TastePointConversionView.vue';
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -83,6 +84,12 @@ const routes: Array<RouteRecordRaw> = [
     component: ProductDetailView, 
     props: true, 
     meta: { requiresAuth: true, title: 'FlavorPal - Product Details', showBottomNav: true } 
+  },
+  {
+    path: '/point-conversion',
+    name: 'PointConversion',
+    component: TastePointConversionView,
+    meta: { requiresAuth: false, title: 'FlavorPal - Taste Point Conversion', showBottomNav: true }
   },
   {
     path: '/:pathMatch(.*)*',
