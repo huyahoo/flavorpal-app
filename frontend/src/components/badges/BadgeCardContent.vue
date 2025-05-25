@@ -2,7 +2,7 @@
   <div class="w-20 h-20 items-center justify-center overflow-hidden mb-5">
     <img
       :src="badge.imageUrl"
-      :alt="badge.title"
+      :alt="badge.name"
       class="w-full h-full object-cover"
       loading="lazy"
     />
@@ -12,9 +12,9 @@
     <h4
       :id="`badge-${badge.id}`"
       class="font-semibold text-md text-flavorpal-gray-dark"
-      :title="badge.title"
+      :title="badge.name"
     >
-      {{ badge.title }}
+      {{ badge.name }}
     </h4>
     <p class="text-xs text-gray-500">
       {{ badge.description }}
@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Badge } from '@/types';
+import type { DisplayBadge } from '@/types';
 
-const { badge } = defineProps<{ badge: Badge }>();
+const { badge } = defineProps<{ badge: DisplayBadge }>();
 </script>

@@ -1,23 +1,24 @@
 <template>
-  <div 
-    id="flavorpal-app-container" 
+  <div
+    id="flavorpal-app-container"
     class="max-w-md mx-auto h-dvh bg-flavorpal-gray-light font-sans overflow-hidden relative flex flex-col"
-    :style="{ 
-      // paddingTop: 'env(safe-area-inset-top)', 
-      // paddingBottom: !showBottomNavComputed ? 'env(safe-area-inset-bottom)' : '0px' 
+    :style="{
+      // paddingTop: 'env(safe-area-inset-top)',
+      // paddingBottom: !showBottomNavComputed ? 'env(safe-area-inset-bottom)' : '0px'
     }"
   >
-    <main 
-      class="flex-grow overflow-y-auto" 
-      :class="{ 'pb-20': showBottomNavComputed }" 
-    > 
+    <main
+      class="flex-grow overflow-y-auto"
+      :class="{ 'pb-20': showBottomNavComputed }"
+    >
       <router-view v-slot="{ Component }">
         <transition name="page-fade" mode="out-in">
-          <component :is="Component" />
+            <component :is="Component" />
         </transition>
       </router-view>
     </main>
 
+    <BadgePopupWrapper />
     <BottomNavigationBar v-if="showBottomNavComputed" />
   </div>
 </template>
@@ -27,6 +28,7 @@ import { onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from './store/auth';
 import BottomNavigationBar from './components/common/BottomNavigationBar.vue';
+import BadgePopupWrapper from './components/badges/BadgePopupWrapper.vue';
 
 const authStore = useAuthStore();
 const route = useRoute();
@@ -35,7 +37,7 @@ const showBottomNavComputed = computed(() => {
   return authStore.isAuthenticated && route.meta.showBottomNav !== false;
 });
 
-onMounted(async () => { 
+onMounted(async () => {
   if (!authStore.user && localStorage.getItem('flavorpal_current_user_v4')) {
     await authStore.initializeAuth();
   }

@@ -1,53 +1,58 @@
 // src/store/badgeStore.ts
-
-import { fetchBadgesApi } from "@/services/badgeService";
-import type { Badge } from "@/types";
-import { defineStore } from "pinia";
+import { defineStore } from 'pinia';
+import type { BadgeStatistic, DisplayBadge } from '../types';
 
 export interface BadgeStoreState {
-  badges: Badge[]
-  isLoading: boolean
-  error: string | null
+  selectedBadges: DisplayBadge[]
 }
 
 export const useBadgeStore = defineStore('badge', {
   state: (): BadgeStoreState => ({
-    badges: [],
-    isLoading: false,
-    error: null
+    selectedBadges: []
   }),
 
   getters: {
-    // Get all badges to display on this page
-    getBadges: (state): Badge[] => state.badges
+    // Getter to access the list selected badges to show popup
+    getSelectedBadges: (state): DisplayBadge[] => state.selectedBadges,
   },
 
   actions: {
-    async loadBadges() {
-      this.isLoading = true
-      try {
-        const badges = await fetchBadgesApi()
-        if (badges) {
-          this.badges = badges
-        } else {
-          this.error = 'Cannot fetch badges'
-        }
-      } catch (err: any) {
-        this.error = err.message || 'Failed to fetch badges'
-        console.error('Error loading badges', err)
-      } finally {
-        this.isLoading = false
-      }
+    /**
+     * Push badges to show on popup
+     */
+    pushBadgeToShow(badge: DisplayBadge) {
+      this.selectedBadges.push(badge)
     },
 
     /**
-    * Clears all badge data, call on logout
-    */
-    clearBadgeData() {
-      this.badges = []
-      this.isLoading = false
-      this.error = null
-      console.log('Badges data cleared from the store')
+     * Pop badges on popup
+     */
+    popBadgeToShow() {
+      this.selectedBadges.pop()
+    },
+
+    /**
+     * Check all badges logic to display popup
+     */
+    checkAllBadgesLogic(value: BadgeStatistic, userBadges: DisplayBadge[]) {
+      return userBadges.forEach(badge => {
+        // Skip earned badges and badges that are not unlocked
+        if (badge.dateEarned || !badge.isUnlockable(value)) {
+          return
+        }
+
+        this.pushBadgeToShow({
+          ...badge,
+          dateEarned: "2025-05-11" // TODO: Make it parse actual date today
+        })
+      })
+    },
+
+    /**
+     * Clears all discover page data. Typically called on user logout.
+     */
+    clearBadgesData() {
+      this.selectedBadges = [];
     }
-  }
-})
+  },
+});

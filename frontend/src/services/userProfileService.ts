@@ -24,11 +24,7 @@ export const fetchUserApiBadges = async (): Promise<ApiBadge[]> => {
 
   // Mock badge data as it would be structured from a backend
   const mockApiBadges: ApiBadge[] = [
-    { id: 'b001', name: 'First Reviewer', description: 'Awarded for logging your very first product review.', dateEarned: '2025-05-01' },
-    { id: 'b002', name: 'Explorer', description: 'Awarded for reviewing 5 products from different categories.', dateEarned: '2025-05-10' },
-    { id: 'b003', name: 'Gourmand', description: 'Awarded for reviewing 10 products.', dateEarned: '2025-05-14' },
-    { id: 'b004', name: 'Health Scout', description: 'Awarded for using the AI ingredient helper 5 times.', dateEarned: '2025-05-12' },
-    { id: 'b005', name: 'Super Scanner', description: 'Awarded for scanning 20 unique products.', dateEarned: '2025-05-15' },
+    { id: '4', dateEarned: '2025-05-01' },
   ];
   return mockApiBadges;
 };

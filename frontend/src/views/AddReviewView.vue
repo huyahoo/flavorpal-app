@@ -61,7 +61,7 @@
 
         <div v-if="currentStep === 4" class="animate-fade-in">
           <h2 class="text-lg font-semibold text-flavorpal-gray-dark mb-3 text-center">Almost there!</h2>
-          <div v-if="productToReview?.aiHealthConclusion && productToReview.aiHealthConclusion !== 'good' && productToReview.aiHealthConclusion !== 'neutral'" 
+          <div v-if="productToReview?.aiHealthConclusion && productToReview.aiHealthConclusion !== 'good' && productToReview.aiHealthConclusion !== 'neutral'"
                class="p-3 mb-4 rounded-md border"
                :class="{
                     'bg-yellow-50 border-yellow-400 text-yellow-700': productToReview.aiHealthConclusion === 'caution',
@@ -73,7 +73,7 @@
                 <svg v-if="productToReview.aiHealthConclusion === 'avoid'" class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" /></svg>
                 <svg v-if="productToReview.aiHealthConclusion === 'info_needed'" class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
                 <p class="text-sm font-medium">
-                    <strong class="capitalize">{{ productToReview.aiHealthConclusion }}:</strong> 
+                    <strong class="capitalize">{{ productToReview.aiHealthConclusion }}:</strong>
                     {{ productToReview.aiHealthSummary || "Please review product ingredients based on your health profile." }}
                 </p>
             </div>
@@ -111,12 +111,16 @@
 import { ref, reactive, computed, onMounted, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useHistoryStore } from '../store/historyStore';
-import type { ProductInteraction } from '../types';
+import type { BadgeStatistic, ProductInteraction } from '../types';
 import StarRatingInput from '@/components/common/StarRatingInput.vue';
+import { useUserProfileStore } from '@/store/userProfileStore';
+import { useBadgeStore } from '@/store/badgeStore';
 
 const route = useRoute();
 const router = useRouter();
 const historyStore = useHistoryStore();
+const userProfileStore = useUserProfileStore();
+const badgeStore = useBadgeStore();
 
 const currentStep = ref(1);
 const totalSteps = 4; // Product Name, Rating, Notes, Confirmation
@@ -129,7 +133,7 @@ const reviewData = reactive({
   productName: (route.query.productName as string) || '',
   userRating: 0,
   userNotes: '',
-  imageUrl: '', 
+  imageUrl: '',
   barcode: '',
   aiHealthSummary: '',
   aiHealthConclusion: undefined as ProductInteraction['aiHealthConclusion'],
@@ -225,6 +229,11 @@ const handleNextOrSubmit = async () => {
     });
 
     if (savedInteraction && !historyStore.error) {
+      // Check if new badges have been achieved
+      await userProfileStore.loadUserProfile();
+      const badgeStatistics: BadgeStatistic = { totalReviewCount: historyStore.totalScanned }
+      badgeStore.checkAllBadgesLogic(badgeStatistics, userProfileStore.badges)
+
       // Navigate to the product detail page of the newly reviewed/updated item
       router.push({ name: 'ProductDetail', params: { id: savedInteraction.id } });
     } else {

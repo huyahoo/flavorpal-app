@@ -66,18 +66,30 @@ export interface ApiResponse<T = any> { // Ensure T is typed if possible
  */
 export interface ApiBadge {
   id: string;
-  name: string;
-  description: string;
-  dateEarned: string;
+  dateEarned: string | null;
 }
 
 /**
- * Interface for badge data enhanced for display in the frontend.
+ * Interface for mapping other badge data apart from API badge data
  */
-export interface DisplayBadge extends ApiBadge {
-  icon: string;
-  bgColor?: string;
-  iconColor?: string;
+export interface BadgeMapping {
+  id: string
+  name: string
+  description: string
+  imageUrl: string
+  isUnlockable: (value: BadgeStatistic) => boolean
+}
+
+/**
+ * Interface for badge data specific to user for frontend display
+ */
+export interface DisplayBadge extends BadgeMapping, ApiBadge {}
+
+/**
+ * Interface for value to pass into badge checking logic
+ */
+export interface BadgeStatistic {
+  totalReviewCount: number
 }
 
 /**
@@ -134,12 +146,4 @@ export interface PublicReviewItem {
 
   likeCount: number;
   // Potentially other fields like comments count, etc.
-}
-
-export interface Badge {
-  id: string;
-  title: string
-  description: string
-  imageUrl: string
-  achievedAt: string | null
 }
