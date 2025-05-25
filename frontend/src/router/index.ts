@@ -134,7 +134,7 @@ router.beforeEach(async (to, from, next) => {
   const { useAuthStore } = await import('../store/auth');
   const authStore = useAuthStore();
 
-  if (authStore.user === null && !authStore.loading && localStorage.getItem('flavorpal_current_user_v4')) {
+  if (!authStore.isAuthenticatedInitiallyChecked) {
       await authStore.initializeAuth();
   }
 
