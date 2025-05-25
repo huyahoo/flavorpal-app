@@ -115,12 +115,14 @@ import type { BadgeStatistic, ProductInteraction } from '../types';
 import StarRatingInput from '@/components/common/StarRatingInput.vue';
 import { useUserProfileStore } from '@/store/userProfileStore';
 import { useBadgeStore } from '@/store/badgeStore';
+import { useAuthStore } from '@/store/auth';
 
 const route = useRoute();
 const router = useRouter();
 const historyStore = useHistoryStore();
 const userProfileStore = useUserProfileStore();
 const badgeStore = useBadgeStore();
+const authStore = useAuthStore()
 
 const currentStep = ref(1);
 const totalSteps = 4; // Product Name, Rating, Notes, Confirmation
@@ -232,7 +234,9 @@ const handleNextOrSubmit = async () => {
       // Check if new badges have been achieved
       await userProfileStore.loadUserProfile();
       const badgeStatistics: BadgeStatistic = { totalReviewCount: historyStore.totalScanned }
+
       badgeStore.checkAllBadgesLogic(badgeStatistics, userProfileStore.badges)
+        .then(apiBadges => authStore.updateBadges(apiBadges))
 
       // Navigate to the product detail page of the newly reviewed/updated item
       router.push({ name: 'ProductDetail', params: { id: savedInteraction.id } });

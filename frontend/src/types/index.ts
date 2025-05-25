@@ -8,7 +8,7 @@ export interface User {
   username: string;
   email: string;
   health_flags: string[];
-  badges: string[];
+  badges: ApiBadge[];
   created_at?: string; // Optional, from GET response
   updated_at?: string; // Optional, from GET response
 }
@@ -20,7 +20,7 @@ export interface UserCreatePayload {
   username: string;
   email: string;
   health_flags: string[];
-  badges: string[];
+  badges: ApiBadge[];
   password: string;
 }
 
@@ -31,7 +31,7 @@ export interface UserCreatePayload {
 export interface UserUpdatePayload {
   username?: string;
   health_flags?: string[];
-  badges?: string[];
+  badges?: ApiBadge[];
   password?: string;
 }
 

@@ -60,7 +60,7 @@ const saveInteractionsToStorage = (interactions: ProductInteraction[]) => {
 
 const generateInteractionId = (prefix: string = 'item_') => `${prefix}${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
-const formatDateForDisplay = (dateInput?: string | Date): string => {
+export const formatDateForDisplay = (dateInput?: string | Date): string => {
     if (!dateInput) return '';
     try {
         return new Date(dateInput).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });

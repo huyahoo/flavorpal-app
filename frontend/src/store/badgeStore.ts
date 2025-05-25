@@ -1,19 +1,20 @@
 // src/store/badgeStore.ts
 import { defineStore } from 'pinia';
-import type { BadgeStatistic, DisplayBadge } from '../types';
+import type { ApiBadge, BadgeStatistic, DisplayBadge } from '../types';
+import { formatDateForDisplay } from './historyStore';
 
 export interface BadgeStoreState {
-  selectedBadges: DisplayBadge[]
+  selectedPopupBadges: DisplayBadge[]
 }
 
 export const useBadgeStore = defineStore('badge', {
   state: (): BadgeStoreState => ({
-    selectedBadges: []
+    selectedPopupBadges: []
   }),
 
   getters: {
     // Getter to access the list selected badges to show popup
-    getSelectedBadges: (state): DisplayBadge[] => state.selectedBadges,
+    getSelectedBadges: (state): DisplayBadge[] => state.selectedPopupBadges,
   },
 
   actions: {
@@ -21,38 +22,42 @@ export const useBadgeStore = defineStore('badge', {
      * Push badges to show on popup
      */
     pushBadgeToShow(badge: DisplayBadge) {
-      this.selectedBadges.push(badge)
+      this.selectedPopupBadges.push(badge)
     },
 
     /**
      * Pop badges on popup
      */
     popBadgeToShow() {
-      this.selectedBadges.pop()
+      this.selectedPopupBadges.pop()
     },
 
     /**
      * Check all badges logic to display popup
+     * @return array of ApiBadge objects to update on user profile
      */
-    checkAllBadgesLogic(value: BadgeStatistic, userBadges: DisplayBadge[]) {
-      return userBadges.forEach(badge => {
+    async checkAllBadgesLogic(value: BadgeStatistic, userBadges: DisplayBadge[]): Promise<ApiBadge[]> {
+      userBadges.forEach(badge => {
         // Skip earned badges and badges that are not unlocked
         if (badge.dateEarned || !badge.isUnlockable(value)) {
           return
         }
-
+        // Badges that went up to this part can be assumed as a new one
+        const todayISO = new Date().toISOString();
+        const dateEarned = formatDateForDisplay(todayISO);
         this.pushBadgeToShow({
           ...badge,
-          dateEarned: "2025-05-11" // TODO: Make it parse actual date today
+          dateEarned
         })
       })
+      return this.selectedPopupBadges.map(badge => ({ id: badge.id, dateEarned: badge.dateEarned }))
     },
 
     /**
      * Clears all discover page data. Typically called on user logout.
      */
     clearBadgesData() {
-      this.selectedBadges = [];
+      this.selectedPopupBadges = [];
     }
   },
 });

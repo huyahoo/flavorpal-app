@@ -1,4 +1,4 @@
-import type { BadgeMapping, BadgeStatistic, DisplayBadge } from "@/types";
+import type { BadgeMapping, BadgeStatistic } from "@/types";
 
 const isAchievedFirstReviewer = (value: BadgeStatistic): boolean => {
   const reviewsCount = value.totalReviewCount

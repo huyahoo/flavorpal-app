@@ -1,6 +1,6 @@
 // src/store/auth.ts
 import { defineStore } from 'pinia';
-import type { User, UserCreatePayload, UserUpdatePayload, LoginCredentials } from '../types';
+import type { User, UserCreatePayload, UserUpdatePayload, LoginCredentials, DisplayBadge, ApiBadge } from '../types';
 import { registerUserApi, loginUserApi, fetchCurrentUserApi, updateUserApi } from '../services/authService';
 import apiClient from '../services/apiClient';
 
@@ -21,8 +21,8 @@ const CURRENT_USER_STORAGE_KEY_FROM_SERVICE = 'flavorpal_current_user';
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
-    user: null, 
-    token: null, 
+    user: null,
+    token: null,
     loading: false,
     error: null,
     isAuthenticatedInitiallyChecked: false,
@@ -51,7 +51,7 @@ export const useAuthStore = defineStore('auth', {
         console.log('AuthStore: Already initialized and user exists.');
         return;
       }
-      
+
       console.log('AuthStore: Attempting to initialize session from localStorage...');
       this.loading = true;
 
@@ -88,7 +88,7 @@ export const useAuthStore = defineStore('auth', {
         this.token = null;
         this.setAuthHeader(null);
       }
-      
+
       this.isAuthenticatedInitiallyChecked = true;
       this.loading = false;
       console.log('AuthStore: Initialization complete. isAuthenticated:', this.isAuthenticated);
@@ -137,8 +137,8 @@ export const useAuthStore = defineStore('auth', {
             // Load data for other stores now that user is authenticated
             const userProfileStore = useUserProfileStore();
             const historyStore = useHistoryStore();
-            userProfileStore.loadUserProfile(); 
-            historyStore.loadInitialData(); 
+            userProfileStore.loadUserProfile();
+            historyStore.loadInitialData();
             return true;
           } else {
             throw new Error(userResponse.msg || "Failed to fetch user details after login.");
@@ -170,7 +170,7 @@ export const useAuthStore = defineStore('auth', {
       this.user = null;
       this.token = null;
       this.isAuthenticatedInitiallyChecked = false;
-      this.setAuthHeader(null); 
+      this.setAuthHeader(null);
     },
 
     async updateUsername(newUsername: string): Promise<boolean> {
@@ -196,6 +196,22 @@ export const useAuthStore = defineStore('auth', {
           return true;
         } else { throw new Error(response.msg); }
       } catch (err: any) { this.error = err.msg || "Update health flags failed."; return false; }
+      finally { this.loading = false; }
+    },
+
+    async updateBadges(badges: ApiBadge[]): Promise<boolean> {
+      if (!this.user || !this.token) { return false; }
+      this.loading = true; this.error = null;
+      try {
+        const response = await updateUserApi(
+          this.userId,
+          { badges }
+        );
+         if (response.code === 200 && response.data) {
+          this.user = response.data;
+          return true;
+        } else { throw new Error(response.msg); }
+      } catch (err: any) { this.error = err.msg || "Update badges failed."; return false; }
       finally { this.loading = false; }
     },
   },

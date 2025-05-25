@@ -1,5 +1,6 @@
 // src/services/userProfileService.ts
 import type { ApiBadge } from '../types';
+import { fetchCurrentUserApi } from './authService';
 
 /**
  * Simulates fetching the user's TastePoints from an API.
@@ -22,9 +23,8 @@ export const fetchUserApiBadges = async (): Promise<ApiBadge[]> => {
   // Simulate a network delay
   await new Promise(resolve => setTimeout(resolve, 600));
 
-  // Mock badge data as it would be structured from a backend
-  const mockApiBadges: ApiBadge[] = [
-    { id: '4', dateEarned: '2025-05-01' },
-  ];
-  return mockApiBadges;
+  // Get badges data from user API
+  const userResponse = await fetchCurrentUserApi()
+
+  return userResponse.data.badges;
 };

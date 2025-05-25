@@ -3,6 +3,7 @@
     v-if="selectedBadge !== null"
     :badge="selectedBadge"
     :handle-close-badge-popup="handleCloseBadgePopup"
+    is-new-badge
   />
 </template>
 
@@ -12,9 +13,10 @@ import { computed } from 'vue';
 import { useBadgeStore } from '@/store/badgeStore';
 
 const badgeStore = useBadgeStore()
+
 const selectedBadge = computed(
-  () => badgeStore.selectedBadges.length > 0 ?
-    badgeStore.selectedBadges[0] : null
+  () => badgeStore.selectedPopupBadges.length > 0 ?
+    badgeStore.selectedPopupBadges[0] : null
 )
 
 const handleCloseBadgePopup = () => {

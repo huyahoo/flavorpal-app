@@ -180,7 +180,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { useAuthStore } from '../store/auth';
 import { useUserProfileStore } from '../store/userProfileStore';
 import { useHistoryStore } from '../store/historyStore';

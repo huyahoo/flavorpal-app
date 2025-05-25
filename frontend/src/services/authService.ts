@@ -1,23 +1,23 @@
 // frontend/src/services/authService.ts
 import apiClient from './apiClient';
-import type { 
-    User, 
+import type {
+    User,
     UserCreatePayload,
     UserUpdatePayload,
-    LoginCredentials, 
-    TokenResponse, 
-    ApiResponse 
+    LoginCredentials,
+    TokenResponse,
+    ApiResponse
 } from '../types';
 
 // --- Temporary localStorage Persistence Logic ---
 // TODO: Remove this block when backend is live and localStorage is not needed
-const USERS_STORAGE_KEY = 'flavorpal_users';    
-const TOKEN_STORAGE_KEY = 'flavorpal_auth_token'; 
-const CURRENT_USER_STORAGE_KEY = 'flavorpal_current_user'; 
+const USERS_STORAGE_KEY = 'flavorpal_users';
+const TOKEN_STORAGE_KEY = 'flavorpal_auth_token';
+const CURRENT_USER_STORAGE_KEY = 'flavorpal_current_user';
 const USER_ID_COUNTER_KEY = 'flavorpal_user_id_counter';
 
 interface StoredUserForDummyDb extends User {
-    _dummyHashedPassword?: string; 
+    _dummyHashedPassword?: string;
 }
 
 const getStoredUsers = (): StoredUserForDummyDb[] => {
@@ -64,27 +64,27 @@ export const registerUserApi = async (userData: UserCreatePayload): Promise<ApiR
   // --- TEMPORARY DUMMY RESPONSE LOGIC (Delete this block when backend is ready) ---
   // TODO: Remove this block when backend is live and localStorage is not needed
   console.log("Registering user (dummy logic):", userData);
-  await new Promise(resolve => setTimeout(resolve, 300)); 
+  await new Promise(resolve => setTimeout(resolve, 300));
   let users = getStoredUsers();
   if (users.find(u => u.email.toLowerCase() === userData.email.toLowerCase())) {
     const errorResponse: ApiResponse<User> = { code: 400, data: {} as User, msg: "Email already registered." };
-    return errorResponse; 
+    return errorResponse;
   }
 
   const newUserForStorage: StoredUserForDummyDb = {
-    id: getNextUserId(), 
+    id: getNextUserId(),
     username: userData.username, // Store the display username
     email: userData.email,
     health_flags: userData.health_flags,
-    badges: [], 
-    _dummyHashedPassword: dummyHashPassword(userData.password) 
+    badges: [],
+    _dummyHashedPassword: dummyHashPassword(userData.password)
   };
   users.push(newUserForStorage);
   saveStoredUsers(users);
 
-  const { _dummyHashedPassword, ...userToReturn } = newUserForStorage; 
+  const { _dummyHashedPassword, ...userToReturn } = newUserForStorage;
   const successResponse: ApiResponse<User> = {
-    code: 201, 
+    code: 201,
     data: userToReturn,
     msg: "User created successfully. Please login."
   };
@@ -119,7 +119,7 @@ export const loginUserApi = async (credentials: LoginCredentials): Promise<ApiRe
   if (foundUserInternal && dummyVerifyPassword(credentials.password, foundUserInternal._dummyHashedPassword)) {
     const dummyToken = `dummy_jwt_for_${foundUserInternal.email}_${Date.now()}`;
     const { _dummyHashedPassword, ...userToStoreForSession } = foundUserInternal;
-    
+
     localStorage.setItem(TOKEN_STORAGE_KEY, dummyToken);
     localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(userToStoreForSession));
 
@@ -132,7 +132,7 @@ export const loginUserApi = async (credentials: LoginCredentials): Promise<ApiRe
   }
 
   const errorResponse: ApiResponse<TokenResponse> = {
-    code: 401, 
+    code: 401,
     data: {} as TokenResponse,
     msg: "Incorrect email or password.",
   };
@@ -166,7 +166,7 @@ export const fetchCurrentUserApi = async (): Promise<ApiResponse<User>> => {
         }
       } catch(e) { console.error("Error parsing current user from localStorage:", e); }
     }
-    
+
     localStorage.removeItem(TOKEN_STORAGE_KEY);
     localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
     const errorResponse: ApiResponse<User> = {
@@ -207,13 +207,16 @@ export const updateUserApi = async (userId: number, userData: UserUpdatePayload)
     if (userData.health_flags !== undefined) {
       users[userIndex].health_flags = userData.health_flags;
     }
-    if (userData.badges !== undefined) { // If badges can be updated this way
-      users[userIndex].badges = userData.badges;
+    if (userData.badges !== undefined) { // Append badges
+      users[userIndex].badges = [
+        ...users[userIndex].badges,
+        ...userData.badges
+      ]
     }
     // Note: Password updates should typically be a separate, more secure endpoint.
 
     saveStoredUsers(users);
-    
+
     const { _dummyHashedPassword, ...userToReturn } = users[userIndex];
     if (localStorage.getItem(CURRENT_USER_STORAGE_KEY)) {
         const currentUser = JSON.parse(localStorage.getItem(CURRENT_USER_STORAGE_KEY)!) as User;
