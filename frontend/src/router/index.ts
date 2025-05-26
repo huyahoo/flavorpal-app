@@ -6,7 +6,7 @@ import LoginView from '../views/Auth/LoginView.vue';
 import RegisterView from '../views/Auth/RegisterView.vue';
 import AddReviewView from '../views/AddReviewView.vue';
 import HistoryView from '../views/HistoryView.vue';
-import ScanView from '../views/ScanView.vue';
+import ScanView from '../views/Scan/ScanView.vue';
 import DiscoverView from '../views/DiscoverView.vue';
 import AccountView from '../views/AccountView.vue';
 import ProductDetailView from '../views/ProductDetailView.vue';
