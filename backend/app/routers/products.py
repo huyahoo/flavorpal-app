@@ -7,19 +7,15 @@ from typing import List
 from app.utils import response 
 from app.utils.ResponseResult import Response
 from app.utils.dependencies import get_current_user
-
+import requests
+from datetime import datetime
 router = APIRouter(
     prefix="/products",
     tags=["Products"]
 )
 
 
-# @router.get("/", response_model=Response[List[schemas.ProductOut]])
-# def get_all_products(db: Session = Depends(get_db)):
-#     products = db.query(models.Product).all()
-#     if not products:
-#         return response.not_found(msg="No products found",code=404)
-#     return Response(code=200, data=products, msg="Products fetched successfully")
+
 
 @router.get("/",response_model=Response[List[schemas.ProductDetailsFrontendOut]])
 def get_all_products(db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):
@@ -29,7 +25,7 @@ def get_all_products(db: Session = Depends(get_db),current_user: models.User = D
     for product in products:
         review = db.query(models.Review).filter(models.Review.product_id == product.id, models.Review.user_id == user_id).first()
         if review:
-            product_info = schemas.ProductDetails(
+            product_info = schemas.ProductDetailsFrontend(
                 id=product.id,
                 name=product.name,
                 brands=product.brands,
@@ -45,7 +41,7 @@ def get_all_products(db: Session = Depends(get_db),current_user: models.User = D
                 data_reviewed=review.note
             )
         else:
-            product_info = schemas.ProductDetails(
+            product_info = schemas.ProductDetailsFrontend(
                 id=product.id,
                 name=product.name,
                 brands=product.brands,
@@ -71,7 +67,7 @@ def get_product(product_id: int, db: Session = Depends(get_db),current_user: mod
     user_id = current_user.id
     review = db.query(models.Review).filter(models.Review.product_id == product_id, models.Review.user_id == user_id).first()
     if review:
-        product_info = schemas.ProductDetailsFrontend(
+        product_details = schemas.ProductDetailsFrontend(
             id=product.id,
             name=product.name,
             brands=product.brands,
@@ -86,6 +82,7 @@ def get_product(product_id: int, db: Session = Depends(get_db),current_user: mod
             data_scanned_at=product.last_updated,
             data_reviewed=review.note
         )
+    product_info = schemas.ProductDetailsFrontendOut(product=product_details)
     return Response(code=200, data=product_info, msg="Product fetched successfully")
 
 @router.post("/", response_model=Response[schemas.ProductOut])
@@ -120,22 +117,17 @@ def add_by_image(request: schemas.ProductImageRequest,  db: Session = Depends(ge
         return Response(code=200, data=db_product, msg="Product fetched successfully")
 
 
-@router.get("/barcode/{barcode}", response_model=Response[schemas.ProductOut])
-def get_product_by_barcode(barcode: str, db: Session = Depends(get_db)):
-    product = db.query(models.Product).filter(models.Product.barcode == barcode).first()
-    if not product:
-        return response.not_found(msg="Product not found",code=404)
-    return Response(code=200, data=product, msg="Product fetched successfully")
 
-@router.patch("/{product_id}", response_model=Response[schemas.ProductOut])
-def update_product(product_id: int, product: schemas.ProductUpdate, db: Session = Depends(get_db)):
-    db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
-    if not db_product:
-        return response.not_found(msg="Product not found",code=404)
-    for field, value in product.dict(exclude_unset=True).items():
-        setattr(db_product, field, value)
-    db.commit()
-    return Response(code=200, data=db_product, msg="Product updated successfully")
+
+# @router.patch("/{product_id}", response_model=Response[schemas.ProductOut])
+# def update_product(product_id: int, product: schemas.ProductUpdate, db: Session = Depends(get_db)):
+#     db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
+#     if not db_product:
+#         return response.not_found(msg="Product not found",code=404)
+#     for field, value in product.dict(exclude_unset=True).items():
+#         setattr(db_product, field, value)
+#     db.commit()
+#     return Response(code=200, data=db_product, msg="Product updated successfully")
 
 @router.delete("/{product_id}", status_code=204)
 def delete_product(product_id: int, db: Session = Depends(get_db)):
@@ -147,9 +139,59 @@ def delete_product(product_id: int, db: Session = Depends(get_db)):
     return Response(code=200, msg="Product deleted successfully")
 
 @router.get("/product/{barcode}", response_model=Response[schemas.ProductDetailsThroughBarcodeOut])
-def get_product_by_barcode(barcode: str, db: Session = Depends(get_db)):
+def get_product_by_barcode(barcode: str, db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):
     product = db.query(models.Product).filter(models.Product.barcode == barcode).first()
-    if not product:
-        return response.not_found(msg="Product not found",code=404)
-    return Response(code=200, data=product, msg="Product fetched successfully")
+    
+    OPEN_FOOD_FACTS_URL = f"https://world.openfoodfacts.org/api/v2/product/{barcode}.json"
+    image_ingredients_url = None
+    image_nutrition_url = None
+    product_info = None
+    brands = None
+    categories = None
+    if requests.get(OPEN_FOOD_FACTS_URL).status_code == 200:
+        data = requests.get(OPEN_FOOD_FACTS_URL).json()
+        product_data = data.get("product",{})
+        if product_data:
+            if product_data.get("image_ingredients_url"):
+                image_ingredients_url = product_data.get("image_ingredients_url")
+            if product_data.get("image_nutrition_url"):
+                image_nutrition_url = product_data.get("image_nutrition_url")
+            if product_data.get("brands"):
+                brands = [brand.strip() for brand in product_data.get("brands").split(",")]
+            if product_data.get("categories"):
+                categories = [category.strip() for category in product_data.get("categories").split(",")]
+    if not product and not product_data:
+        product = models.Product(
+            barcode=barcode,
+            image_url=product_data.get("image_url"),
+            name=product_data.get("product_name"),
+            generic_name=product_data.get("generic_name"),
+            ingredients=product_data.get("ingredients"),
+            categories=categories,
+            brands=brands,
+            image_ingredients_url=image_ingredients_url,
+            image_nutrition_url=image_nutrition_url,
+        )
+        db.add(product)
+        db.commit()
+        db.refresh(product)
+    review = None
+    if product:
+        review = db.query(models.Review).filter(models.Review.product_id == product.id, models.Review.user_id == current_user.id).first()
+    product_info = schemas.ProductDetailsThroughBarcodeOut(
+        id=product.id if product else None,
+        name=product.name if product else product_data.get("product_name"),
+        barcode = barcode,
+        brand = product.brands if product else brands,
+        categories = product.categories if product else categories,
+        image_url = product.image_url if product else product_data.get("image_url"),
+        image_ingredients_url = image_ingredients_url,
+        image_nutrition_url = image_nutrition_url,
+        is_reviewed = review is not None,
+        date_scanned = product.last_updated if product else None,
+        likes_count = product.likes_count if product else 0,
+        ai_health_summary = product.ai_health_summary if product else None,
+        ai_health_conclusion = product.ai_health_conclusion if product else None,
+    )
+    return Response(code=200, data=product_info, msg="Product fetched successfully")
 
