@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col min-h-screen bg-gray-800 text-white relative overflow-hidden">
+  <div class="flex flex-col h-full bg-gray-800 text-white relative overflow-hidden">
     <header 
       v-if="!isCameraActive && scanStore.currentStage !== 'analyzing'" 
       class="absolute top-0 left-0 z-30 p-3 sm:p-4 w-full"

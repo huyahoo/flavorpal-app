@@ -17,12 +17,42 @@ backend/
 │   ├── schemas/           # Pydantic schemas for request/response validation
 │   ├── utils/             # Utility functions (e.g., hashing, common tools)
 │   └── main.py            # FastAPI application entry point        
+│
+├── certs/
+│   ├── cert.pem/          # The Certificate enable HTTPS for dev env
+│   ├── key.pem/           # The Private Key enable HTTPS for dev env
+│
+├── postman/
+│   ├── FlavorPal_API_v1.postman_collection.json          # Postman collection for FlavorPal API.
 
 ## Running the backend
 Make sure you have Docker installed.
 
 ```bash
 docker compose up --build
+```
+
+## Create .env file
+``` bash
+cp .env.example .env
+```
+
+## Configure FastAPI/Uvicorn to use HTTPS
+- You can use OpenSSL for this. Run these commands in terminal
+``` bash
+cd flavorpal-app/backend/certs
+# Generate a private key
+openssl genpkey -algorithm RSA -out key.pem
+
+# Generate a self-signed certificate using the private key
+openssl req -new -key key.pem -x509 -days 365 -out cert.pem
+```
+- This will ask you for some information (Country Name, Organization, etc.). You can fill these as you like for a development certificate. This creates key.pem (your private key) and cert.pem (your certificate).
+
+## JWT Configuration
+- Example using OpenSSL to generate JWT SECRET KEY
+``` bash
+openssl rand -base64 32
 ```
 
 ## Comments
@@ -33,8 +63,10 @@ My apologies — the current comments for individual methods are insufficient. I
 
 The API documentation is available at:
 
-http://localhost:8000/docs
+https://localhost:8000/docs
 
+## Base URL
+https://localhost:8000/
 
 * `POST /users`
      - Create a new user

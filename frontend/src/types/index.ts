@@ -1,14 +1,64 @@
 // src/types/index.ts
 
 /**
- * Interface for a mock user for the FlavorPal application.
+ * Represents a user object, aligning with the backend schema.
  */
-export interface MockUser {
-  id: string;
-  username: string;
+export interface User {
+  id: number;
+  name: string;
   email: string;
+  health_flags: string[];
+  badges: string[];
+  created_at?: string; // Optional, from GET response
+  updated_at?: string; // Optional, from GET response
+}
+
+/**
+ * Payload for creating a new user (matches backend's UserCreate schema).
+ */
+export interface UserCreatePayload {
+  name: string;
+  email: string;
+  health_flags: string[]; // Sending simple strings as per last backend update
+  badges: string[];       // Sending simple strings
+  password: string;
+}
+
+/**
+ * Payload for updating an existing user (matches backend's UserUpdate schema).
+ * Note: Fields are optional to allow partial updates.
+ */
+export interface UserUpdatePayload {
+  name?: string;
+  email?: string;
+  health_flags?: string[]; // Sending simple strings as per last backend update
+  badges?: string[];       // Sending simple strings
   password?: string;
-  healthFlags: string[];
+} 
+
+/**
+ * Credentials for user login.
+ */
+export interface LoginCredentials {
+    username: string; // FastAPI's OAuth2PasswordRequestForm expects 'username' (which will be our email)
+    password: string;
+}
+
+/**
+ * Expected response data from the /auth/token endpoint.
+ */
+export interface TokenResponse {
+    access_token: string;
+    token_type: string;
+}
+
+/**
+ * Generic API response structure from backend.
+ */
+export interface ApiResponse<T = any> { // Ensure T is typed if possible
+    code: number;
+    data: T;
+    msg: string;
 }
 
 /**
@@ -62,8 +112,26 @@ export interface ProductInteraction {
   isReviewed: boolean;           
   userRating?: number;           
   userNotes?: string;            
-  dateReviewed?: string;         
+  dateReviewed?: string;
   
   // For local UI state in ProductDetailView for "Is this a new product for you?"
   isNewForUser?: boolean; 
+}
+
+export interface PublicReviewItem {
+  reviewId: string;          // Unique ID for this public review entry
+  productId: string;         // ID of the product being reviewed
+  productName: string;
+  productImageUrl?: string;
+
+  reviewerId: string;        // ID of the user who wrote the review
+  reviewerUsername: string;
+  reviewerAvatarUrl?: string; // Optional
+
+  userRating: number;        // The rating given by this reviewer
+  userNotes: string;         // The review notes from this reviewer
+  dateReviewed: string;      // ISO date string
+
+  likeCount: number;
+  // Potentially other fields like comments count, etc.
 }

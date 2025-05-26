@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 
@@ -8,44 +8,48 @@ class ReviewBase(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     likes_count: Optional[int] = None
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ReviewProductCreate(ReviewBase):
     pass
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 class ReviewProductOut(ReviewBase):
     product_id: int
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ReviewUserCreate(ReviewBase):
     pass
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 class ReviewUserOut(ReviewBase):
     user_id: int
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
         
 class ReviewCreate(ReviewBase):
     pass
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ReviewUpdate(ReviewBase):
     pass
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 class ReviewOut(ReviewBase):
     pass
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 class ReviewSummary(ReviewBase):
     average_rating: float
     review_count: int
     reviews: List[ReviewBase]
+    model_config = ConfigDict(from_attributes=True)
+    
+class ReviewProductCreateFrontend(BaseModel):
+    rating: int
+    note: Optional[str] = None
+    class Config:
+        orm_mode = True
+
+
+class ReviewProductUpdateFrontend(BaseModel):
+    rating: int
+    note: Optional[str] = None
     class Config:
         orm_mode = True
     
