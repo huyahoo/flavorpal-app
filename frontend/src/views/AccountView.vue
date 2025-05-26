@@ -72,7 +72,7 @@
       <section v-if="authStore.user" class="bg-white p-5 rounded-xl shadow-lg">
         <div class="flex justify-between items-center mb-3">
           <h3 class="text-lg font-semibold text-flavorpal-gray-dark">My Badges</h3>
-          <router-link to="/badges" class="text-sm text-flavorpal-green hover:text-flavorpal-green-dark font-medium">
+          <router-link to="/badges" class="text-sm text-flavorpal-green hover:text-flavorpal-green-dark font-medium flex items-center p-1 rounded hover:bg-flavorpal-green-light transition-colors">
             All Badges
           </router-link>
         </div>
@@ -152,11 +152,48 @@
               <svg class="w-4 h-4 text-gray-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
             </button>
           </li>
+
+          <li>
+            <button @click="navigateToConvertTastePoints" class="w-full flex items-center p-4 hover:bg-gray-50 transition-colors text-left">
+              <svg 
+                class="w-5 h-5 text-flavorpal-gray-dark mr-3" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24" 
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+              >
+                <path 
+                  stroke-linecap="round" 
+                  stroke-linejoin="round" 
+                  stroke-width="2" 
+                  d="M7 16l-4-4m0 0l4-4m-4 4h18m-7 4l4 4m0 0l-4 4m4-4H3"
+                ></path>
+              </svg>
+              <span class="text-base text-flavorpal-gray-dark font-medium">Convert TastePoints</span>
+              <svg class="w-4 h-4 text-gray-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+          </li>
+
           <li>
             <button @click="changePassword" class="w-full flex items-center p-4 hover:bg-gray-50 transition-colors text-left">
-              <svg class="w-5 h-5 text-flavorpal-gray-dark mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.628 5.857L12 20.857l-2.372-2.372A6 6 0 0115 7zm0 0v-.5A2.5 2.5 0 0012.5 4h-5A2.5 2.5 0 005 6.5V7m6-3h-1a2 2 0 00-2 2v1a2 2 0 002 2h1m-3 4V14a1 1 0 011-1h1m0 3h-1a1 1 0 01-1-1v-2a1 1 0 011-1h1a1 1 0 011 1v2a1 1 0 01-1 1z"></path></svg>
+              <svg 
+                class="w-5 h-5 text-flavorpal-gray-dark mr-3" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24" 
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+              >
+                <path 
+                  stroke-linecap="round" 
+                  stroke-linejoin="round" 
+                  stroke-width="2" 
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                ></path>
+              </svg>
               <span class="text-base text-flavorpal-gray-dark font-medium">Change Password</span>
-               <svg class="w-4 h-4 text-gray-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+              <svg class="w-4 h-4 text-gray-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
             </button>
           </li>
         </ul>
@@ -299,12 +336,18 @@ const navigateToMyReviews = () => {
   router.push({ name: 'History' });
 };
 
+// --- Navigation Handler for "Convert TastePoints" ---
+const navigateToConvertTastePoints = () => {
+  router.push({ name: 'PointConversion' });
+};
+
 // Other event handlers
 const handleLogout = async () => {
   await authStore.logout();
   router.push({ name: 'Login' });
 };
 
+// --- Change Password Functionality ---
 const changePassword = () => {
   alert('Change password functionality to be implemented!');
 };
