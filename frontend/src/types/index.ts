@@ -5,7 +5,7 @@
  */
 export interface User {
   id: number;
-  username: string;
+  name: string;
   email: string;
   health_flags: string[];
   badges: ApiBadge[];
@@ -17,7 +17,7 @@ export interface User {
  * Payload for creating a new user (matches backend's UserCreate schema).
  */
 export interface UserCreatePayload {
-  username: string;
+  name: string;
   email: string;
   health_flags: string[];
   badges: ApiBadge[];
@@ -29,7 +29,7 @@ export interface UserCreatePayload {
  * Note: Fields are optional to allow partial updates.
  */
 export interface UserUpdatePayload {
-  username?: string;
+  name?: string;
   health_flags?: string[];
   badges?: ApiBadge[];
   password?: string;
@@ -55,10 +55,12 @@ export interface TokenResponse {
  * Generic API response structure from backend.
  */
 export interface ApiResponse<T = any> {
+    access_token: string | null;
+    token_type: string;
     code: number;
     data: T;
     msg: string;
-    details?: any;
+    detail?: any;
 }
 
 /**
