@@ -25,8 +25,8 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 # JWT Configuration
-SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
-ALGORITHM = os.environ.get('JWT_ALGORITHM')
+SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'default_secret_key')  # Default secret key if not set
+ALGORITHM = os.environ.get('JWT_ALGORITHM', 'HS256')  # Default to HS256 if not set
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get('JWT_EXPIRATION_TIME'))
 
 # Pydantic model for data expected/encoded in the JWT
