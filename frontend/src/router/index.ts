@@ -6,11 +6,12 @@ import LoginView from '../views/Auth/LoginView.vue';
 import RegisterView from '../views/Auth/RegisterView.vue';
 import AddReviewView from '../views/AddReviewView.vue';
 import HistoryView from '../views/HistoryView.vue';
-import ScanView from '../views/ScanView.vue';
+import ScanView from '../views/Scan/ScanView.vue';
 import DiscoverView from '../views/DiscoverView.vue';
 import AccountView from '../views/AccountView.vue';
 import ProductDetailView from '../views/ProductDetailView.vue';
 import PublicReviewDetailView from '../views/PublicReviewDetailView.vue';
+import TastePointConversionView from '@/views/TastePointConversionView.vue';
 import BadgesView from '@/views/BadgesView.vue';
 
 declare module 'vue-router' {
@@ -91,6 +92,12 @@ const routes: Array<RouteRecordRaw> = [
     component: BadgesView,
     props: true,
     meta: { requiresAuth: true, title: 'FlavorPal - Badges', showBottomNav: true }
+  },
+  {
+    path: '/point-conversion',
+    name: 'PointConversion',
+    component: TastePointConversionView,
+    meta: { requiresAuth: false, title: 'FlavorPal - Taste Point Conversion', showBottomNav: true }
   },
   {
     path: '/:pathMatch(.*)*',

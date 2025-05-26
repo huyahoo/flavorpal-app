@@ -147,3 +147,10 @@ export interface PublicReviewItem {
   likeCount: number;
   // Potentially other fields like comments count, etc.
 }
+
+export interface PointConversionGift {
+  id: string;                // Unique identifier for the gift
+  name: string;              // Name of the gift
+  requiredPoints: number;    // Points required to redeem the gift
+  icon: "coin" | "drink" | "shopping-cart" // Define icon
+}
