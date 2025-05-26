@@ -114,3 +114,15 @@ export const mockProcessScanOrPhoto = async (
 };
 
 // fetchScanStatisticsApi remains in historyService.ts
+export const mockPhotoAnalyze = async (photoBase64: String) => {
+  // Mock timeout
+  await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000)); // Simulate network delay
+  const historyStore = useHistoryStore();
+  // Hardcode a mock return from history service.
+  const mockInteraction = historyStore.getProductInteractionById('hist_item_001')
+  if (!mockInteraction) {
+    console.error('No mock interaction found for photo analysis.');
+    return null; // Or throw an error if preferred
+  }
+  return mockInteraction;
+}

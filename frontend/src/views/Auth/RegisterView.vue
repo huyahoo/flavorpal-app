@@ -11,6 +11,26 @@
 
       <form @submit.prevent="handleRegister" class="space-y-5">
         <div class="relative">
+          <label for="nameRegister" class="block text-sm font-medium text-flavorpal-gray-dark mb-1">Username</label>
+          <div class="relative rounded-lg shadow-sm">
+             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <input
+              type="text"
+              id="nameRegister"
+              v-model="nameInput"
+              required
+              autocomplete="username"
+              class="appearance-none block w-full px-3 py-3 pl-10 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-flavorpal-green focus:border-flavorpal-green sm:text-sm transition-shadow"
+              placeholder="e.g., John"
+            />
+          </div>
+        </div>
+
+        <div class="relative">
           <label for="emailRegister" class="block text-sm font-medium text-flavorpal-gray-dark mb-1">Email Address</label>
           <div class="relative rounded-lg shadow-sm">
              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -81,19 +101,14 @@
             id="healthFlagsRegister"
             v-model="healthFlagsInput"
             class="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-flavorpal-green focus:border-flavorpal-green sm:text-sm transition-shadow shadow-sm"
-            placeholder="e.g., nuts, gluten, low sugar"
+            placeholder="e.g., nuts, gluten-free, low sugar"
           />
         </div>
 
-        <div v-if="authStore.error" class="p-3 bg-red-50 border-l-4 border-red-400 text-red-700 text-sm rounded-md" role="alert">
-          <p class="font-medium">Heads up!</p>
+        <div v-if="authStore.error && !showSuccessModal" class="p-3 bg-red-50 border-l-4 border-red-400 text-red-700 text-sm rounded-md" role="alert">
           <p>{{ authStore.error }}</p>
         </div>
-        <div v-if="registrationMessage" class="p-3 bg-green-50 border-l-4 border-green-400 text-green-700 text-sm rounded-md" role="alert">
-          <p class="font-medium">Success!</p>
-          <p>{{ registrationMessage }}</p>
-        </div>
-
+        
         <button
           type="submit"
           :disabled="authStore.loading"
@@ -114,35 +129,57 @@
         </router-link>
       </p>
     </div>
-    <footer class="text-center mt-8">
-        <p class="text-xs text-emerald-100">&copy; {{ new Date().getFullYear() }} FlavorPal. Let's get tasting!</p>
+    <footer class="text-center mt-8 pb-4"> <p class="text-xs text-emerald-100">&copy; {{ new Date().getFullYear() }} FlavorPal. Let's get tasting!</p>
     </footer>
+
+    <NotificationModal
+        :is-open="showSuccessModal"
+        title="Registration Successful!"
+        :message="successModalMessage"
+        confirm-text="Proceed to Login"
+        type="success"
+        @confirm="proceedToLogin"
+        @cancel="showSuccessModal = false" 
+        :close-on-overlay-click="false" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useAuthStore } from '../../store/auth'; // Import the authentication store
+import { useAuthStore } from '../../store/auth';
+import type { UserCreatePayload } from '../../types';
+import { useRouter } from 'vue-router';
+import NotificationModal from '@/components/common/NotificationModal.vue';
 
 // Reactive variables for form inputs
+const nameInput = ref<string>('');
 const email = ref<string>('');
 const password = ref<string>('');
 const confirmPassword = ref<string>('');
-const healthFlagsInput = ref<string>(''); // Stores comma-separated health flags from the user
-const registrationMessage = ref<string>(''); // For displaying success messages to the user
+const healthFlagsInput = ref<string>(''); 
 
-const authStore = useAuthStore(); // Get an instance of the authentication store
+const authStore = useAuthStore(); 
+const router = useRouter();
+
+// State for Notification Modal
+const showSuccessModal = ref(false);
+const successModalMessage = ref('');
 
 // Function to handle form submission for registration
 const handleRegister = async () => {
-  authStore.error = null; // Clear any previous errors from the store
-  registrationMessage.value = ''; // Clear previous success messages
+  authStore.error = null; 
+  showSuccessModal.value = false;
 
   // Perform client-side validation
+  if (!nameInput.value.trim()) {
+    authStore.error = "Name is required.";
+    return;
+  }
   if (!email.value.trim()) {
     authStore.error = "Email is required.";
     return;
   }
+
   if (password.value !== confirmPassword.value) {
     authStore.error = "Passwords do not match.";
     return;
@@ -154,22 +191,40 @@ const handleRegister = async () => {
 
   // Process health flags: convert comma-separated string into an array of trimmed, non-empty strings
   const flagsArray = healthFlagsInput.value
-    .split(',')                  // Split the string by commas
-    .map(flag => flag.trim())    // Remove leading/trailing whitespace from each flag
-    .filter(flag => flag !== ''); // Remove any empty strings that might result (e.g., from multiple commas)
+    .split(',')                  
+    .map(flag => flag.trim())    
+    .filter(flag => flag !== ''); 
 
-  // Call the register action from the authentication store
-  const success = await authStore.register(email.value, password.value, flagsArray);
+  // Construct the payload according to UserCreatePayload
+  const payload: UserCreatePayload = {
+    username: nameInput.value.trim(),
+    email: email.value.trim(),
+    password: password.value, // Password is sent plain, backend should hash it
+    health_flags: flagsArray,
+    badges: [], // Send empty array for badges; backend might assign some initially or handle this differently
+  };
 
-  if (success) {
-    registrationMessage.value = "Account created successfully! You are now logged in.";
-    // Optionally, clear the form fields after successful registration if not redirecting immediately
-    // email.value = '';
-    // password.value = '';
-    // confirmPassword.value = '';
-    // healthFlagsInput.value = '';
-    // Navigation to the Home page is typically handled by the store action or router guards upon successful registration
+  console.log('Registering with payload:', payload); // For debugging
+
+  const result = await authStore.register(payload); // authStore.register now returns { success, message }
+
+  if (result.success) {
+    successModalMessage.value = result.message || "Your account has been created successfully. Please proceed to login.";
+    showSuccessModal.value = true; // Show the success modal
+    // Clear form fields after showing modal, or when modal is confirmed
+    nameInput.value = '';
+    email.value = '';
+    password.value = '';
+    confirmPassword.value = '';
+    healthFlagsInput.value = '';
   }
-  // If registration is not successful, authStore.error will be set by the action and displayed by the template
+};
+
+const proceedToLogin = () => {
+    showSuccessModal.value = false;
+    router.push({ name: 'Login' });
 };
 </script>
+
+<style scoped>
+</style>

@@ -12,22 +12,22 @@
         </svg>
         <p class="text-flavorpal-gray">Loading account details...</p>
       </div>
-      
+
       <section v-if="authStore.user" class="bg-white p-5 rounded-xl shadow-lg flex items-center space-x-4">
         <div class="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 bg-flavorpal-green-light rounded-full flex items-center justify-center text-flavorpal-green-dark">
           <svg class="w-10 h-10 sm:w-12 sm:h-12" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
         </div>
         <div class="flex-grow min-w-0">
           <div v-if="!isEditingUsername" class="flex items-center space-x-2">
-            <h2 
-              class="text-xl sm:text-2xl font-bold text-flavorpal-gray-dark truncate" 
+            <h2
+              class="text-xl sm:text-2xl font-bold text-flavorpal-gray-dark truncate"
               :title="authStore.user?.username || 'Username'"
             >
               {{ authStore.user?.username || 'Username' }}
             </h2>
-            <button 
-              @click="startEditUsername" 
-              class="text-flavorpal-green hover:text-flavorpal-green-dark p-1 rounded-md hover:bg-flavorpal-green-light transition-colors flex-shrink-0" 
+            <button
+              @click="startEditUsername"
+              class="text-flavorpal-green hover:text-flavorpal-green-dark p-1 rounded-md hover:bg-flavorpal-green-light transition-colors flex-shrink-0"
               aria-label="Edit username"
             >
               <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
@@ -47,16 +47,16 @@
               />
             </div>
             <div class="flex items-center space-x-2">
-              <button 
-                type="submit" 
-                :disabled="authStore.loading || !newUsernameInput.trim() || newUsernameInput.trim().length < 3" 
+              <button
+                type="submit"
+                :disabled="authStore.loading || !newUsernameInput.trim() || newUsernameInput.trim().length < 3"
                 class="px-3 py-1.5 text-sm font-medium text-white bg-flavorpal-green hover:bg-flavorpal-green-dark rounded-md disabled:opacity-60 transition-colors"
               >
                 Save
               </button>
-              <button 
-                type="button" 
-                @click="cancelEditUsername" 
+              <button
+                type="button"
+                @click="cancelEditUsername"
                 class="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors"
               >
                 Cancel
@@ -72,7 +72,7 @@
       <section v-if="authStore.user" class="bg-white p-5 rounded-xl shadow-lg">
         <div class="flex justify-between items-center mb-3">
           <h3 class="text-lg font-semibold text-flavorpal-gray-dark">My Badges</h3>
-          <router-link to="/all-badges" class="text-sm text-flavorpal-green hover:text-flavorpal-green-dark font-medium">
+          <router-link to="/badges" class="text-sm text-flavorpal-green hover:text-flavorpal-green-dark font-medium">
             All Badges
           </router-link>
         </div>
@@ -80,9 +80,9 @@
             <p class="text-xs text-flavorpal-gray animate-pulse">Loading badges...</p>
         </div>
         <div v-else-if="userProfileStore.badges.length > 0" class="flex space-x-3 sm:space-x-4 overflow-x-auto pb-2">
-          <BadgeItem 
-            v-for="badge in userProfileStore.getProfileSummaryBadges(4)" 
-            :key="badge.id" 
+          <BadgeItem
+            v-for="badge in userProfileStore.getProfileSummaryBadges(4)"
+            :key="badge.id"
             :badge="badge"
           />
         </div>
@@ -100,8 +100,8 @@
         </div>
         <div v-if="!isEditingKeywords">
             <div v-if="authStore.healthFlags.length > 0" class="flex flex-wrap gap-2">
-            <span 
-                v-for="(flag, index) in authStore.healthFlags" 
+            <span
+                v-for="(flag, index) in authStore.healthFlags"
                 :key="index"
                 class="px-3 py-1.5 bg-flavorpal-green-light text-flavorpal-green-dark text-sm font-medium rounded-full shadow-sm"
             >
@@ -124,16 +124,16 @@
                 />
             </div>
             <div class="flex items-center space-x-2">
-                <button 
-                    type="submit" 
-                    :disabled="authStore.loading" 
+                <button
+                    type="submit"
+                    :disabled="authStore.loading"
                     class="px-3 py-1.5 text-sm font-medium text-white bg-flavorpal-green hover:bg-flavorpal-green-dark rounded-md disabled:opacity-60 transition-colors"
                 >
                     Save Keywords
                 </button>
-                <button 
-                    type="button" 
-                    @click="cancelEditKeywords" 
+                <button
+                    type="button"
+                    @click="cancelEditKeywords"
                     class="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors"
                 >
                     Cancel
@@ -180,12 +180,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { useAuthStore } from '../store/auth';
 import { useUserProfileStore } from '../store/userProfileStore';
 import { useHistoryStore } from '../store/historyStore';
 import { useRouter } from 'vue-router';
-import BadgeItem from '@/components/account/BadgeItem.vue'; 
+import BadgeItem from '@/components/account/BadgeItem.vue';
 
 const authStore = useAuthStore();
 const userProfileStore = useUserProfileStore();
@@ -212,9 +212,9 @@ const keywordsEditError = ref<string | null>(null);
 interface Badge {
   id: string;
   name: string;
-  icon: string; 
-  bgColor?: string; 
-  iconColor?: string; 
+  icon: string;
+  bgColor?: string;
+  iconColor?: string;
 }
 
 // Mock user badges (from userProfileStore now)
@@ -241,7 +241,7 @@ const saveUsername = async () => {
     return;
   }
   usernameEditError.value = null;
-  
+
   const success = await authStore.updateUsername(trimmedUsername);
   if (success) {
     isEditingUsername.value = false;
@@ -260,7 +260,7 @@ const cancelEditUsername = () => {
 const startEditKeywords = () => {
   isEditingKeywords.value = true;
   // Join the array of flags into a comma-separated string for the input field
-  newKeywordsInput.value = authStore.healthFlags.join(', '); 
+  newKeywordsInput.value = authStore.healthFlags.join(', ');
   keywordsEditError.value = null; // Clear previous errors
   nextTick(() => {
     keywordsInputRef.value?.focus(); // Focus the input field
@@ -273,7 +273,7 @@ const saveKeywords = async () => {
   const flagsArray = newKeywordsInput.value
     .split(',')
     .map(flag => flag.trim())
-    .filter(flag => flag !== ''); 
+    .filter(flag => flag !== '');
 
   // Call the authStore action to update health flags
   const success = await authStore.updateHealthFlags(flagsArray);
@@ -289,7 +289,7 @@ const cancelEditKeywords = () => {
   isEditingKeywords.value = false;
   keywordsEditError.value = null; // Clear errors
   // Optionally reset newKeywordsInput to current flags if needed, or just let it be
-  // newKeywordsInput.value = authStore.healthFlags.join(', '); 
+  // newKeywordsInput.value = authStore.healthFlags.join(', ');
 };
 
 
@@ -301,7 +301,8 @@ const navigateToMyReviews = () => {
 
 // Other event handlers
 const handleLogout = async () => {
-  await authStore.logout(); 
+  await authStore.logout();
+  router.push({ name: 'Login' });
 };
 
 const changePassword = () => {
@@ -311,9 +312,9 @@ const changePassword = () => {
 // Lifecycle hook
 onMounted(async () => {
   if (!authStore.user && localStorage.getItem('flavorpal_current_user_v4')) {
-    await authStore.initializeAuth(); 
+    await authStore.initializeAuth();
   }
-  
+
   if (authStore.isAuthenticated) {
     // userProfileStore.loadUserProfile() is already called in the previous version,
     // ensure it's still being called if you need tastePoints and badges from there.
@@ -327,9 +328,9 @@ onMounted(async () => {
 
 <style scoped>
 .overflow-x-auto {
-  -webkit-overflow-scrolling: touch; 
+  -webkit-overflow-scrolling: touch;
 }
 .overflow-x-auto::-webkit-scrollbar {
-  display: none; 
+  display: none;
 }
 </style>

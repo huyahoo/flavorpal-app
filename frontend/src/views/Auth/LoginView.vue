@@ -85,23 +85,40 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useAuthStore } from '../../store/auth'; // Import the authentication store
+import { useRouter } from 'vue-router'; // Import the router for navigation
+import type { LoginCredentials } from '../../types';
 
 // Reactive variables for form inputs
 const email = ref<string>('');
 const password = ref<string>('');
 
-const authStore = useAuthStore(); // Get an instance of the auth store
+const authStore = useAuthStore();
+const router = useRouter();
 
 // Function to handle form submission for login
 const handleLogin = async () => {
   // Basic client-side validation
   if (!email.value.trim() || !password.value.trim()) {
-    authStore.error = 'Please enter both email and password.'; // Set error message in the store
+    authStore.error = 'Please enter both email and password.';
     return;
   }
-  // Call the login action from the authentication store
-  await authStore.login(email.value, password.value);
-  // Navigation on success or error display is handled by the store action or router guards
+
+  const credentials: LoginCredentials = {
+    username: email.value.trim(),
+    password: password.value,
+  };
+
+  const success = await authStore.login(credentials);
+
+  if (success) {
+    // Component handles navigation after successful login
+    const redirectPath = router.currentRoute.value.query.redirect as string || { name: 'Home' };
+    router.push(redirectPath); 
+    console.log("Login successful from view, navigating...");
+  } else {
+    console.log("Login failed from view, error should be in store:", authStore.error);
+  }
+
 };
 </script>
 

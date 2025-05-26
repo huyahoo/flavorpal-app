@@ -1,7 +1,7 @@
 // src/store/historyStore.ts
 import { defineStore } from 'pinia';
 import type { ProductInteraction, AiHealthConclusion } from '../types';
-import { fetchProductInteractionsApi, fetchScanStatisticsApi } from '../services/historyService'; 
+import { fetchProductInteractionsApi, fetchScanStatisticsApi } from '../services/historyService';
 
 export type ReviewedFilterStatus = 'all' | 'reviewed_only' | 'scanned_only';
 
@@ -13,27 +13,27 @@ export interface HistoryFilters {
 }
 
 export interface ReviewDataPayload {
-  productIdToUpdate?: string; 
+  productIdToUpdate?: string;
   productName: string;
   userRating: number;
   userNotes: string;
-  imageUrl?: string; 
-  barcode?: string; 
+  imageUrl?: string;
+  barcode?: string;
   aiHealthSummary?: string;
   aiHealthConclusion?: AiHealthConclusion;
 }
 
 export interface HistoryStoreState {
-  allProductInteractions: ProductInteraction[]; 
+  allProductInteractions: ProductInteraction[];
   discoveredThisMonth: number;
   totalScanned: number;
-  loadingStats: boolean; 
+  loadingStats: boolean;
   filterSearchQuery: string;
-  filterDateAfter: string;           
-  filterReviewedStatus: ReviewedFilterStatus; 
-  filterMinRating: number;           
-  filterAiConclusion?: AiHealthConclusion | ''; 
-  loadingInteractions: boolean; 
+  filterDateAfter: string;
+  filterReviewedStatus: ReviewedFilterStatus;
+  filterMinRating: number;
+  filterAiConclusion?: AiHealthConclusion | '';
+  loadingInteractions: boolean;
   error: string | null;
 }
 
@@ -45,7 +45,7 @@ const getInteractionsFromStorage = (): ProductInteraction[] | null => {
     return interactionsJson ? JSON.parse(interactionsJson) : null;
   } catch (e) {
     console.error("Error parsing history interactions from localStorage:", e);
-    localStorage.removeItem(HISTORY_INTERACTIONS_STORAGE_KEY); 
+    localStorage.removeItem(HISTORY_INTERACTIONS_STORAGE_KEY);
     return null;
   }
 };
@@ -60,12 +60,12 @@ const saveInteractionsToStorage = (interactions: ProductInteraction[]) => {
 
 const generateInteractionId = (prefix: string = 'item_') => `${prefix}${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
-const formatDateForDisplay = (dateInput?: string | Date): string => {
+export const formatDateForDisplay = (dateInput?: string | Date): string => {
     if (!dateInput) return '';
     try {
         return new Date(dateInput).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     } catch (e) {
-        return dateInput.toString(); 
+        return dateInput.toString();
     }
 };
 
@@ -77,7 +77,7 @@ export const useHistoryStore = defineStore('history', {
     loadingStats: false,
     filterSearchQuery: '',
     filterDateAfter: '',
-    filterReviewedStatus: 'all', 
+    filterReviewedStatus: 'all',
     filterMinRating: 0,
     filterAiConclusion: '',
     loadingInteractions: false,
@@ -87,7 +87,7 @@ export const useHistoryStore = defineStore('history', {
   getters: {
     // ... (processedHistoryItems, activeFilterCount, getProductInteractionById, getRecentlyScannedItems remain the same) ...
     processedHistoryItems: (state): ProductInteraction[] => {
-      let items = [...state.allProductInteractions]; 
+      let items = [...state.allProductInteractions];
       if (state.filterSearchQuery.trim()) {
         const lowerCaseQuery = state.filterSearchQuery.toLowerCase();
         items = items.filter(item =>
@@ -110,11 +110,11 @@ export const useHistoryStore = defineStore('history', {
       if (state.filterDateAfter) {
         try {
           const filterDate = new Date(state.filterDateAfter);
-          filterDate.setHours(0, 0, 0, 0); 
+          filterDate.setHours(0, 0, 0, 0);
           items = items.filter(item => {
             const itemDateString = (item.isReviewed && item.dateReviewed) ? item.dateReviewed : item.dateScanned;
-            const itemDate = new Date(itemDateString); 
-            itemDate.setHours(0, 0, 0, 0); 
+            const itemDate = new Date(itemDateString);
+            itemDate.setHours(0, 0, 0, 0);
             return itemDate >= filterDate;
           });
         } catch (e) { console.error("Error parsing date for history filtering:", e); }
@@ -122,7 +122,7 @@ export const useHistoryStore = defineStore('history', {
       return items.sort((a, b) => {
         const dateA = new Date((a.isReviewed && a.dateReviewed) ? a.dateReviewed : a.dateScanned).getTime();
         const dateB = new Date((b.isReviewed && b.dateReviewed) ? b.dateReviewed : b.dateScanned).getTime();
-        return dateB - dateA; 
+        return dateB - dateA;
       });
     },
     activeFilterCount: (state): number => {
@@ -155,25 +155,25 @@ export const useHistoryStore = defineStore('history', {
     async loadProductInteractions(forceReload: boolean = false) {
       // ... (logic remains the same) ...
       if (this.allProductInteractions.length > 0 && !forceReload && !this.error) {
-        // return; 
+        // return;
       }
       this.loadingInteractions = true;
       this.error = null;
       try {
         let interactions = null;
         if (!forceReload) {
-          interactions = getInteractionsFromStorage(); 
+          interactions = getInteractionsFromStorage();
         }
         if (interactions) {
           this.allProductInteractions = interactions;
         } else {
-          interactions = await fetchProductInteractionsApi(); 
+          interactions = await fetchProductInteractionsApi();
           this.allProductInteractions = interactions;
-          saveInteractionsToStorage(this.allProductInteractions); 
+          saveInteractionsToStorage(this.allProductInteractions);
         }
       } catch (err: any) {
         this.error = err.message || 'Failed to load history.';
-        this.allProductInteractions = []; 
+        this.allProductInteractions = [];
       } finally {
         this.loadingInteractions = false;
       }
@@ -190,7 +190,7 @@ export const useHistoryStore = defineStore('history', {
         this.discoveredThisMonth = stats.discoveredThisMonth;
         if (this.allProductInteractions.length === 0 || forceReload) {
              this.totalScanned = stats.totalScanned;
-        } else if (this.totalScanned < stats.totalScanned) { 
+        } else if (this.totalScanned < stats.totalScanned) {
             this.totalScanned = stats.totalScanned;
         }
         if (this.allProductInteractions.length > this.totalScanned) {
@@ -207,16 +207,16 @@ export const useHistoryStore = defineStore('history', {
     setFilters(filters: Partial<HistoryFilters>) { /* ... */ },
     setInitialHistoryFilters(status: ReviewedFilterStatus) { /* ... */ },
     clearAllFilters() { /* ... */ },
-    
+
     clearHistoryData() {
       this.allProductInteractions = [];
-      this.clearAllFilters(); 
-      this.discoveredThisMonth = 0; 
-      this.totalScanned = 0;        
-      this.loadingStats = false;    
-      this.loadingInteractions = false; 
+      this.clearAllFilters();
+      this.discoveredThisMonth = 0;
+      this.totalScanned = 0;
+      this.loadingStats = false;
+      this.loadingInteractions = false;
       this.error = null;
-      localStorage.removeItem(HISTORY_INTERACTIONS_STORAGE_KEY); 
+      localStorage.removeItem(HISTORY_INTERACTIONS_STORAGE_KEY);
     },
 
     addOrUpdateInteraction(interaction: ProductInteraction) {
@@ -229,31 +229,31 @@ export const useHistoryStore = defineStore('history', {
             isNewToList = true;
         }
         if (isNewToList) {
-            this.totalScanned++; 
+            this.totalScanned++;
         }
         this.allProductInteractions.sort((a, b) => {
           const dateA = new Date((a.isReviewed && a.dateReviewed) ? a.dateReviewed : a.dateScanned).getTime();
           const dateB = new Date((b.isReviewed && b.dateReviewed) ? b.dateReviewed : b.dateScanned).getTime();
           return dateB - dateA;
         });
-        saveInteractionsToStorage(this.allProductInteractions); 
+        saveInteractionsToStorage(this.allProductInteractions);
     },
-        
+
     async saveOrUpdateUserReview(reviewData: ReviewDataPayload): Promise<ProductInteraction | null> {
         // ... (logic remains the same, ensure it calls saveInteractionsToStorage) ...
-        this.loadingInteractions = true; 
+        this.loadingInteractions = true;
         this.error = null;
-        await new Promise(resolve => setTimeout(resolve, 400)); 
+        await new Promise(resolve => setTimeout(resolve, 400));
 
         try {
-            const todayISO = new Date().toISOString(); 
+            const todayISO = new Date().toISOString();
             const displayDate = formatDateForDisplay(todayISO);
 
             let interactionToSave: ProductInteraction;
             let existingItemIndex = -1;
 
             if (this.allProductInteractions.length === 0 && !this.loadingInteractions) {
-                await this.loadProductInteractions(); 
+                await this.loadProductInteractions();
             }
 
             if (reviewData.productIdToUpdate) {
@@ -263,13 +263,13 @@ export const useHistoryStore = defineStore('history', {
             if (existingItemIndex !== -1) {
                 const existingItem = this.allProductInteractions[existingItemIndex];
                 interactionToSave = {
-                    ...existingItem, 
-                    name: reviewData.productName, 
+                    ...existingItem,
+                    name: reviewData.productName,
                     isReviewed: true,
                     userRating: reviewData.userRating,
                     userNotes: reviewData.userNotes,
-                    dateReviewed: displayDate, 
-                    imageUrl: reviewData.imageUrl || existingItem.imageUrl, 
+                    dateReviewed: displayDate,
+                    imageUrl: reviewData.imageUrl || existingItem.imageUrl,
                     barcode: reviewData.barcode || existingItem.barcode,
                     aiHealthSummary: existingItem.aiHealthSummary || reviewData.aiHealthSummary,
                     aiHealthConclusion: existingItem.aiHealthConclusion || reviewData.aiHealthConclusion,
@@ -277,11 +277,11 @@ export const useHistoryStore = defineStore('history', {
                 this.allProductInteractions[existingItemIndex] = interactionToSave;
             } else {
                 interactionToSave = {
-                    id: reviewData.productIdToUpdate || generateInteractionId('review_'), 
+                    id: reviewData.productIdToUpdate || generateInteractionId('review_'),
                     name: reviewData.productName,
                     imageUrl: reviewData.imageUrl,
-                    dateScanned: displayDate, 
-                    aiHealthSummary: reviewData.aiHealthSummary, 
+                    dateScanned: displayDate,
+                    aiHealthSummary: reviewData.aiHealthSummary,
                     aiHealthConclusion: reviewData.aiHealthConclusion,
                     isReviewed: true,
                     userRating: reviewData.userRating,
@@ -289,10 +289,10 @@ export const useHistoryStore = defineStore('history', {
                     dateReviewed: displayDate,
                     barcode: reviewData.barcode,
                 };
-                this.allProductInteractions.unshift(interactionToSave); 
-                this.totalScanned++; 
+                this.allProductInteractions.unshift(interactionToSave);
+                this.totalScanned++;
             }
-            
+
             this.allProductInteractions.sort((a, b) => {
                 const dateA = new Date((a.isReviewed && a.dateReviewed) ? a.dateReviewed : a.dateScanned).getTime();
                 const dateB = new Date((b.isReviewed && b.dateReviewed) ? b.dateReviewed : b.dateScanned).getTime();
@@ -301,7 +301,7 @@ export const useHistoryStore = defineStore('history', {
 
             saveInteractionsToStorage(this.allProductInteractions);
             this.loadingInteractions = false;
-            return interactionToSave; 
+            return interactionToSave;
 
         } catch (err: any) {
             this.error = err.message || "Failed to save review.";
@@ -324,7 +324,7 @@ export const useHistoryStore = defineStore('history', {
             const itemIndex = this.allProductInteractions.findIndex(item => item.id === itemId);
             if (itemIndex !== -1) {
                 this.allProductInteractions.splice(itemIndex, 1); // Remove from array
-                
+
                 // Decrement totalScanned.
                 // This is a simple decrement; more complex logic might be needed if an item
                 // could be "scanned" multiple times under the same ID before being deleted.

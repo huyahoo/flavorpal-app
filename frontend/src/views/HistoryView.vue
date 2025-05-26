@@ -77,15 +77,15 @@
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-lg font-semibold text-flavorpal-gray-dark">Filter History</h3>
                 <button @click="closeFilterModal" class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                  <IconClose />
                 </button>
             </div>
             <div class="space-y-5">
                 <div>
                     <label for="filter-date-history" class="block text-sm font-medium text-gray-700">Scanned/Reviewed on or after</label>
-                    <input 
-                        type="date" 
-                        id="filter-date-history" 
+                    <input
+                        type="date"
+                        id="filter-date-history"
                         v-model="tempFilters.dateAfter"
                         class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-flavorpal-green focus:border-flavorpal-green sm:text-sm p-2.5">
                 </div>
@@ -101,8 +101,8 @@
 
                 <div v-if="tempFilters.reviewedStatus === 'reviewed_only'" class="transition-all duration-300 ease-in-out">
                     <label for="filter-rating-history" class="block text-sm font-medium text-gray-700">Minimum Rating</label>
-                    <select 
-                        id="filter-rating-history" 
+                    <select
+                        id="filter-rating-history"
                         v-model.number="tempFilters.minRating"
                         class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-flavorpal-green focus:border-flavorpal-green sm:text-sm p-2.5">
                         <option value="0">Any Rating</option>
@@ -116,8 +116,8 @@
 
                 <div v-if="tempFilters.reviewedStatus === 'scanned_only'" class="transition-all duration-300 ease-in-out">
                     <label for="filter-ai-conclusion-history" class="block text-sm font-medium text-gray-700">AI Health Conclusion</label>
-                    <select 
-                        id="filter-ai-conclusion-history" 
+                    <select
+                        id="filter-ai-conclusion-history"
                         v-model="tempFilters.aiConclusion"
                         class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-flavorpal-green focus:border-flavorpal-green sm:text-sm p-2.5">
                         <option value="">Any Conclusion</option>
@@ -150,6 +150,7 @@ import { ref, computed, onMounted, reactive } from 'vue';
 import { useHistoryStore, type ReviewedFilterStatus } from '../store/historyStore'; // Import store and types
 import type { AiHealthConclusion } from '../types';
 import HistoryListItem from '@/components/history/HistoryListItem.vue'; // Import the list item component
+import IconClose from '@/components/icons/IconClose.vue';
 
 const historyStore = useHistoryStore();
 

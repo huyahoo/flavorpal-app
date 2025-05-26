@@ -1,0 +1,345 @@
+{
+	"info": {
+		"_postman_id": "COLLECTION_ID",
+		"name": "FlavorPal API",
+		"description": "API collection for FlavorPal, including authentication endpoints. Base URL: https://0.0.0.0:8000",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login for Access Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "john.doe@example.com",
+									"description": "User's email address",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "securepassword123",
+									"description": "User's plain text password",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/token",
+							"auth": {
+								"type": "bearer",
+								"bearer": [
+									{
+										"key": "token",
+										"value": "{{access_token}}",
+										"type": "string"
+									}
+								]
+							},
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"token"
+							]
+						},
+						"description": "Logs in a user with email (as username) and password. Returns an access token.\n**After successful login, copy the `access_token` and use it as a Bearer token in the Authorization header for protected routes.**"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"description": "User management endpoints",
+			"item": [
+				{
+					"name": "Create New User (Register)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Jane Doe\",\n    \"email\": \"jane.doe@example.com\",\n    \"health_flags\": [\"dairy-free\"],\n    \"badges\": [],\n    \"password\": \"anotherSecurePassword\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								""
+							]
+						},
+						"description": "Creates a new user. Password will be hashed by the backend."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User (Me)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"description": "Requires Bearer token after login."
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"me"
+							]
+						},
+						"description": "**PROTECTED ROUTE** - Retrieves the profile of the currently authenticated user. Set `{{access_token}}` from login response."
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"description": "May require Bearer token if this endpoint is protected."
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/{{user_id_to_get}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{{user_id_to_get}}"
+							]
+						},
+						"description": "Retrieves a specific user by their ID. Set `{{user_id_to_get}}`. This might be a public or protected endpoint depending on app's logic."
+					},
+					"response": []
+				},
+				{
+					"name": "Update User by ID (Me)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Jane Updated\",\n    \"health_flags\": [\"dairy-free\", \"nut-allergy\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/{{user_id_to_update}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{{user_id_to_update}}"
+							]
+						},
+						"description": "**PROTECTED ROUTE (Typically)** - Updates the authenticated user's details (or a specific user if admin). Set `{{user_id_to_update}}` (usually current user's ID) and `{{access_token}}`."
+					},
+					"response": []
+				},
+                {
+					"name": "Add Badge to User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"badge_id\": \"badge_super_taster_007\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/{{user_id_for_badge}}/badges",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{{user_id_for_badge}}",
+                                "badges"
+							]
+						},
+						"description": "**PROTECTED ROUTE (Typically)** - Adds a badge to a specific user. Set `{{user_id_for_badge}}`, `badge_id` in body, and `{{access_token}}`."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Get All Products",
+					"request": { "method": "GET", "url": "{{base_url}}/products" }
+				},
+				{
+					"name": "Get Product by ID",
+					"request": { "method": "GET", "url": "{{base_url}}/products/{{product_id}}" }
+				},
+                {
+					"name": "Get Product by Barcode",
+					"request": { "method": "GET", "url": "{{base_url}}/products/barcode/{{barcode}}" }
+				},
+				{
+					"name": "Create New Product",
+					"description": "Consider if this should be an admin-only protected route.",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }, {"key": "Authorization", "value": "Bearer {{admin_access_token}}"}],
+						"body": { "mode": "raw", "raw": "{\n    \"name\": \"Artisan Kimchi\",\n    \"image_url\": \"https://example.com/kimchi.jpg\",\n    \"barcode\": \"8801234567890\",\n    \"generic_name\": \"Spicy Fermented Cabbage\",\n    \"ingredients\": \"Napa cabbage, gochugaru, garlic, ginger, salt, fish sauce\",\n    \"categories\": \"fermented,korean,side-dish\",\n    \"brands\": \"FlavorPal Homemade\"\n}" },
+						"url": { "raw": "{{base_url}}/products" }
+					}
+				}
+			]
+		},
+		{
+			"name": "Reviews",
+			"item": [
+				{
+					"name": "Get All Reviews for a Product",
+					"request": { "method": "GET", "url": "{{base_url}}/reviews/products/{{product_id}}/" }
+				},
+				{
+					"name": "Create New Review for a Product",
+					"description": "**PROTECTED ROUTE** - The user_id in the path should ideally come from the token. Modify backend if user_id is not needed in path. Set `{{product_id}}`, `{{user_id_for_review}}`, and `{{access_token}}`.",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }, {"key": "Authorization", "value": "Bearer {{access_token}}"}],
+						"body": { "mode": "raw", "raw": "{\n    \"rating\": 4,\n    \"note\": \"Very tasty, will buy again!\",\n    \"likes_count\": 0\n}" },
+						"url": { "raw": "{{base_url}}/reviews/products/{{product_id}}/users/{{user_id_for_review}}/" }
+					}
+				},
+				{
+					"name": "Get All Reviews by a User",
+					"description": "**PROTECTED ROUTE (Typically)** - To get reviews for the *current* user, use /users/me/reviews (if you create it) or ensure this endpoint checks if the requester is the user_id or an admin. Set `{{user_id_to_get_reviews}}` and `{{access_token}}`.",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+						"url": { "raw": "{{base_url}}/users/{{user_id_to_get_reviews}}/reviews" }
+					}
+				},
+				{
+					"name": "Get Review by ID",
+					"request": { "method": "GET", "url": "{{base_url}}/reviews/{{review_id}}" }
+				},
+                {
+					"name": "Like a Review",
+					"description": "**PROTECTED ROUTE** - Set `{{review_id_to_like}}` and `{{access_token}}`.",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+						"url": { "raw": "{{base_url}}/reviews/{{review_id_to_like}}/like" }
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "https://0.0.0.0:8000",
+			"type": "string",
+            "description": "Base URL for the API when running in Docker and accessing from host."
+		},
+        {
+            "key": "access_token",
+            "value": "your_access_token_here",
+            "type": "string",
+            "description": "Copy the access_token from the Login response here."
+        },
+        {
+            "key": "user_id_to_get",
+            "value": "",
+            "type": "string",
+            "description": "ID of a user to fetch/update."
+        },
+         {
+            "key": "user_id_for_badge",
+            "value": "",
+            "type": "string",
+            "description": "ID of a user to add badge to."
+        },
+        {
+            "key": "user_id_for_review",
+            "value": "",
+            "type": "string",
+            "description": "ID of a user creating a review (consider if needed in path with token auth)."
+        },
+         {
+            "key": "user_id_to_get_reviews",
+            "value": "",
+            "type": "string",
+            "description": "ID of a user whose reviews are to be fetched."
+        },
+        {
+            "key": "product_id",
+            "value": "",
+            "type": "string",
+            "description": "ID of a product."
+        },
+        {
+            "key": "review_id",
+            "value": "",
+            "type": "string",
+            "description": "ID of a review."
+        },
+         {
+            "key": "review_id_to_like",
+            "value": "",
+            "type": "string",
+            "description": "ID of a review to like."
+        },
+        {
+            "key": "barcode",
+            "value": "",
+            "type": "string",
+            "description": "A product barcode."
+        }
+	]
+}

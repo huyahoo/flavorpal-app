@@ -1,30 +1,78 @@
 // src/services/apiClient.ts
 import axios from 'axios';
+import { useAuthStore } from '@/store/auth';
 
-// Your Supabase URL will go here.
-// It's good practice to use environment variables for this.
-const API_URL = import.meta.env.VITE_SUPABASE_URL || 'YOUR_SUPABASE_PROJECT_URL_HERE/rest/v1'; // Example REST endpoint
-const API_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY_HERE';
+const API_BASE_URL = 'https://localhost:8000';
 
 const apiClient = axios.create({
-  baseURL: API_URL,
+  baseURL: API_BASE_URL,
   headers: {
-    'apikey': API_KEY,
-    'Authorization': `Bearer ${API_KEY}`, // For Supabase, anon key can be used for some public data or auth endpoints
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  },
 });
 
-// You might want to add interceptors for handling auth tokens
-apiClient.interceptors.request.use((config: any) => {
-  // Example: Get token from Pinia store if user is logged in
-  // const authStore = useAuthStore(); // Assuming you have an authStore
-  // if (authStore.token) {
-  //   config.headers.Authorization = `Bearer ${authStore.token}`;
-  // }
-  return config;
-}, (error: any) => {
-  return Promise.reject(error);
-});
+// Request Interceptor: To add Authorization token to requests
+apiClient.interceptors.request.use(
+  (config) => {
+    // Get token from Pinia store if user is logged in
+    // Must be done carefully to avoid issues if store is not yet initialized
+    // or if this runs outside Vue setup context.
+    // A common pattern is for service functions to get the token and add it.
+    // However, for a global interceptor:
+    try {
+      const authStore = useAuthStore(); // Get store instance
+      if (authStore.token) {
+        config.headers.Authorization = `Bearer ${authStore.token}`;
+      }
+    } catch (e) {
+      // This can happen if the interceptor runs before Pinia is fully initialized,
+      // or if called from outside a component setup context.
+      // Fallback to localStorage if store access fails here, though store should be source of truth.
+      const tokenFromStorage = localStorage.getItem('flavorpal_auth_token');
+      if (tokenFromStorage) {
+        config.headers.Authorization = `Bearer ${tokenFromStorage}`;
+      }
+      console.warn('AuthStore not available in apiClient interceptor, using localStorage token if present.');
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response Interceptor: To handle global errors like 401 Unauthorized
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true; // Mark to prevent infinite loops
+      console.error('API Error: 401 Unauthorized. Attempting to handle...');
+      try {
+        const authStore = useAuthStore();
+        // Here could implement token refresh logic if backend supports it.
+        // For now, we'll just log out the user.
+        console.log('Logging out due to 401 error.');
+        await authStore.logout(); // Ensure logout clears token and redirects
+        // router.push('/login'); // Or directly navigate if logout doesn't always redirect
+        return Promise.reject(error); // Important to reject after handling
+      } catch (e) {
+        console.error('Error during 401 handling logout:', e);
+        return Promise.reject(error);
+      }
+    }
+    // For other errors, log them
+    if (error.response) {
+      console.error('API Error Response:', error.response.data);
+    } else if (error.request) {
+      console.error('API No Response:', error.request);
+    } else {
+      console.error('API Request Setup Error:', error.message);
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default apiClient;
