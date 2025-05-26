@@ -106,8 +106,8 @@ def most_similar_img(embedding, db: Session):
     # """)
     query = text("""
         SELECT * FROM Products
-        WHERE (image_embedding <-> CAST(:embedding AS vector)) < :threshold
-        ORDER BY image_embedding <-> CAST(:embedding AS vector)
+        WHERE (image_embedding <#> CAST(:embedding AS vector)) < :threshold
+        ORDER BY image_embedding <#> CAST(:embedding AS vector)
         LIMIT 1;
     """)
 
@@ -116,12 +116,23 @@ def most_similar_img(embedding, db: Session):
         "threshold": 0.2,
     }
 
-    result = db.execute(query, params).fetchone()
+    result = db.execute(query, params).mappings().fetchone()
 
     if result:
+        print(f'result type: {type(result)}, result: {result}')
         # Assuming the result is a dictionary or tuple-like object, we can map it to a product object
         return models.Product(**result)  # Convert the result to a Product model object
     return None
+
+
+import numpy as np
+
+def normalize(vector):
+    norm = np.linalg.norm(vector)
+    if norm == 0:
+        return vector
+    return vector / norm
+
 
 def get_image_embedding(base64image):
     # encoded_image = encode_image_to_base64(image_path)
@@ -138,7 +149,9 @@ def get_image_embedding(base64image):
         print("Success on image_encode_endpoint")
     else:
         print("Error:", response.status_code, response.text)
-    return response.json()["textDescriptionEmbedding"]
+    embedding = response.json()["textDescriptionEmbedding"]
+
+    return normalize(embedding).tolist()
 
 def get_AI_product_info(base64image):
     payload = {
