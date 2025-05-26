@@ -34,6 +34,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_suggestions: {
+        Row: {
+          created_at: string
+          id: number
+          opinion: string
+          product_id: number
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          opinion: string
+          product_id: number
+          reason: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          opinion?: string
+          product_id?: number
+          reason?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_suggestions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       badges: {
         Row: {
           created_at: string
