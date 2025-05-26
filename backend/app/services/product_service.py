@@ -119,7 +119,7 @@ def most_similar_img(embedding, db: Session):
     result = db.execute(query, params).mappings().fetchone()
 
     if result:
-        print(f'result type: {type(result)}, result: {result}')
+        # print(f'result type: {type(result)}, result: {result}')
         # Assuming the result is a dictionary or tuple-like object, we can map it to a product object
         return models.Product(**result)  # Convert the result to a Product model object
     return None
