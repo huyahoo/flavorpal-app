@@ -53,8 +53,8 @@ def send_to_image_encode_endpoint(image_path, endpoint_url):
 
     response = requests.post(endpoint_url, json=payload, headers=headers)
     if response.ok:
-        # print("Success:", response.json())
-        print("Success on image_encode_endpoint")
+        print("Success:", response.json())
+        # print("Success on image_encode_endpoint")
     else:
         print("Error:", response.status_code, response.text)
     return response.json()
