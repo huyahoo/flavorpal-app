@@ -101,7 +101,7 @@
 
         <section class="mt-6">
           <button 
-            @click="showImageSourceModal = true"
+            @click="openImageSourceChoiceModal"
             class="w-full flex items-center justify-center py-3 px-4 bg-flavorpal-green hover:bg-flavorpal-green-dark text-white font-medium rounded-xl transition-colors duration-150 ease-in-out"
           >
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18v-2m0-4H9m3 4h3m-3-4V6"></path></svg>
@@ -132,7 +132,7 @@
             </button>
         </section>
 
-        <section v-if="!product.isReviewed" class="bg-white p-5 rounded-xl shadow-lg">
+        <!-- <section v-if="!product.isReviewed" class="bg-white p-5 rounded-xl shadow-lg">
           <h3 class="text-lg font-semibold text-flavorpal-gray-dark mb-3">Is this a new product for you?</h3>
           <div class="flex space-x-3">
             <button
@@ -152,7 +152,7 @@
               No, I've had it before
             </button>
           </div>
-        </section>
+        </section> -->
 
         <section class="bg-white p-5 rounded-xl shadow-lg">
           <h3 class="text-lg font-semibold text-flavorpal-gray-dark mb-4">Related Products</h3>
@@ -189,7 +189,7 @@
       </div>
       <ImageSourceChoiceModal
         :is-open="showImageSourceModal"
-        @close="showImageSourceModal = false"
+        @close="closeImageSourceChoiceModal"
         @select-source="handleImageSourceSelected"
       />
       <ConfirmationModal
@@ -362,9 +362,18 @@ const openDeleteConfirmModal = () => {
     showDeleteConfirmModal.value = true;
 };
 
+const openImageSourceChoiceModal = () => {
+    showImageSourceModal.value = true;
+    uiStore.setCameraOverlayActive(true);
+};
+
+const closeImageSourceChoiceModal = () => {
+    showImageSourceModal.value = false;
+    uiStore.setCameraOverlayActive(false);
+};
 // --- Updated Ingredient Photo Upload Logic ---
 const handleImageSourceSelected = (source: 'camera' | 'upload') => {
-    showImageSourceModal.value = false;
+    closeImageSourceChoiceModal();
     if (source === 'camera') {
         showPhotoCapturer.value = true;
         uiStore.setCameraOverlayActive(true);
