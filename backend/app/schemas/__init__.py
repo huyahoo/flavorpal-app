@@ -1,6 +1,6 @@
-from .product import ProductBase, ProductCreate, ProductOut, ProductUpdate, ProductReview, ProductAiGenerated
-from .review import ReviewBase, ReviewCreate, ReviewUpdate, ReviewOut, ReviewProductCreate, ReviewProductOut, ReviewUserCreate, ReviewUserOut
+from .product import ProductBase, ProductCreate, ProductOut, ProductUpdate, ProductReview, ProductAiGenerated, ProductDetailsFrontend, ProductDetailsFrontendOut, ProductDetailsThroughBarcode, ProductDetailsThroughBarcodeOut
+from .review import ReviewBase, ReviewCreate, ReviewUpdate, ReviewOut, ReviewProductCreate, ReviewProductOut, ReviewUserCreate, ReviewUserOut, ReviewProductCreateFrontend, ReviewProductUpdateFrontend
 from .healthflag import HealthFlag, HealthFlagOut, UserHealthFlagOut
 from .badge import Badge, BadgeCreate, BadgeOut, UserBadgeOut
 from .history import HistoryCreate, HistoryOut
-from .user import UserCreate, UserUpdate, UserProfileOut
+from .user import UserCreate, UserUpdate, UserProfileOut, UserLogin, UserCreateFrontend, UserCreateFrontendOut, UserUpdateFrontend, UserProfileFrontendOut, UserBadgeFrontendOut

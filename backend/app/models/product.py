@@ -17,6 +17,8 @@ class Product(Base):
     ingredients = Column(Text)  
     categories = Column(String) 
     brands = Column(String)  
+    ai_health_summary = Column(Text)
+    ai_health_conclusion = Column(Text)
 
     reviews = relationship("Review", back_populates="product")
     history = relationship("History", back_populates="product")

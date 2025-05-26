@@ -40,3 +40,16 @@ class ReviewSummary(ReviewBase):
     reviews: List[ReviewBase]
     model_config = ConfigDict(from_attributes=True)
     
+class ReviewProductCreateFrontend(BaseModel):
+    rating: int
+    note: Optional[str] = None
+    class Config:
+        orm_mode = True
+
+
+class ReviewProductUpdateFrontend(BaseModel):
+    rating: int
+    note: Optional[str] = None
+    class Config:
+        orm_mode = True
+    

@@ -5,6 +5,7 @@ from app import models, schemas
 from app.db.db import get_db
 from app.utils import response
 from app.utils.ResponseResult import Response
+from app.utils.dependencies import get_current_user
 router = APIRouter(tags=["Reviews"])
 
 
@@ -19,33 +20,35 @@ def get_product_reviews(product_id: int, db: Session = Depends(get_db)):
     return Response(code=200, data=reviews, msg="Reviews fetched successfully")
 
 
-@router.post("/reviews/products/{product_id}", response_model=Response[schemas.ReviewProductOut])
-def create_product_review(user_id: int,product_id: int, review: schemas.ReviewProductCreate, db: Session = Depends(get_db)):
+@router.post("/reviews/products/{product_id}")
+def create_product_review(product_id: int, review: schemas.ReviewProductCreateFrontend, db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):
+    user_id = current_user.id
     db_review = models.Review(**review.dict(), user_id=user_id, product_id=product_id)
     db.add(db_review)
     db.commit()
-    return Response(code=200, data=db_review, msg="Review created successfully")
+    return Response(code=200, data=[], msg="Review created successfully")
 
 
-@router.patch("/reviews/products/{review_id}", response_model=Response[schemas.ReviewOut])
-def update_review(review_id: int, review: schemas.ReviewUpdate, db: Session = Depends(get_db)):
-    db_review = db.query(models.Review).filter(models.Review.id == review_id).first()
+@router.patch("/reviews/products/{product_id}")
+def update_review(product_id: int, review: schemas.ReviewProductUpdateFrontend, db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):
+    user_id = current_user.id
+    db_review = db.query(models.Review).filter(models.Review.product_id == product_id, models.Review.user_id == user_id).first()
     if not db_review:
         return response.not_found(msg="Review not found",code=404)
     for field, value in review.dict(exclude_unset=True).items():
         setattr(db_review, field, value)
     db.commit()
     db.refresh(db_review)
-    return Response(code=200, data=db_review, msg="Review updated successfully")
+    return Response(code=201, data=[], msg="Review updated successfully")
 
 @router.delete("/reviews/{review_id}", response_model=schemas.ReviewOut)
-def delete_review(review_id: int, db: Session = Depends(get_db)):
+def delete_review(review_id: int, db: Session = Depends(get_db),_: models.User = Depends(get_current_user)):
     db_review = db.query(models.Review).filter(models.Review.id == review_id).first()
     if not db_review:
         return response.not_found(msg="Review not found",code=404)
     db.delete(db_review)
     db.commit()
-    return Response(code=200, msg="Review deleted successfully")
+    return Response(code=204, msg="Review deleted successfully")
 
 @router.post("/reviews/{review_id}/like", response_model=Response[schemas.ReviewOut])
 def like_review(review_id: int, db: Session = Depends(get_db)):

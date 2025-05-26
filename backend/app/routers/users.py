@@ -9,8 +9,44 @@ from app.utils.security import get_password_hash
 from app.utils.dependencies import get_current_user
 from app.schemas.user import UserProfileOut
 from app.models import User as UserModel
+from app.utils.security import verify_password, create_access_token
 
 router = APIRouter(prefix="/users", tags=["users"])
+
+@router.post("/auth/login")
+def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
+    db_user = db.query(models.User).filter(models.User.email == user.email).first()
+    if not db_user:
+        return response.not_found(msg="User not found",code=404)
+    if not verify_password(user.password, db_user.hashed_password):
+        return Response(code=401, data=None, msg="Incorrect password or email")
+    access_token = create_access_token(data={"sub": db_user.email})
+    return Response(code=200, data={"access_token": access_token, "token_type": "bearer"}, msg="User logged in successfully")
+
+
+@router.post("/auth/logout")
+def logout(_: models.User = Depends(get_current_user)):
+    return Response(code=200, data=None, msg="User logged out successfully")
+
+@router.get("/auth/me", response_model=Response[schemas.UserProfileFrontendOut])
+def get_me(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    badges = []
+    if current_user.badges:
+        for badge in current_user.badges:
+            badge_db = db.query(models.UserBadge).filter(models.UserBadge.id == badge.id).first()
+            badge_obj = schemas.UserBadgeFrontendOut(
+                id=badge_db.id,
+                date_earned=badge_db.date_earned
+            ) 
+            badges.append(badge_obj)
+    user_profile = schemas.UserProfileFrontendOut(
+        id=current_user.id,
+        name=current_user.name,
+        email=current_user.email,
+        health_flags=current_user.health_flags,
+        badges=badges
+    )
+    return Response(code=200, data=user_profile, msg="User logged in successfully")
 
 @router.get("/",response_model=Response[List[schemas.UserProfileOut]])
 def get_users(db: Session = Depends(get_db)):
@@ -96,6 +132,15 @@ def delete_all_users(db: Session = Depends(get_db)):
     db.query(models.User).delete()
     db.commit()
     return Response(code=200, msg="All users deleted successfully")
+
+@router.delete("/{user_id}")
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    db_user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not db_user:
+        raise response.not_found(msg="User not found",code=404)
+    db.delete(db_user)
+    db.commit()
+    return Response(code=200,data=None, msg="User deleted successfully")
 
 @router.get("/{user_id}/badges", response_model=Response[List[schemas.UserBadgeOut]])
 def get_user_badges(user_id: int, db: Session = Depends(get_db)):
