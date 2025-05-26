@@ -55,10 +55,10 @@ export interface TokenResponse {
  * Generic API response structure from backend.
  */
 export interface ApiResponse<T = any> {
-    access_token: string | null;
-    token_type: string;
+    access_token?: string | null;
+    token_type?: string;
     code: number;
-    data: T;
+    data?: T;
     msg: string;
     detail?: any;
 }
@@ -100,36 +100,98 @@ export interface BadgeStatistic {
 export type AiHealthConclusion = 'good' | 'caution' | 'avoid' | 'neutral' | 'info_needed' | 'error_analyzing';
 
 /**
+ * Defines the possible fetch statuses for a scanned product.
+ */
+export type FetchStatus = 'found' | 'not_found_in_db' | 'api_error';
+
+/**
  * Represents a user's interaction with a product.
  * This can be a scan, a review, or both.
  */
-export interface ProductInteraction {
-  id: string;                    // Unique identifier (can be barcode for scanned items from OFF)
-  name: string;                  // Name of the product
-  imageUrl?: string;             // Optional URL for the product image
+export interface Product {
+  id?: number;                    // Unique identifier (barcode from OFF will be used as ID)
+  barcode?: string;              // The scanned barcode
+  name?: string;                  // Product name
+  brands?: string;               // Product brands (as a string from OFF)
+  imageUrl?: string;             // Main product image
+  imageIngredientsUrl?: string;  // Ingredients image URL
+  imageNutritionUrl?: string;    // Nutrition image URL
+  categories?: string;           // Categories (as a string from OFF)
 
-  // Scanning-related data
-  dateScanned: string;           // Date when the product was first scanned/encountered
-  barcode?: string;              // Barcode if scanned
-
-  // Data from Open Food Facts (or similar API)
-  ingredientsText?: string;      // Raw ingredients string
-  categories?: string[];         // Product categories
-  brands?: string[];             // Product brands
-  genericName?: string;          // Generic name from OFF
-
-  // AI-generated insights (can be client-side mock based on ingredientsText and healthFlags)
+  // AI-generated insights (will be populated by scanStore after this fetch)
   aiHealthSummary?: string;
-  aiHealthConclusion?: AiHealthConclusion;
-
-  // User Review Details
-  isReviewed: boolean;
+  aiHealthConclusion?: AiHealthConclusion; 
+  
+  // User Review Details (will be populated by historyStore if user has reviewed this product)
+  isReviewed?: boolean;           // Default to false when fetching from OFF
   userRating?: number;
   userNotes?: string;
-  dateReviewed?: string;
+  dateReviewed?: string;         // Date of user's review
+  dateScanned?: string;           // Date this item was processed by the app
+  likeCount?: number;            // Likes on a user's review (not directly from OFF product data)
 
-  // For local UI state in ProductDetailView for "Is this a new product for you?"
-  isNewForUser?: boolean;
+  fetchStatus?: FetchStatus;      // Status of the OFF fetch
+}
+
+/**
+ * Payload for creating a new product (POST /products/).
+ * Matches backend's schemas.ProductCreate.
+ */
+export interface ProductCreatePayload {
+  name: string;
+  image_url?: string;
+  barcode?: string;
+  generic_name?: string;
+  ingredients?: string; 
+  categories?: string;  
+  brands?: string;      
+}
+
+/**
+* Payload for updating an existing product (PATCH /products/{product_id}).
+*/
+export interface ProductUpdatePayload {
+  name?: string;
+  image_url?: string;
+  barcode?: string;
+  generic_name?: string;
+  ingredients?: string;
+  categories?: string;
+  brands?: string;
+  ai_health_summary?: string; // If backend supports updating these
+  ai_health_conclusion?: AiHealthConclusion;
+}
+
+// --- Interfaces mirroring Backend Pydantic Schemas for mapping ---
+// From your backend: schemas.ProductDetails
+interface BackendProductDetailsData {
+  id: number;
+  name: string;
+  brands?: string | null;
+  barcode?: string | null;
+  image_url?: string | null;
+  categories?: string | null;
+  isReviewed: boolean;
+  user_rating?: number | null;
+  user_note?: string | null; 
+  ai_health_summary?: string | null;
+  ai_health_conclusion?: string | null; 
+  data_scanned_at?: string | null; 
+  data_reviewed?: string | null;   
+}
+// From your backend: schemas.ProductDetailsFrontendOut
+interface BackendProductDetailsWrapper { // Renamed to avoid conflict
+  product: BackendProductDetailsData;
+}
+// From your backend: schemas.ProductOut
+interface BackendBasicProductData { 
+  id: number;
+  name: string;
+  generic_name?: string | null;
+  ingredients?: string | null;
+  // Note: image_url, barcode, categories, brands are NOT in your backend ProductOut
+  // This means creating/updating a product will return minimal info.
+  // The frontend might need to re-fetch full details using getProductByIdApi after create/update.
 }
 
 export interface PublicReviewItem {

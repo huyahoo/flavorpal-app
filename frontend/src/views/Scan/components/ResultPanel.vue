@@ -117,11 +117,11 @@
 </template>
 
 <script setup lang="ts">
-import type { ProductInteraction, AiHealthConclusion } from '@/types';
+import type { Product, AiHealthConclusion } from '@/types';
 import StarRating from '@/components/common/StarRating.vue';
 
 interface Props {
-  productForDisplay: ProductInteraction;
+  productForDisplay: Product;
   scanAnotherCallback: () => void;
   navigateToProductDetailCallback: (product_id: string) => void;
 }

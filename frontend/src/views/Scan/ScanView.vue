@@ -54,7 +54,7 @@
 // ... (script setup remains the same as flavorpal_scan_view_v4_zxing)
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import type { AiHealthConclusion, ProductInteraction } from '../../types'
+import type { AiHealthConclusion, Product } from '../../types'
 import PhotoCapturer, { type CapturedPhoto } from './components/PhotoCapturer.vue'
 import Header from './components/Header.vue'
 import BarcodeScanner from './components/BarcodeScanner.vue'
@@ -63,7 +63,7 @@ import BarcodeInput from './components/BarcodeInput.vue'
 import Analyzing from './components/Analyzing.vue'
 import ResultPanel from './components/ResultPanel.vue'
 import ErrorDisplay from './components/ErrorDisplay.vue'
-import { fetchProductDataFromOpenFoodFacts, mockPhotoAnalyze } from '@/services/scanService'
+import { getProductByBarcode, fetchProductDataFromOpenFoodFacts, mockPhotoAnalyze } from '@/services/scanService'
 
 // DELETE AFTER BACKEND INTEGRATION
 import { useHistoryStore } from '../../store/historyStore'
@@ -74,7 +74,7 @@ const router = useRouter()
 
 const state = ref<ScanViewStage>('idle_choice')
 const errorMessage = ref<string | null>(null)
-const productForDisplay = ref<ProductInteraction | null>(null)
+const productForDisplay = ref<Product | null>(null)
 
 export type ScanViewStage =
   | 'idle_choice'
@@ -103,13 +103,24 @@ const handleResetView = () => {
 const handleBarcodeSubmission = async (barcodeValue: string) => {
   console.log('Processing submitted barcode:', barcodeValue)
   state.value = 'analyzing'
-  const productInteraction = await fetchProductDataFromOpenFoodFacts(barcodeValue)
-  if (productInteraction) {
-    productForDisplay.value = productInteraction as ProductInteraction
+
+  // Check if product exists in database
+  const productData = await getProductByBarcode(barcodeValue)
+  if (productData.code === 200) {
+    console.log('Product exists in database')
+    productForDisplay.value = productData.data ?? null
+  } else {
+    // If product does not exist in database, fetch from Open Food Facts
+    console.log('Product does not exist in database')
+    const productOFF = await fetchProductDataFromOpenFoodFacts(barcodeValue)
+    if (productOFF) {
+      productForDisplay.value = productOFF as Product
+    }
   }
-  // DELETE AFTER BACKEND INTEGRATION
-  historyStore.addOrUpdateInteraction(productForDisplay.value as ProductInteraction)
-  //////////////////////////////////////
+
+  // // DELETE AFTER BACKEND INTEGRATION
+  // historyStore.addOrUpdateInteraction(productForDisplay.value as Product)
+  // //////////////////////////////////////
   state.value = 'result_display'
 }
 
@@ -131,7 +142,6 @@ const handlePhotoCapture = async (photo: CapturedPhoto) => {
   }
   state.value = 'result_display'
 }
-
 
 onUnmounted(() => {
   handleResetView()

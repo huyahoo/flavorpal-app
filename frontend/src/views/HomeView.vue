@@ -106,7 +106,7 @@ onMounted(async () => {
   if (authStore.isAuthenticated) {
     // Load both interactions (for recent scans) and stats
     Promise.all([
-        historyStore.loadProductInteractions(), // This will populate allProductInteractions
+        historyStore.loadAllProducts(), // This will populate allProductInteractions
         historyStore.loadScanStatistics()      // This will populate stats
     ]).catch(error => {
         console.error("Error loading home page data (history/stats):", error);

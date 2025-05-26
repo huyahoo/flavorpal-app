@@ -1,7 +1,7 @@
 // src/store/scanStore.ts
 import { defineStore } from 'pinia';
-import type { ProductInteraction, AiHealthConclusion } from '../types';
-import { mockProcessScanOrPhoto, type OpenFoodFactsResult } from '../services/scanService'; 
+import type { Product, AiHealthConclusion } from '../types';
+import { processScanOrPhoto, type OpenFoodFactsResult } from '../services/scanService'; 
 import { useHistoryStore } from './historyStore';
 import { useAuthStore } from './auth';
 
@@ -9,7 +9,7 @@ export type ScanViewStage = 'idle_choice' | 'inputting_barcode' | 'analyzing' | 
 
 export interface ScanStoreState {
   currentStage: ScanViewStage;
-  productForDisplay: ProductInteraction | Partial<ProductInteraction> | null; 
+  productForDisplay: Product | Partial<Product> | null; 
   isLoadingAnalysis: boolean;
   analysisError: string | null;
   scannedBarcodeValue: string; 
@@ -50,7 +50,7 @@ export const useScanStore = defineStore('scan', {
       }
 
       try {
-        const serviceResult = await mockProcessScanOrPhoto(inputType, effectiveBarcode);
+        const serviceResult = await processScanOrPhoto(inputType, effectiveBarcode);
         // Ensure serviceResult is treated as OpenFoodFactsResult for barcode scans
         const scannedDataPartial = serviceResult as OpenFoodFactsResult; 
 
@@ -100,10 +100,10 @@ export const useScanStore = defineStore('scan', {
         
         const historyStore = useHistoryStore();
         if (historyStore.allProductInteractions.length === 0 && !historyStore.loadingInteractions) {
-            await historyStore.loadProductInteractions(true); 
+            await historyStore.loadAllProducts(true); 
         }
 
-        let existingHistoryItem: ProductInteraction | undefined = undefined;
+        let existingHistoryItem: Product | undefined = undefined;
         // Use the ID from scannedDataPartial if it exists (e.g., barcode from OFF or generated for photo)
         const idToSearch = scannedDataPartial.id || effectiveBarcode || generateInteractionId('unknown_');
 
@@ -116,7 +116,7 @@ export const useScanStore = defineStore('scan', {
             );
         }
         
-        let productToDisplayAndSave: ProductInteraction;
+        let productToDisplayAndSave: Product;
 
         if (existingHistoryItem) {
           console.log('Scan matched existing item in history:', existingHistoryItem.name);
@@ -150,7 +150,7 @@ export const useScanStore = defineStore('scan', {
             aiHealthConclusion: finalAiConclusion,
             isReviewed: false, // New interaction is not reviewed by default
             fetchStatus: scannedDataPartial.fetchStatus, // Persist fetch status if available
-          } as ProductInteraction; // Assert type as ProductInteraction
+          } as Product; // Assert type as Product
         }
         
         // Only add to history if it was successfully 'found' by the service

@@ -1,16 +1,16 @@
 // src/services/historyService.ts
-import type { ProductInteraction } from '../types'; // Assuming AiHealthConclusion is also in types
+import type { Product } from '../types'; // Assuming AiHealthConclusion is also in types
 
 /**
  * Simulates fetching a list of all product interactions (scans and reviews) for the user.
- * @returns A Promise that resolves to an array of ProductInteraction objects.
+ * @returns A Promise that resolves to an array of Product objects.
  */
-export const fetchProductInteractionsApi = async (): Promise<ProductInteraction[]> => {
+export const fetchProductInteractionsApi = async (): Promise<Product[]> => {
   console.log('Mock API Call: Fetching All Product Interactions (History)...');
   await new Promise(resolve => setTimeout(resolve, 800)); // Simulate network delay
 
-  // Using the same mock data as before for ProductInteraction
-  const mockInteractions: ProductInteraction[] = [
+  // Using the same mock data as before for Product
+  const mockInteractions: Product[] = [
     {
       id: 'hist_item_001', name: 'Gourmet Coffee Beans (Reviewed)', imageUrl: 'https://placehold.co/200x200/6B4F4F/FFFFFF?text=Coffee&font=roboto', dateScanned: 'May 10, 2025', aiHealthSummary: 'Generally fine, monitor caffeine intake.', aiHealthConclusion: 'neutral', isReviewed: true, userRating: 4.5, userNotes: 'Excellent aroma, smooth taste. A bit pricey but worth it for special occasions. Roasted in small batches.', dateReviewed: 'May 11, 2025', barcode: 'coffee_bean_123',
     },

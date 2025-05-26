@@ -49,12 +49,12 @@
 </template>
 
 <script setup lang="ts">
-// MODIFIED: Changed ScannedItem to ProductInteraction
-import type { ProductInteraction, AiHealthConclusion } from '../../types'; 
+// MODIFIED: Changed ScannedItem to Product
+import type { Product, AiHealthConclusion } from '../../types'; 
 import { useRouter } from 'vue-router';
 
 const props = defineProps<{
-  item: ProductInteraction; // MODIFIED: Use ProductInteraction
+  item: Product; // MODIFIED: Use Product
 }>();
 
 const router = useRouter();

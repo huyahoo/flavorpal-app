@@ -181,22 +181,19 @@ const aiConclusionOptions: { label: string, value: AiHealthConclusion }[] = [
   { label: 'Info Needed', value: 'info_needed' },
 ];
 
-
 // --- Computed Properties ---
 // Get processed (filtered and sorted) items from the store
 const processedHistoryItems = computed(() => historyStore.processedHistoryItems);
+console.log("VIEW (processedHistoryItems):", processedHistoryItems.value);
 // Bind search query directly to the store state for two-way data binding
 const searchQuery = computed({
   get: () => historyStore.filterSearchQuery,
   set: (value) => historyStore.filterSearchQuery = value,
 });
 
-
 // --- Lifecycle Hooks ---
 onMounted(() => {
-  // Load product interactions if not already loaded or if forced
-  // The store action itself can decide if it needs to re-fetch.
-  historyStore.loadProductInteractions();
+  historyStore.loadAllProducts();
 });
 
 // --- Event Handlers ---
@@ -239,7 +236,6 @@ const clearAndCloseFilters = () => {
     closeFilterModal();
 };
 
-// viewItemDetail is now handled by HistoryListItem.vue's handleItemClick
 </script>
 
 <style scoped>

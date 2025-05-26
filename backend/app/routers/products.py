@@ -27,7 +27,7 @@ def get_all_products(db: Session = Depends(get_db),current_user: models.User = D
     for product in products:
         review = db.query(models.Review).filter(models.Review.product_id == product.id, models.Review.user_id == user_id).first()
         if review:
-            product_info = schemas.ProductDetails(
+            product_info = schemas.ProductDetailsFrontend(
                 id=product.id,
                 name=product.name,
                 brands=product.brands,
@@ -43,7 +43,7 @@ def get_all_products(db: Session = Depends(get_db),current_user: models.User = D
                 data_reviewed=review.note
             )
         else:
-            product_info = schemas.ProductDetails(
+            product_info = schemas.ProductDetailsFrontend(
                 id=product.id,
                 name=product.name,
                 brands=product.brands,

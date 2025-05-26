@@ -222,21 +222,21 @@ import { ref, onMounted, computed, watch, onBeforeMount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useUiStore } from '../store/uiStore';
 import { useHistoryStore } from '../store/historyStore';
-import type { ProductInteraction, AiHealthConclusion } from '../types';
+import type { Product, AiHealthConclusion } from '../types';
 import StarRating from '@/components/common/StarRating.vue';
 import ConfirmationModal from '@/components/common/ConfirmationModal.vue';
 import IconArrowBack from '@/components/icons/IconArrowBack.vue';
 import ImageSourceChoiceModal from '@/components/common/ImageSourceChoiceModal.vue';
 import PhotoCapturer, { type CapturedPhoto } from '@/components/common/PhotoCapturer.vue';
 
-const props = defineProps<{ id: string; }>();
+const props = defineProps<{ id: number; }>();
 const router = useRouter();
 const uiStore = useUiStore();
 const route = useRoute();
 const historyStore = useHistoryStore();
 
-const product = ref<(ProductInteraction & { isNewForUser?: boolean }) | null>(null); 
-const relatedProducts = ref<Partial<ProductInteraction & {isReviewed?: boolean, id?: string}>[]>([]); 
+const product = ref<(Product) | null>(null); 
+const relatedProducts = ref<Partial<Product & {id?: number}>[]>([]); 
 const loadingProduct = ref<boolean>(true); 
 const productUpdateError = ref<string | null>(null); 
 const previousRouteName = ref<string | null>(null);
@@ -249,10 +249,10 @@ let analysisController: AbortController | null = null;
 const showPhotoCapturer = ref(false);
 
 
-const loadProductData = async (productId: string) => {
+const loadProductData = async (productId: number) => {
   loadingProduct.value = true;
   if (historyStore.allProductInteractions.length === 0 && !historyStore.loadingInteractions) {
-    await historyStore.loadProductInteractions();
+    await historyStore.loadAllProducts();
   }
 
   const foundProduct = historyStore.getProductInteractionById(productId);
@@ -260,7 +260,6 @@ const loadProductData = async (productId: string) => {
   if (foundProduct) {
     product.value = {
         ...foundProduct,
-        isNewForUser: (foundProduct as any).isNewForUser === undefined ? undefined : (foundProduct as any).isNewForUser
     };
 
     relatedProducts.value = historyStore.allProductInteractions
@@ -333,16 +332,16 @@ const navigateToAddReview = () => {
     router.push({ name: 'AddReview', query: { scanId: product.value.id, productName: product.value.name, fromTitle: previousRouteName.value || 'Details' } });
 };
 
-const markAsNewProductUserChoice = (isNew: boolean) => {
+// const markAsNewProductUserChoice = (isNew: boolean) => {
   // if (product.value) {
   //   const updatedProduct = { ...product.value, isNewForUser: isNew };
   //   product.value = updatedProduct;
   //   historyStore.updateProductInteraction(updatedProduct);
   // }
-};
+// };
 
-const viewRelatedItemDetail = (itemId: string) => {
-  router.push({ name: 'ProductDetail', params: { id: itemId } });
+const viewRelatedItemDetail = (productId: string) => {
+  router.push({ name: 'ProductDetail', params: { id: productId } });
 };
 
 const executeDelete = async () => {

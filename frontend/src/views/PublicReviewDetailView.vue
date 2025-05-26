@@ -91,7 +91,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useDiscoverStore } from '../store/discoverStore';
 import { useHistoryStore } from '../store/historyStore'; // To get product interaction details
-import type { PublicReviewItem, ProductInteraction, AiHealthConclusion } from '../types';
+import type { PublicReviewItem, Product, AiHealthConclusion } from '../types';
 import StarRating from '@/components/common/StarRating.vue';
 import SmallPublicReviewCard from '@/components/discover/SmallPublicReviewCard.vue'; // Import new component
 
@@ -105,7 +105,7 @@ const router = useRouter();
 
 const review = computed(() => discoverStore.getCurrentReviewDetail);
 const relatedReviews = computed(() => discoverStore.getRelatedPublicReviews);
-const productInteractionDetails = ref<ProductInteraction | null | undefined>(null); // To store AI insights
+const productInteractionDetails = ref<Product | null | undefined>(null); // To store AI insights
 
 const defaultAvatar = 'https://placehold.co/48x48/E5E7EB/4B5563?text=??&font=roboto';
 
@@ -118,9 +118,9 @@ const loadData = async (currentReviewId: string) => {
         localLikeCount.value = review.value.likeCount;
         // Fetch related reviews
         discoverStore.loadRelatedPublicReviews(review.value.productId, review.value.reviewId);
-        // Fetch ProductInteraction from historyStore for AI insights
+        // Fetch Product from historyStore for AI insights
         if (historyStore.allProductInteractions.length === 0 && !historyStore.loadingInteractions) {
-            await historyStore.loadProductInteractions();
+            await historyStore.loadAllProducts();
         }
         productInteractionDetails.value = historyStore.getProductInteractionById(review.value.productId);
     }

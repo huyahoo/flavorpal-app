@@ -114,12 +114,12 @@
 
 <script setup lang="ts">
 // ... (script setup remains the same as flavorpal_history_list_item)
-import type { ProductInteraction, AiHealthConclusion } from '../../types';
+import type { Product, AiHealthConclusion } from '../../types';
 import StarRating from '@/components/common/StarRating.vue'; 
 import { useRouter } from 'vue-router';
 
 const props = defineProps<{
-  item: ProductInteraction;
+  item: Product;
   viewMode: 'list' | 'grid'; 
 }>();
 

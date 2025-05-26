@@ -111,7 +111,7 @@
 import { ref, reactive, computed, onMounted, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useHistoryStore } from '../store/historyStore';
-import type { BadgeStatistic, ProductInteraction } from '../types';
+import type { BadgeStatistic, Product } from '../types';
 import StarRatingInput from '@/components/common/StarRatingInput.vue';
 import { useUserProfileStore } from '@/store/userProfileStore';
 import { useBadgeStore } from '@/store/badgeStore';
@@ -138,16 +138,16 @@ const reviewData = reactive({
   imageUrl: '',
   barcode: '',
   aiHealthSummary: '',
-  aiHealthConclusion: undefined as ProductInteraction['aiHealthConclusion'],
+  aiHealthConclusion: undefined as Product['aiHealthConclusion'],
   dateScanned: '',
 });
 
 const isEditing = computed(() => !!route.query.editProductId);
-const productToReview = ref<ProductInteraction | null>(null);
+const productToReview = ref<Product | null>(null);
 
 onMounted(async () => {
   if (historyStore.allProductInteractions.length === 0 && !historyStore.loadingInteractions) {
-    await historyStore.loadProductInteractions();
+    await historyStore.loadAllProducts();
   }
 
   const productId = route.query.editProductId as string || route.query.scanId as string;
