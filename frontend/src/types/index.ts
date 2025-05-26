@@ -8,7 +8,7 @@ export interface User {
   username: string;
   email: string;
   health_flags: string[];
-  badges: string[];
+  badges: ApiBadge[];
   created_at?: string; // Optional, from GET response
   updated_at?: string; // Optional, from GET response
 }
@@ -20,7 +20,7 @@ export interface UserCreatePayload {
   username: string;
   email: string;
   health_flags: string[];
-  badges: string[];
+  badges: ApiBadge[];
   password: string;
 }
 
@@ -31,9 +31,9 @@ export interface UserCreatePayload {
 export interface UserUpdatePayload {
   username?: string;
   health_flags?: string[];
-  badges?: string[];
+  badges?: ApiBadge[];
   password?: string;
-} 
+}
 
 /**
  * Credentials for user login.
@@ -66,18 +66,30 @@ export interface ApiResponse<T = any> {
  */
 export interface ApiBadge {
   id: string;
-  name: string;
-  description: string;
-  dateEarned: string;
+  dateEarned: string | null;
 }
 
 /**
- * Interface for badge data enhanced for display in the frontend.
+ * Interface for mapping other badge data apart from API badge data
  */
-export interface DisplayBadge extends ApiBadge {
-  icon: string;
-  bgColor?: string;
-  iconColor?: string;
+export interface BadgeMapping {
+  id: string
+  name: string
+  description: string
+  imageUrl: string
+  isUnlockable: (value: BadgeStatistic) => boolean
+}
+
+/**
+ * Interface for badge data specific to user for frontend display
+ */
+export interface DisplayBadge extends BadgeMapping, ApiBadge {}
+
+/**
+ * Interface for value to pass into badge checking logic
+ */
+export interface BadgeStatistic {
+  totalReviewCount: number
 }
 
 /**
@@ -93,11 +105,11 @@ export interface ProductInteraction {
   id: string;                    // Unique identifier (can be barcode for scanned items from OFF)
   name: string;                  // Name of the product
   imageUrl?: string;             // Optional URL for the product image
-  
+
   // Scanning-related data
   dateScanned: string;           // Date when the product was first scanned/encountered
   barcode?: string;              // Barcode if scanned
-  
+
   // Data from Open Food Facts (or similar API)
   ingredientsText?: string;      // Raw ingredients string
   categories?: string[];         // Product categories
@@ -105,17 +117,17 @@ export interface ProductInteraction {
   genericName?: string;          // Generic name from OFF
 
   // AI-generated insights (can be client-side mock based on ingredientsText and healthFlags)
-  aiHealthSummary?: string;      
-  aiHealthConclusion?: AiHealthConclusion; 
+  aiHealthSummary?: string;
+  aiHealthConclusion?: AiHealthConclusion;
 
   // User Review Details
-  isReviewed: boolean;           
-  userRating?: number;           
-  userNotes?: string;            
+  isReviewed: boolean;
+  userRating?: number;
+  userNotes?: string;
   dateReviewed?: string;
-  
+
   // For local UI state in ProductDetailView for "Is this a new product for you?"
-  isNewForUser?: boolean; 
+  isNewForUser?: boolean;
 }
 
 export interface PublicReviewItem {

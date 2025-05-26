@@ -1,7 +1,8 @@
 // src/store/userProfileStore.ts
 import { defineStore } from 'pinia';
-import type { ApiBadge, DisplayBadge } from '../types';
+import type { ApiBadge, BadgeMapping, DisplayBadge } from '../types';
 import { fetchTastePoints, fetchUserApiBadges } from '../services/userProfileService'; // Ensure service path is correct
+import { badgeMappings } from './badgeLogic';
 
 // Define the shape of the user profile state
 export interface UserProfileState {
@@ -12,38 +13,30 @@ export interface UserProfileState {
 }
 
 /**
- * Maps an ApiBadge object (raw data) to a DisplayBadge object (with UI properties).
- * This function assigns icons and colors based on badge names or IDs.
+ * Maps all badges data to user-specific data for display
  * @param apiBadge - The badge data from the API.
  * @returns A DisplayBadge object ready for UI rendering.
  */
-const mapApiBadgeToDisplayBadge = (apiBadge: ApiBadge): DisplayBadge => {
-  let icon = '🏆'; // Default fallback icon
-  let bgColor = '#E5E7EB'; // Tailwind's bg-gray-200
-  let iconColor = '#4B5563'; // Tailwind's text-gray-600
-
-  const lowerCaseName = apiBadge.name.toLowerCase();
-
-  // Define badge presentation based on name (could also use ID)
-  if (lowerCaseName.includes('first reviewer')) {
-    icon = '🥇'; bgColor = '#FEF3C7'; iconColor = '#B45309'; // Amber
-  } else if (lowerCaseName.includes('explorer')) {
-    icon = '🧭'; bgColor = '#DBEAFE'; iconColor = '#1D4ED8'; // Blue
-  } else if (lowerCaseName.includes('gourmand')) {
-    icon = '🍕'; bgColor = '#FFE4E6'; iconColor = '#F43F5E'; // Rose
-  } else if (lowerCaseName.includes('health scout')) {
-    icon = '🥗'; bgColor = '#D1FAE5'; iconColor = '#047857'; // Emerald (FlavorPal Green Dark)
-  } else if (lowerCaseName.includes('super scanner')) {
-    icon = '📸'; bgColor = '#E0E7FF'; iconColor = '#4F46E5'; // Indigo
-  }
-  // Add more badge mappings as needed
-
-  return {
-    ...apiBadge, // Include all original properties from ApiBadge
-    icon,
-    bgColor,
-    iconColor,
-  };
+const processBadgesData = (apiBadges: ApiBadge[]): DisplayBadge[] => {
+  // Match badge ID with the data
+  const mappedBadgeData: DisplayBadge[] = badgeMappings.map(
+    badgeMapping => {
+      const apiBadge = apiBadges.find(badge => badge.id == badgeMapping.id) ?? null
+      if (!apiBadge) {
+        // User hasn't achieved this badge yet
+        return {
+          ...badgeMapping,
+          dateEarned: null
+        }
+      }
+      // Map dateEarned into the badge
+      return {
+        ...badgeMapping,
+        dateEarned: apiBadge.dateEarned
+      }
+    }
+  )
+  return mappedBadgeData
 };
 
 // Define the userProfile store
@@ -70,8 +63,8 @@ export const useUserProfileStore = defineStore('userProfile', {
      * @returns A function that takes a count and returns an array of DisplayBadge.
      */
     getProfileSummaryBadges: (state) => (count: number = 4): DisplayBadge[] => {
-        return state.badges.slice(0, count);
-    }
+        return state.badges.filter(badge => badge.dateEarned).slice(0, count);
+    },
   },
 
   actions: {
@@ -85,7 +78,7 @@ export const useUserProfileStore = defineStore('userProfile', {
       //   console.log('User profile data already available in store.');
       //   return;
       // }
-      
+
       this.loading = true;
       this.error = null; // Clear previous errors
       try {
@@ -97,7 +90,7 @@ export const useUserProfileStore = defineStore('userProfile', {
 
         this.tastePoints = points;
         // Map the raw API badge data to display-ready badge objects
-        this.badges = apiBadgesData.map(mapApiBadgeToDisplayBadge);
+        this.badges = processBadgesData(apiBadgesData)
 
         console.log('User profile data successfully loaded into store:', { points: this.tastePoints, badgesCount: this.badges.length });
 
