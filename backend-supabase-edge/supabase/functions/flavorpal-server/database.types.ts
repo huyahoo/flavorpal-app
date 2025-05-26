@@ -64,6 +64,13 @@ export type Database = {
             foreignKeyName: "ai_suggestions_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "product_interactions_view"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "ai_suggestions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
@@ -113,6 +120,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "product_interactions_view"
+            referencedColumns: ["product_id"]
+          },
           {
             foreignKeyName: "history_product_id_fkey"
             columns: ["product_id"]
@@ -200,6 +214,13 @@ export type Database = {
             foreignKeyName: "reviews_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "product_interactions_view"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
@@ -236,7 +257,25 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      product_interactions_view: {
+        Row: {
+          ai_opinion: string | null
+          ai_reason: string | null
+          barcode: string | null
+          brands: Json | null
+          categories: Json | null
+          date_reviewed: string | null
+          date_scanned: string | null
+          image_url: string | null
+          is_reviewed: boolean | null
+          likes_count: number | null
+          name: string | null
+          product_id: number | null
+          user_note: string | null
+          user_rating: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
