@@ -1,16 +1,18 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app import models, schemas
-from app.db.db import get_db
+from app import models, schemas, services
+from app.db.db_supabase import get_db
 from typing import List
-from app.utils import response  
+from app.utils import response 
 from app.utils.ResponseResult import Response
 from app.utils.dependencies import get_current_user
+
 router = APIRouter(
     prefix="/products",
     tags=["Products"]
 )
+
 
 # @router.get("/", response_model=Response[List[schemas.ProductOut]])
 # def get_all_products(db: Session = Depends(get_db)):
@@ -92,6 +94,31 @@ def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)
     db.add(db_product)
     db.commit()
     return Response(code=200, data=db_product, msg="Product created successfully")
+
+@router.post("/image", response_model=Response[schemas.ProductOut])
+def add_by_image(request: schemas.ProductImageRequest,  db: Session = Depends(get_db)):
+    base64image = request.base64image
+    embedding = services.get_image_embedding(base64image)
+    product = services.most_similar_img(embedding, db)
+    
+    if product:
+        print(f"Most similar product id: {product.id}, name: {product.name}")
+        return Response(code=200, data=product, msg="Product fetched successfully")
+    else:
+        
+        image_url = services.upload_image_to_bucket(base64image)
+        product_name, product_manufacturer, product_description = services.get_AI_product_info(base64image)
+        product = schemas.ProductCreate(
+            name=product_name,
+            image_url=image_url,
+            image_embedding=embedding
+        )
+        db_product = models.Product(**product.dict())
+        db.add(db_product)
+        db.commit()
+        db.refresh(db_product)
+        return Response(code=200, data=db_product, msg="Product fetched successfully")
+
 
 @router.get("/barcode/{barcode}", response_model=Response[schemas.ProductOut])
 def get_product_by_barcode(barcode: str, db: Session = Depends(get_db)):

@@ -1,0 +1,156 @@
+from supabase import create_client, Client
+import os
+from dotenv import load_dotenv
+from storage3.utils import StorageException
+from app import models
+from sqlalchemy.orm import Session
+from sqlalchemy import text
+import base64
+import mimetypes
+import requests
+import uuid
+
+
+load_dotenv() 
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+AI_SERVICE_URL = os.getenv("AI_SERVICE_URL")
+IMG_BUCKET_NAME = os.getenv("IMG_BUCKET_NAME")
+
+# supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+import base64
+import re
+import io
+
+
+def base64_to_bytes(base64_str: str) -> bytes:
+    # Remove data URL prefix if present
+    match = re.match(r'data:image/(png|jpeg|jpg);base64,(.*)', base64_str)
+    if match:
+        base64_data = match.group(2)
+    else:
+        base64_data = base64_str
+
+    return base64.b64decode(base64_data)
+def base64_to_bytesio(base64_str: str) -> io.BytesIO:
+    # Remove data URL prefix
+    match = re.match(r'data:image/(png|jpeg|jpg);base64,(.*)', base64_str)
+    if match:
+        base64_data = match.group(2)
+    else:
+        base64_data = base64_str
+
+    image_bytes = base64.b64decode(base64_data)
+    return io.BytesIO(image_bytes)
+def encode_image_to_base64(image_path):
+    mime_type, _ = mimetypes.guess_type(image_path)
+    if not mime_type:
+        raise ValueError("Cannot determine the MIME type of the file")
+
+    # Read and encode image in base64
+    with open(image_path, "rb") as img_file:
+        base64_string = base64.b64encode(img_file.read()).decode("utf-8")
+
+    # Format it with data URI scheme
+    data_uri = f"data:{mime_type};base64,{base64_string}"
+    return data_uri
+
+
+def generate_unique_filename(extension: str = ".jpg", max_attempts: int = 10) -> str:
+    filename = f"{uuid.uuid4().hex}{extension}"
+    return filename
+    
+    # TODO: fix this
+    for _ in range(max_attempts):
+        filename = f"{uuid.uuid4().hex}{extension}"
+        try:
+            # Try to get metadata; if it exists, filename is taken
+            supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+            supabase.storage.from_(IMG_BUCKET_NAME).get_metadata(filename)
+        except Exception as e:
+            if "object not found" in str(e).lower():
+                return filename
+    raise Exception("Unable to generate a unique filename after multiple attempts.")
+
+def upload_image_to_bucket(image):
+    try:
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        filename = generate_unique_filename()
+
+        res = supabase.storage.from_(IMG_BUCKET_NAME).upload(filename, base64_to_bytes(image))
+        
+
+    except StorageException as e:
+        raise Exception(f"Upload failed: {e.message}")
+
+    public_url = f"{SUPABASE_URL}/storage/v1/object/public/{IMG_BUCKET_NAME}/{filename}"
+    return public_url
+
+
+def most_similar_img(embedding, db: Session):
+    threshold = 0.2
+    
+    # query = text("""
+    #     SELECT * FROM Products
+    #     WHERE (image_embedding <-> :embedding::vector) < :threshold
+    #     ORDER BY image_embedding <-> :embedding::vector
+    #     LIMIT 1;
+    # """)
+    # query = text("""
+    #     SELECT * FROM Products
+    #     WHERE (image_embedding <-> :embedding) < :threshold
+    #     ORDER BY image_embedding <-> :embedding
+    #     LIMIT 1;
+    # """)
+    query = text("""
+        SELECT * FROM Products
+        WHERE (image_embedding <-> CAST(:embedding AS vector)) < :threshold
+        ORDER BY image_embedding <-> CAST(:embedding AS vector)
+        LIMIT 1;
+    """)
+
+    params = {
+        "embedding": embedding, 
+        "threshold": 0.2,
+    }
+
+    result = db.execute(query, params).fetchone()
+
+    if result:
+        # Assuming the result is a dictionary or tuple-like object, we can map it to a product object
+        return models.Product(**result)  # Convert the result to a Product model object
+    return None
+
+def get_image_embedding(base64image):
+    # encoded_image = encode_image_to_base64(image_path)
+    payload = {
+        "image": base64image
+    }
+
+    headers = {
+        "Content-Type": "application/json"
+    }
+    response = requests.post(f'{AI_SERVICE_URL}/image-encode', json=payload, headers=headers)
+    if response.ok:
+        # print("Success:", response.json())
+        print("Success on image_encode_endpoint")
+    else:
+        print("Error:", response.status_code, response.text)
+    return response.json()["textDescriptionEmbedding"]
+
+def get_AI_product_info(base64image):
+    payload = {
+        "image": base64image
+    }
+    headers = {
+        "Content-Type": "application/json"
+    }
+    response = requests.post(f'{AI_SERVICE_URL}/product-info', json=payload, headers=headers)
+    if response.ok:
+        # print("Success:", response.json())
+        print("Success on image_encode_endpoint")
+    else:
+        print("Error:", response.status_code, response.text)
+    return response.json()["response"]["productName"], response.json()["response"]["productManufacturer"], response.json()["response"]["productDescription"]

@@ -14,6 +14,7 @@ class ProductCreate(ProductBase):
     ingredients: Optional[str] = None
     categories: Optional[str] = None
     brands: Optional[str] = None
+    image_embedding: Optional[List[float]] = None  
     model_config = ConfigDict(from_attributes=True)
 
 class ProductOut(ProductBase):
@@ -78,3 +79,5 @@ class ProductDetailsThroughBarcodeOut(BaseModel):
     product:ProductDetailsThroughBarcode
     class Config:
         orm_mode = True
+class ProductImageRequest(BaseModel):
+    base64image: str
