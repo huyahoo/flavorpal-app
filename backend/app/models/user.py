@@ -9,10 +9,11 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
+    password = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow,
                         onupdate=datetime.datetime.utcnow)
+    total_taste_points = Column(Integer, default=0)
 
     user_health_flags_association = relationship("UserHealthFlag", back_populates="user", cascade="all, delete-orphan")
     badges_association = relationship("UserBadge", back_populates="user", cascade="all, delete-orphan")

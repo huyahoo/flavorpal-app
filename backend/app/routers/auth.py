@@ -27,7 +27,7 @@ async def login_for_access_token(
     """
     user = get_user_by_email(db, email=form_data.username) # OAuth2 form uses 'username' for the first field
     
-    if not user or not user.hashed_password or not verify_password(form_data.password, user.hashed_password):
+    if not user or not user.password or not verify_password(form_data.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
