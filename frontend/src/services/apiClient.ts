@@ -71,7 +71,7 @@ apiClient.interceptors.response.use(
     } else {
       console.error('API Request Setup Error:', error.message);
     }
-    return Promise.reject(error);
+    return error.response;
   }
 );
 

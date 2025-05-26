@@ -1,7 +1,13 @@
-// src/store/auth.ts
+// frontend/src/store/auth.ts
 import { defineStore } from 'pinia';
-import type { User, UserCreatePayload, UserUpdatePayload, LoginCredentials, DisplayBadge, ApiBadge } from '../types';
-import { registerUserApi, loginUserApi, fetchCurrentUserApi, updateUserApi } from '../services/authService';
+import type { User, UserCreatePayload, LoginCredentials, ApiBadge } from '../types';
+import { 
+    registerUserApi, 
+    loginUserApi, 
+    fetchCurrentUserApi, 
+    logoutUserApi,
+    updateUserApi
+} from '../services/authService'; 
 import apiClient from '../services/apiClient';
 
 import { useUserProfileStore } from './userProfileStore';
@@ -10,19 +16,19 @@ import { useScanStore } from './scanStore';
 
 export interface AuthState {
   user: User | null;
-  token: string | null;
+  token: string | null; 
   loading: boolean;
   error: string | null;
   isAuthenticatedInitiallyChecked: boolean;
 }
 
-const TOKEN_STORAGE_KEY_FROM_SERVICE = 'flavorpal_auth_token';
-const CURRENT_USER_STORAGE_KEY_FROM_SERVICE = 'flavorpal_current_user';
+const AUTH_STORE_TOKEN_KEY = 'flavorpal_jwt_token_v1'; 
+const AUTH_STORE_USER_KEY = 'flavorpal_user_v1';    
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
-    user: null,
-    token: null,
+    user: JSON.parse(localStorage.getItem(AUTH_STORE_USER_KEY) || 'null'), 
+    token: localStorage.getItem(AUTH_STORE_TOKEN_KEY), 
     loading: false,
     error: null,
     isAuthenticatedInitiallyChecked: false,
@@ -30,15 +36,13 @@ export const useAuthStore = defineStore('auth', {
 
   getters: {
     isAuthenticated: (state): boolean => !!state.token && !!state.user,
-    currentUsername: (state): string | null => state.user?.username || null,
-    healthFlags: (state): string[] => {
-        return state.user?.health_flags || [];
-    },
-    userId: (state): number => state.user?.id || -1,
+    currentUsername: (state): string | null => state.user?.name || null,
+    healthFlags: (state): string[] => state.user?.health_flags || [],
+    userId: (state): number | null => state.user?.id || null, 
   },
 
   actions: {
-    setAuthHeader(token: string | null) {
+    setTokenInApiClient(token: string | null) {
       if (token) {
         apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       } else {
@@ -47,68 +51,46 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async initializeAuth() {
-      if (this.isAuthenticatedInitiallyChecked && this.user) {
-        console.log('AuthStore: Already initialized and user exists.');
+      if (this.isAuthenticatedInitiallyChecked && this.token && this.user) {
+        this.setTokenInApiClient(this.token);
         return;
       }
-
-      console.log('AuthStore: Attempting to initialize session from localStorage...');
       this.loading = true;
+      const tokenFromStorage = localStorage.getItem(AUTH_STORE_TOKEN_KEY);
+      const userJsonFromStorage = localStorage.getItem(AUTH_STORE_USER_KEY);
 
-      const tokenFromStorage = localStorage.getItem(TOKEN_STORAGE_KEY_FROM_SERVICE);
-      const userJsonFromStorage = localStorage.getItem(CURRENT_USER_STORAGE_KEY_FROM_SERVICE);
-
-      if (tokenFromStorage && userJsonFromStorage) {
-        try {
-          const user = JSON.parse(userJsonFromStorage) as User;
-          if (user && user.email && tokenFromStorage.startsWith("dummy_jwt_for_") && tokenFromStorage.includes(user.email)) {
-            this.user = user;
-            this.token = tokenFromStorage;
-            this.setAuthHeader(this.token);
-            console.log('AuthStore: Session successfully restored from localStorage for user:', user.email);
-          } else {
-            console.warn('AuthStore: Invalid token or user data in localStorage. Clearing session.');
-            this.user = null;
-            this.token = null;
-            localStorage.removeItem(TOKEN_STORAGE_KEY_FROM_SERVICE);
-            localStorage.removeItem(CURRENT_USER_STORAGE_KEY_FROM_SERVICE);
-            this.setAuthHeader(null);
-          }
-        } catch(e) {
-            console.error("AuthStore: Error parsing user data from localStorage during init:", e);
-            this.user = null;
-            this.token = null;
-            localStorage.removeItem(TOKEN_STORAGE_KEY_FROM_SERVICE);
-            localStorage.removeItem(CURRENT_USER_STORAGE_KEY_FROM_SERVICE);
-            this.setAuthHeader(null);
+      if (tokenFromStorage) {
+        this.token = tokenFromStorage;
+        this.setTokenInApiClient(this.token);
+        if (userJsonFromStorage) {
+            try {
+                this.user = JSON.parse(userJsonFromStorage) as User;
+            } catch (e) {
+                console.error("Failed to parse stored user, fetching from API:", e);
+                await this.fetchAndSetCurrentUser();
+            }
+        } else {
+            await this.fetchAndSetCurrentUser();
         }
       } else {
-        console.log('AuthStore: No session found in localStorage.');
         this.user = null;
         this.token = null;
-        this.setAuthHeader(null);
+        this.setTokenInApiClient(null);
       }
-
       this.isAuthenticatedInitiallyChecked = true;
       this.loading = false;
-      console.log('AuthStore: Initialization complete. isAuthenticated:', this.isAuthenticated);
     },
 
     async register(payload: UserCreatePayload): Promise<{ success: boolean; message?: string }> {
       this.loading = true;
       this.error = null;
-
-      try {
-        const response = await registerUserApi(payload);
-        if (response.code === 201 && response.data) {
-          this.loading = false;
-          return { success: true, message: response.msg || "Registration successful!" };
-        } else {
-          throw new Error(response.msg || 'Registration failed due to server error.');
-        }
-      } catch (err: any) {
-        this.error = err.response.data.detail || err.message || err.msg || err.detail ||'An unknown registration error occurred.';
-        console.error('Registration error in store:', err);
+      const response = await registerUserApi(payload);
+      
+      if (response.code === 201 && response.data) { 
+        this.loading = false;
+        return { success: true, message: response.msg };
+      } else {
+        this.error = response.msg || response.detail || 'Registration failed.';
         this.loading = false;
         return { success: false, message: this.error ?? undefined };
       }
@@ -120,45 +102,75 @@ export const useAuthStore = defineStore('auth', {
 
       try {
         const tokenResponse = await loginUserApi(credentials);
-
-        if (tokenResponse.code === 200 && tokenResponse.data.access_token) {
-          this.token = tokenResponse.data.access_token;
-
-          this.setAuthHeader(this.token);
-
-          // After getting token, fetch user details
+        if (tokenResponse && tokenResponse.access_token) {
+          this.token = tokenResponse.access_token;
+          localStorage.setItem(AUTH_STORE_TOKEN_KEY, this.token);
+          this.setTokenInApiClient(this.token);
+          
           const userResponse = await fetchCurrentUserApi();
-          console.log('User response:', userResponse);
           if (userResponse.code === 200 && userResponse.data) {
             this.user = userResponse.data;
-
-            this.isAuthenticatedInitiallyChecked = true;
-
-            // Load data for other stores now that user is authenticated
+            localStorage.setItem(AUTH_STORE_USER_KEY, JSON.stringify(this.user));
+            this.isAuthenticatedInitiallyChecked = true; 
+            
             const userProfileStore = useUserProfileStore();
             const historyStore = useHistoryStore();
-            userProfileStore.loadUserProfile();
-            historyStore.loadInitialData();
+            userProfileStore.loadUserProfile(); 
+            historyStore.loadInitialData(); 
+
+            this.loading = false;
             return true;
           } else {
-            throw new Error(userResponse.msg || "Failed to fetch user details after login.");
+            this.error = userResponse.msg || "Failed to fetch user details after login.";
           }
         } else {
-          throw new Error(tokenResponse.msg || 'Login failed: Could not get token.');
+          this.error = tokenResponse.msg || 'Login failed: Could not get token.';
         }
       } catch (err: any) {
         this.error = err.msg || err.detail || err.message || 'Login error.';
-        console.error('Login error:', err);
-        this.token = null;
-        this.user = null;
-        this.setAuthHeader(null);
-        return false;
-      } finally {
-        this.loading = false;
+        console.error('Login error in store:', err);
       }
+      
+      this.token = null; 
+      this.user = null;
+      localStorage.removeItem(AUTH_STORE_TOKEN_KEY);
+      localStorage.removeItem(AUTH_STORE_USER_KEY);
+      this.setTokenInApiClient(null);
+      this.loading = false;
+      return false;
+    },
+    
+    async fetchAndSetCurrentUser() { // Helper for initializeAuth
+        if (!this.token) {
+            this.user = null;
+            localStorage.removeItem(AUTH_STORE_USER_KEY);
+            return;
+        }
+        const userResponse = await fetchCurrentUserApi();
+        if (userResponse.code === 200 && userResponse.data) {
+            this.user = userResponse.data;
+            localStorage.setItem(AUTH_STORE_USER_KEY, JSON.stringify(this.user));
+        } else {
+            console.warn("Failed to fetch current user with stored token, clearing session.", userResponse.msg);
+            this.user = null;
+            this.token = null;
+            localStorage.removeItem(AUTH_STORE_TOKEN_KEY);
+            localStorage.removeItem(AUTH_STORE_USER_KEY);
+            this.setTokenInApiClient(null);
+        }
     },
 
     async logout(): Promise<void> {
+      this.loading = true;
+      
+      if (this.token) {
+        try {
+          await logoutUserApi(); 
+        } catch (e) {
+          console.error("Error during backend logout, proceeding with client-side cleanup:", e);
+        }
+      }
+
       // Clear other stores' data
       const userProfileStore = useUserProfileStore();
       const historyStore = useHistoryStore();
@@ -170,33 +182,60 @@ export const useAuthStore = defineStore('auth', {
       this.user = null;
       this.token = null;
       this.isAuthenticatedInitiallyChecked = false;
-      this.setAuthHeader(null);
+      localStorage.removeItem(AUTH_STORE_TOKEN_KEY);
+      localStorage.removeItem(AUTH_STORE_USER_KEY);
+      this.setTokenInApiClient(null); 
+      this.loading = false;
+
+      console.log('AuthStore: User logged out, state and localStorage cleared.');
     },
 
     async updateUsername(newUsername: string): Promise<boolean> {
-      if (!this.user || !this.token || this.userId === null) { return false; }
-      this.loading = true; this.error = null;
+      if (!this.user || !this.token || this.user.id === null) { 
+        this.error = "Not authenticated or user ID missing."; 
+        return false; 
+      }
+      this.loading = true;
+      this.error = null;
       try {
-        const response = await updateUserApi(this.userId, { username: newUsername });
+        const response = await updateUserApi(this.user.id, { name: newUsername });
         if (response.code === 200 && response.data) {
-          this.user = response.data;
+          this.user = response.data; 
+          localStorage.setItem(AUTH_STORE_USER_KEY, JSON.stringify(this.user));
+          this.loading = false;
           return true;
-        } else { throw new Error(response.msg); }
-      } catch (err: any) { this.error = err.msg || "Update username failed."; return false; }
-      finally { this.loading = false; }
+        } else { 
+          throw new Error(response.msg || "Update username failed."); 
+        }
+      } catch (err: any) { 
+        this.error = err.msg || err.detail || "Could not update username."; 
+        this.loading = false;
+        return false; 
+      }
     },
 
     async updateHealthFlags(flags: string[]): Promise<boolean> {
-      if (!this.user || !this.token) { return false; }
-      this.loading = true; this.error = null;
+      if (!this.user || !this.token || this.user.id === null) { 
+        this.error = "Not authenticated or user ID missing."; 
+        return false; 
+      }
+      this.loading = true;
+      this.error = null;
       try {
-        const response = await updateUserApi(this.userId, { health_flags: flags });
+        const response = await updateUserApi(this.user.id, { health_flags: flags });
          if (response.code === 200 && response.data) {
-          this.user = response.data;
+          this.user = response.data; 
+          localStorage.setItem(AUTH_STORE_USER_KEY, JSON.stringify(this.user));
+          this.loading = false;
           return true;
-        } else { throw new Error(response.msg); }
-      } catch (err: any) { this.error = err.msg || "Update health flags failed."; return false; }
-      finally { this.loading = false; }
+        } else {
+            throw new Error(response.msg || "Failed to update health flags."); 
+        }
+      } catch (err: any) { 
+        this.error = err.msg || err.detail || "Could not update health flags."; 
+        this.loading = false;
+        return false; 
+      }
     },
 
     async updateBadges(badges: ApiBadge[]): Promise<boolean> {
@@ -204,7 +243,7 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true; this.error = null;
       try {
         const response = await updateUserApi(
-          this.userId,
+          this.user.id,
           { badges }
         );
          if (response.code === 200 && response.data) {

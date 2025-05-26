@@ -28,7 +28,8 @@ services:
       - ./backend:/code
     command: >
       sh -c "alembic upgrade head &&
-             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload "
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --ssl-keyfile /code/certs/key.pem --ssl-certfile /code/certs/cert.pem"
+             
     ports:
       - "8000:8000"
     depends_on:
