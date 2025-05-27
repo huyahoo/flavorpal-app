@@ -189,7 +189,7 @@ def get_product_by_barcode(barcode: str, db: Session = Depends(get_db),current_u
         image_nutrition_url = image_nutrition_url,
         is_reviewed = review is not None,
         date_scanned = product.last_updated if product else None,
-        likes_count = product.likes_count if product else 0,
+        likes_count = review.likes_count if review else 0,
         ai_health_summary = product.ai_health_summary if product else None,
         ai_health_conclusion = product.ai_health_conclusion if product else None,
     )
