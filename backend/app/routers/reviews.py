@@ -65,3 +65,26 @@ def get_user_reviews(user_id: int, db: Session = Depends(get_db)):
     if not db_review:
         return response.not_found(msg="No reviews found",code=404)
     return Response(code=200, data=db_review, msg="Reviews fetched successfully")
+
+@router.get("/reviews/products", response_model=Response[List[schemas.ReviewProductListFrontend]])
+def get_product_reviews_list(db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):
+    db_reviews = db.query(models.Review).filter(models.Review.user_id == current_user.id).all()
+    if not db_reviews:
+        return response.not_found(msg="No reviews found",code=404)
+    reviews = []
+    for review in db_reviews:
+        review_data = schemas.ReviewProductListFrontend(
+            reviewId=review.id,
+            productId=review.product.id,
+            productBarcode=review.product.barcode,
+            productName=review.product.name,
+            productImageUrl=review.product.image_url,
+            productRating=review.rating,
+            productNote=review.note,
+            reviewUsername=review.user.name,
+            dateReviewed=review.created_at,
+            likeCount=review.likes_count    
+        )
+        reviews.append(review_data)
+    
+    return Response(code=200, data=reviews, msg="Reviews fetched successfully")

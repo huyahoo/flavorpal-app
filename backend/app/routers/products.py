@@ -9,6 +9,7 @@ from app.utils.ResponseResult import Response
 from app.utils.dependencies import get_current_user
 import requests
 from datetime import datetime
+import json
 router = APIRouter(
     prefix="/products",
     tags=["Products"]
@@ -25,36 +26,40 @@ def get_all_products(db: Session = Depends(get_db),current_user: models.User = D
     for product in products:
         review = db.query(models.Review).filter(models.Review.product_id == product.id, models.Review.user_id == user_id).first()
         if review:
+            brands = ",".join(product.brands) if isinstance(product.brands, list) else product.brands or ""
+            categories = ",".join(product.categories) if isinstance(product.categories, list) else product.categories or ""
             product_info = schemas.ProductDetailsFrontend(
                 id=product.id,
                 name=product.name,
-                brands=product.brands,
+                brands=brands,
                 barcode=product.barcode,
-                image_url=product.image_url,
-                categories=product.categories,
+                imageUrl=product.image_url,
+                categories=categories,
                 isReviewed=True,
-                user_rating=review.rating,
-                user_note=review.note,
-                ai_health_summary=product.ai_health_summary,
-                ai_health_conclusion=product.ai_health_conclusion,
-                data_scanned_at=product.last_updated,
-                data_reviewed=review.note
+                userRating=review.rating,
+                userNote=review.note,
+                aiHealthSummary=product.ai_health_summary,
+                aiHealthConclusion=product.ai_health_conclusion,
+                dateScanned=product.last_updated,
+                dateReviewed=review.updated_at
             )
         else:
+            brands = ",".join(product.brands) if isinstance(product.brands, list) else product.brands or ""
+            categories = ",".join(product.categories) if isinstance(product.categories, list) else product.categories or ""
             product_info = schemas.ProductDetailsFrontend(
                 id=product.id,
                 name=product.name,
-                brands=product.brands,
+                brands=brands,
                 barcode=product.barcode,
-                image_url=product.image_url,
-                categories=product.categories,
+                imageUrl=product.image_url,
+                categories=categories,
                 isReviewed=False,
-                user_rating=None,
-                user_note=None,
-                ai_health_summary=product.ai_health_summary,
-                ai_health_conclusion=product.ai_health_conclusion,
-                data_scanned_at=product.last_updated,
-                data_reviewed=None
+                userRating=None,
+                userNote=None,
+                aiHealthSummary=product.ai_health_summary,
+                aiHealthConclusion=product.ai_health_conclusion,
+                dateScanned=product.last_updated,
+                dateReviewed=None
             )
         product_details.append(product_info)
     return Response(code=200, data=product_details, msg="Products fetched successfully")
@@ -68,57 +73,68 @@ def get_product(product_id: int, db: Session = Depends(get_db),current_user: mod
     review = db.query(models.Review).filter(models.Review.product_id == product_id, models.Review.user_id == user_id).first()
     product_details = None
     if review:
+        brands = ",".join(product.brands) if isinstance(product.brands, list) else product.brands or ""
+        categories = ",".join(product.categories) if isinstance(product.categories, list) else product.categories or ""
         product_details = schemas.ProductDetailsFrontend(
             id=product.id,
             name=product.name,
-            brands=product.brands,
+            brands=brands,
             barcode=product.barcode,
-            image_url=product.image_url,
-            categories=product.categories,
+            imageUrl=product.image_url,
+            categories=categories,
             isReviewed=True,
-            user_rating=review.rating,
-            user_note=review.note,
-            ai_health_summary=product.ai_health_summary,
-            ai_health_conclusion=product.ai_health_conclusion,
-            date_scanned=product.last_updated,
-            date_reviewed=review.updated_at
+            userRating=review.rating,
+            userNote=review.note,
+            aiHealthSummary=product.ai_health_summary,
+            aiHealthConclusion=product.ai_health_conclusion,
+            dateScanned=product.last_updated,
+            dateReviewed=review.updated_at
         )
     else:
+        brands = ",".join(product.brands) if isinstance(product.brands, list) else product.brands or ""
+        categories = ",".join(product.categories) if isinstance(product.categories, list) else product.categories or ""
         product_details = schemas.ProductDetailsFrontend(
             id=product.id,
             name=product.name,
-            brands=product.brands,
+            brands=brands,
             barcode=product.barcode,
-            image_url=product.image_url,
-            categories=product.categories,
+            imageUrl=product.image_url,
+            categories=categories,
             isReviewed=False,
-            user_rating=None,
-            user_note=None,
-            ai_health_summary=product.ai_health_summary,
-            ai_health_conclusion=product.ai_health_conclusion,
-            data_scanned_at=product.last_updated,
-            data_reviewed=None
+            userRating=None,
+            userNote=None,
+            aiHealthSummary=product.ai_health_summary,
+            aiHealthConclusion=product.ai_health_conclusion,
+            dateScanned=product.last_updated,
+            dateReviewed=None
         )
     return Response(code=200, data=product_details, msg="Product fetched successfully")
 
 @router.post("/", response_model=Response[schemas.ProductOut])
 def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)):
-    db_product = models.Product(**product.dict())
+    db_product = models.Product(
+        name=product.name,
+        generic_name=product.genericName,
+        ingredients=product.ingredients,
+        categories=product.categories,
+        brands=product.brands,
+        image_url=product.imageUrl
+    )
     db.add(db_product)
     db.commit()
     db.refresh(db_product)
     product_info = schemas.ProductOut(
         id=db_product.id,
         name=db_product.name,
-        generic_name=db_product.generic_name,
+        genericName=db_product.generic_name,
         ingredients=db_product.ingredients,
         categories=db_product.categories,
         brands=db_product.brands,
-        image_url=db_product.image_url,
-        image_embedding=db_product.image_embedding,
-        last_updated=db_product.last_updated,
-        ai_health_summary=db_product.ai_health_summary,
-        ai_health_conclusion=db_product.ai_health_conclusion,
+        imageUrl=db_product.image_url,
+        imageEmbedding=db_product.image_embedding,
+        lastUpdated=db_product.last_updated,
+        aiHealthSummary=db_product.ai_health_summary,
+        aiHealthConclusion=db_product.ai_health_conclusion,
     )
     return Response(code=200, data=product_info, msg="Product created successfully")
 
@@ -137,8 +153,8 @@ def add_by_image(request: schemas.ProductImageRequest,  db: Session = Depends(ge
         product_name, product_manufacturer, product_description = services.get_AI_product_info(base64image)
         product = schemas.ProductCreate(
             name=product_name,
-            image_url=image_url,
-            image_embedding=embedding
+            imageUrl=image_url,
+            imageEmbedding=embedding
         )
         db_product = models.Product(**product.dict())
         db.add(db_product)
@@ -193,18 +209,16 @@ def get_product_by_barcode(barcode: str, db: Session = Depends(get_db),current_u
                 brands = [brand.strip() for brand in product_data.get("brands").split(",")]
             if product_data.get("categories"):
                 categories = [category.strip() for category in product_data.get("categories").split(",")]
-    
-    if not product and not product_data:
+
+    if not product and  product_data:
         product = models.Product(
             barcode=barcode,
             image_url=product_data.get("image_url"),
             name=product_data.get("product_name"),
             generic_name=product_data.get("generic_name"),
-            ingredients=product_data.get("ingredients"),
+            ingredients=json.dumps(product_data.get("ingredients")),
             categories=categories,
             brands=brands,
-            image_ingredients_url=image_ingredients_url,
-            image_nutrition_url=image_nutrition_url,
         )
         db.add(product)
         db.commit()
@@ -216,16 +230,58 @@ def get_product_by_barcode(barcode: str, db: Session = Depends(get_db),current_u
         id=product.id if product else None,
         name=product.name if product else product_data.get("product_name"),
         barcode = barcode,
-        brand = product.brands if product else brands,
-        categories = product.categories if product else categories,
-        image_url = product.image_url if product else product_data.get("image_url"),
-        image_ingredients_url = image_ingredients_url,
-        image_nutrition_url = image_nutrition_url,
-        is_reviewed = review is not None,
-        date_scanned = product.last_updated if product else None,
-        likes_count = review.likes_count if review else 0,
-        ai_health_summary = product.ai_health_summary if product else None,
-        ai_health_conclusion = product.ai_health_conclusion if product else None,
+        brand=product_data.get("brands"),
+        categories = product_data.get("categories"),
+        imageUrl = product.image_url if product else product_data.get("image_url"),
+        imageIngredientsUrl = image_ingredients_url,
+        imageNutritionUrl = image_nutrition_url,
+        isReviewed = review is not None,
+        dateScanned = product.last_updated if product else None,
+        likesCount = review.likes_count if review else 0,
+        aiHealthSummary = product.ai_health_summary if product else None,
+        aiHealthConclusion = product.ai_health_conclusion if product else None,
     )
     return Response(code=200, data=product_info, msg="Product fetched successfully")
 
+@router.post("/health_suggestion", response_model=Response[schemas.ProductDetailsFrontend])
+def update_ai_health_suggestion(
+    request: schemas.ProductAISuggestionRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    product = db.query(models.Product).filter(models.Product.id == request.productId).first()
+    if not product:
+        return response.not_found(msg="Product not found", code=404)
+
+    health_flags = current_user.health_flags
+    health_flags = ", ".join(health_flags) if len(health_flags) > 0 else ""
+    summary, conclusion = services.get_AI_health_suggestion(request.base64Image, health_flags)
+
+    product.ai_health_summary = summary
+    product.ai_health_conclusion = conclusion
+    product.last_updated = datetime.utcnow()
+    db.commit()
+    db.refresh(product)
+
+    review = db.query(models.Review).filter(
+        models.Review.product_id == product.id,
+        models.Review.user_id == current_user.id
+    ).first()
+
+    product_details = schemas.ProductDetailsFrontend(
+        id=product.id,
+        name=product.name,
+        brands=product.brands,
+        barcode=product.barcode,
+        image_url=product.image_url,
+        categories=product.categories,
+        isReviewed=bool(review),
+        user_rating=review.rating if review else None,
+        user_note=review.note if review else None,
+        ai_health_summary=summary,
+        ai_health_conclusion=conclusion,
+        data_scanned_at=product.last_updated,
+        data_reviewed=review.note if review else None
+    )
+
+    return Response(code=200, data=product_details, msg="AI suggestion updated and product info returned")

@@ -167,3 +167,27 @@ def get_AI_product_info(base64image):
     else:
         print("Error:", response.status_code, response.text)
     return response.json()["response"]["productName"], response.json()["response"]["productManufacturer"], response.json()["response"]["productDescription"]
+
+def get_AI_health_suggestion(base64image, health_flags):
+    payload = {
+        "image": base64image,
+        "dietaryPref": health_flags
+    }
+    headers = {
+        "Content-Type": "application/json"
+    }
+    response = requests.post(f'{AI_SERVICE_URL}/health-suggestion', json=payload, headers=headers)
+    if response.ok:
+        print("Success:", response.json())
+        # print("Success on image_encode_endpoint")
+    else:
+        print("Error:", response.status_code, response.text)
+
+    return response.json()["response"]["opinion"], response.json()["response"]["reason"],
+
+if __name__ == '__main__':
+    query_image_path = "./static/picture/test_images/ingredient/milk.png"
+    # query_image_path = "C:\Users\user\家榆\LineYahoo\HackU\flavorpal-app\backend\static\picture\test_images\milk2.jpg"
+    encoded_image = encode_image_to_base64(query_image_path)
+    summary, reason = get_AI_health_suggestion(encoded_image, "peanut allergic")
+    print(f'summary: {summary}, reason: {reason}')
