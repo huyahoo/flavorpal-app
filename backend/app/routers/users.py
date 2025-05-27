@@ -18,7 +18,7 @@ def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
     db_user = db.query(models.User).filter(models.User.email == user.email).first()
     if not db_user:
         return response.not_found(msg="User not found",code=404)
-    if not verify_password(user.password, db_user.hashed_password):
+    if not verify_password(user.password, db_user.password):
         return Response(code=401, data=None, msg="Incorrect password or email")
     access_token = create_access_token(data={"sub": db_user.email})
     return Response(code=200, data={"access_token": access_token, "token_type": "bearer"}, msg="User logged in successfully")
@@ -33,7 +33,7 @@ def get_me(current_user: models.User = Depends(get_current_user), db: Session = 
     badges = []
     if current_user.badges:
         for badge in current_user.badges:
-            badge_db = db.query(models.UserBadge).filter(models.UserBadge.id == badge.id).first()
+            badge_db = db.query(models.UserBadge).filter(models.UserBadge.badge_id == badge.id).first()
             badge_obj = schemas.UserBadgeFrontendOut(
                 id=badge_db.id,
                 date_earned=badge_db.date_earned
@@ -77,7 +77,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = models.User(
         name=user.name,
         email=user.email,
-        hashed_password=hashed_password
+        password=hashed_password
     )
     db.add(db_user)
     db.flush()

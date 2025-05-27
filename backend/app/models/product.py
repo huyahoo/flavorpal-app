@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .base import Base
 import datetime
+from pgvector.sqlalchemy import Vector
 
 
 class Product(Base):
@@ -11,6 +12,7 @@ class Product(Base):
     name = Column(String, index=True, nullable=False)
     barcode = Column(String, unique=True, index=True)
     image_url = Column(String)
+    image_embedding = Column(Vector(1536))
     last_updated = Column(
         DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     generic_name = Column(String)

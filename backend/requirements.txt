@@ -13,3 +13,6 @@ python-multipart
 
 pgvector
 python-dotenv
+
+supabase
+requests

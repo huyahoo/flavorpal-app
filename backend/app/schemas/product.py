@@ -14,6 +14,7 @@ class ProductCreate(ProductBase):
     ingredients: Optional[str] = None
     categories: Optional[str] = None
     brands: Optional[str] = None
+    image_embedding: Optional[List[float]] = None  
     model_config = ConfigDict(from_attributes=True)
 
 class ProductOut(ProductBase):
@@ -46,10 +47,10 @@ class ProductAiGenerated(ProductBase):
 class ProductDetailsFrontend(BaseModel):
     id:int
     name:Optional[str] = None
-    brands:Optional[str] = None
+    brands:Optional[List[str]] = None
     barcode:Optional[str] = None
     image_url:Optional[str] = None
-    categories:Optional[str] = None
+    categories:Optional[List[str]] = None
     isReviewed:Optional[bool] = None
     user_rating:Optional[int] = None
     user_note:Optional[str] = None
@@ -68,13 +69,28 @@ class ProductDetailsFrontendOut(BaseModel):
 class ProductDetailsThroughBarcode(BaseModel):
     name:str
     barcode:str
+    brand:Optional[List[str]] = None
+    categories:Optional[List[str]] = None
     image_url:Optional[str] = None
     image_ingredients_url:Optional[str] = None
     image_nutrition_url:Optional[str] = None
+    is_reviewed:Optional[bool] = None
+    date_scanned:Optional[datetime] = None
+    likes_count:Optional[int] = None
+    ai_health_summary:Optional[str] = None
+    ai_health_conclusion:Optional[str] = None
     class Config:
         orm_mode = True
         
-class ProductDetailsThroughBarcodeOut(BaseModel):
-    product:ProductDetailsThroughBarcode
+class ProductDetailsThroughBarcodeOut(ProductDetailsThroughBarcode):
+    pass
     class Config:
         orm_mode = True
+class ProductImageRequest(BaseModel):
+    base64image: str
+
+class ProductDetailsThroughBarcodeOut(ProductDetailsThroughBarcode):
+    pass
+    class Config:
+        orm_mode = True
+
