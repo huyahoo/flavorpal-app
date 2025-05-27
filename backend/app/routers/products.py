@@ -26,13 +26,15 @@ def get_all_products(db: Session = Depends(get_db),current_user: models.User = D
     for product in products:
         review = db.query(models.Review).filter(models.Review.product_id == product.id, models.Review.user_id == user_id).first()
         if review:
+            brands = ",".join(product.brands) if isinstance(product.brands, list) else product.brands or ""
+            categories = ",".join(product.categories) if isinstance(product.categories, list) else product.categories or ""
             product_info = schemas.ProductDetailsFrontend(
                 id=product.id,
                 name=product.name,
-                brands=product.brands,
+                brands=brands,
                 barcode=product.barcode,
                 imageUrl=product.image_url,
-                categories=product.categories,
+                categories=categories,
                 isReviewed=True,
                 userRating=review.rating,
                 userNote=review.note,
@@ -42,13 +44,15 @@ def get_all_products(db: Session = Depends(get_db),current_user: models.User = D
                 dateReviewed=review.updated_at
             )
         else:
+            brands = ",".join(product.brands) if isinstance(product.brands, list) else product.brands or ""
+            categories = ",".join(product.categories) if isinstance(product.categories, list) else product.categories or ""
             product_info = schemas.ProductDetailsFrontend(
                 id=product.id,
                 name=product.name,
-                brands=product.brands,
+                brands=brands,
                 barcode=product.barcode,
                 imageUrl=product.image_url,
-                categories=product.categories,
+                categories=categories,
                 isReviewed=False,
                 userRating=None,
                 userNote=None,
@@ -69,13 +73,15 @@ def get_product(product_id: int, db: Session = Depends(get_db),current_user: mod
     review = db.query(models.Review).filter(models.Review.product_id == product_id, models.Review.user_id == user_id).first()
     product_details = None
     if review:
+        brands = ",".join(product.brands) if isinstance(product.brands, list) else product.brands or ""
+        categories = ",".join(product.categories) if isinstance(product.categories, list) else product.categories or ""
         product_details = schemas.ProductDetailsFrontend(
             id=product.id,
             name=product.name,
-            brands=product.brands,
+            brands=brands,
             barcode=product.barcode,
             imageUrl=product.image_url,
-            categories=product.categories,
+            categories=categories,
             isReviewed=True,
             userRating=review.rating,
             userNote=review.note,
@@ -85,13 +91,15 @@ def get_product(product_id: int, db: Session = Depends(get_db),current_user: mod
             dateReviewed=review.updated_at
         )
     else:
+        brands = ",".join(product.brands) if isinstance(product.brands, list) else product.brands or ""
+        categories = ",".join(product.categories) if isinstance(product.categories, list) else product.categories or ""
         product_details = schemas.ProductDetailsFrontend(
             id=product.id,
             name=product.name,
-            brands=product.brands,
+            brands=brands,
             barcode=product.barcode,
             imageUrl=product.image_url,
-            categories=product.categories,
+            categories=categories,
             isReviewed=False,
             userRating=None,
             userNote=None,
@@ -222,8 +230,8 @@ def get_product_by_barcode(barcode: str, db: Session = Depends(get_db),current_u
         id=product.id if product else None,
         name=product.name if product else product_data.get("product_name"),
         barcode = barcode,
-        brand = product.brands if product else brands,
-        categories = product.categories if product else categories,
+        brand=product_data.get("brands"),
+        categories = product_data.get("categories"),
         imageUrl = product.image_url if product else product_data.get("image_url"),
         imageIngredientsUrl = image_ingredients_url,
         imageNutritionUrl = image_nutrition_url,

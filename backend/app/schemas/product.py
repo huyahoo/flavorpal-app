@@ -14,8 +14,8 @@ class ProductCreate(ProductBase):
     barcode: Optional[str] = None
     genericName: Optional[str] = None
     ingredients: Optional[str] = None
-    categories: Optional[List[str]] = None
-    brands: Optional[List[str]] = None
+    categories: Optional[str] = None
+    brands: Optional[str] = None
     # imageEmbedding: Optional[List[float]] = None
     model_config = ConfigDict(from_attributes=True)
 
@@ -25,8 +25,8 @@ class ProductOut(ProductBase):
     name: Optional[str] = None
     genericName: Optional[str] = None
     ingredients: Optional[str] = None
-    categories: Optional[List[str]] = None
-    brands: Optional[List[str]] = None
+    categories: Optional[str] = None
+    brands: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -55,10 +55,10 @@ class ProductAiGenerated(ProductBase):
 class ProductDetailsFrontend(BaseModel):
     id: int
     name: Optional[str] = None
-    brands: Optional[List[str]] = None
+    brands: Optional[str] = None
     barcode: Optional[str] = None
     imageUrl: Optional[str] = None
-    categories: Optional[List[str]] = None
+    categories: Optional[str] = None
     isReviewed: Optional[bool] = None
     userRating: Optional[int] = None
     userNote: Optional[str] = None
@@ -82,8 +82,8 @@ class ProductDetailsThroughBarcode(BaseModel):
     id: int
     name: str
     barcode: str
-    brand: Optional[List[str]] = None
-    categories: Optional[List[str]] = None
+    brand: Optional[str] = None
+    categories: Optional[str] = None
     imageUrl: Optional[str] = None
     imageIngredientsUrl: Optional[str] = None
     imageNutritionUrl: Optional[str] = None
