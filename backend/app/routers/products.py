@@ -229,7 +229,7 @@ def get_product_by_barcode(barcode: str, db: Session = Depends(get_db),current_u
     )
     return Response(code=200, data=product_info, msg="Product fetched successfully")
 
-@router.post("/health_suggestion", response_model=Response[schemas.ProductDetailsFrontendOut])
+@router.post("/health_suggestion", response_model=Response[schemas.ProductDetailsFrontend])
 def update_ai_health_suggestion(
     request: schemas.ProductAISuggestionRequest,
     db: Session = Depends(get_db),
@@ -271,4 +271,4 @@ def update_ai_health_suggestion(
         data_reviewed=review.note if review else None
     )
 
-    return Response(code=200, data=schemas.ProductDetailsFrontendOut(product=product_details), msg="AI suggestion updated and product info returned")
+    return Response(code=200, data=product_details, msg="AI suggestion updated and product info returned")
