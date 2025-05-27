@@ -8,6 +8,29 @@ import type {
     ReViewDataPayload
 } from '../types';
 
+
+const convertDateToDate = (dateString: string): string => {
+  return new Date(dateString).toLocaleString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+};
+
+const mapApiProductToProductInteraction = (product: any): ProductInteraction => {
+  return ({
+    id: product.id,
+    name: product.name,
+    barcode: product.barcode,
+    brands: product.brands,
+    categories: product.categories,
+    dateScanned: convertDateToDate(product.data_scanned_at),
+    dateReviewed: convertDateToDate(product.data_reviewed),
+    isReviewed: product.isReviewed,
+    imageUrl: product.image_url,
+    userRating: product.user_rating,
+    userNotes: product.user_note,
+    aiHealthSummary: product.ai_health_summary || "No summary available",
+    aiHealthConclusion: product.ai_health_conclusion || "info_needed",
+  });
+};
+
 /**
  * Creates a new product.
  * Endpoint: POST /products/
@@ -48,13 +71,11 @@ export const getAllProductsApi = async (): Promise<ApiResponse<ProductInteractio
  */
 export const getProductByBarcodeApi = async (barcode: string): Promise<ApiResponse<ProductInteraction>> => {
   console.log(`SERVICE (getProductByBarcodeApi): Fetching product by barcode ${barcode}...`);
-  try {
-    const response = await apiClient.get<ApiResponse<BackendBasicProductData>>(`/products/product/${barcode}`);
-    return response.data;
-  } catch (error: any) {
-    console.error(`SERVICE (getProductByBarcodeApi): API call failed for barcode ${barcode}:`, error.response?.data || error.message);
-    return { code: error.response?.status || 500, msg: error.response?.data?.detail || error.response?.data?.msg || `Failed to fetch product by barcode ${barcode}.` };
-  }
+  const response = await apiClient.get<ApiResponse<ProductInteraction>>(`/products/product/${barcode}`);
+  console.log("SERVICE (getProductByBarcodeApi): API call response:", response);
+  const productInteraction = mapApiProductToProductInteraction(response.data.data);
+  console.log("SERVICE (getProductByBarcodeApi): API call response:", productInteraction);
+  return productInteraction;
 };
 
 /**
