@@ -11,8 +11,7 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    healthFlags: Optional[List[str]] = []
-    badges: Optional[List[str]] = []
+    healthFlags: Optional[List[str]] = [] 
     password: str
     model_config = ConfigDict(from_attributes=True)
 
@@ -20,8 +19,7 @@ class UserCreate(UserBase):
 class UserUpdate(UserBase):
     name: Optional[str] = None
     email: Optional[EmailStr] = None
-    healthFlags: Optional[List[str]] = []
-    badges: Optional[List[str]] = []
+    healthFlags: Optional[List[str]] = [] 
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -53,8 +51,6 @@ class UserUpdateFrontend(UserBaseFrontend):
     name: Optional[str] = None
     email: Optional[EmailStr] = None
     healthFlags: Optional[List[str]] = []
-    badges: Optional[List[str]] = []
-
     class Config:
         orm_mode = True
 
@@ -82,8 +78,6 @@ class UserCreateFrontendOut(BaseModel):
     name: str
     email: EmailStr
     healthFlags: List[str] = []
-    badges: List[str] = []
-
     class Config:
         orm_mode = True
 

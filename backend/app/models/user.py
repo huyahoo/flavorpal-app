@@ -1,6 +1,8 @@
 # backend/app/models/user.py
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import relationship
+
+from app import models
 from .base import Base
 import datetime
 
@@ -30,11 +32,4 @@ class User(Base):
         """Returns a list of names of the user's health flags."""
         if self.user_health_flags:
             return [assoc.health_flag.name for assoc in self.user_health_flags if assoc.health_flag]
-        return []
-
-    @property
-    def badges(self) -> list[str]:
-        """Returns a list of names of the user's badges."""
-        if self.user_badges:
-            return [assoc.badge.name for assoc in self.user_badges if assoc.badge]
         return []

@@ -29,22 +29,12 @@ def logout(_: models.User = Depends(get_current_user)):
     return Response(code=200, data=None, msg="User logged out successfully")
 
 @router.get("/auth/me", response_model=Response[schemas.UserProfileFrontendOut])
-def get_me(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    badges = []
-    if current_user.badges:
-        for badge in current_user.badges:
-            badge_db = db.query(models.UserBadge).filter(models.UserBadge.badge_id == badge.id).first()
-            badge_obj = schemas.UserBadgeFrontendOut(
-                id=badge_db.id,
-                dateEarned=badge_db.date_earned
-            ) 
-            badges.append(badge_obj)
+def get_me(current_user: models.User = Depends(get_current_user)):
     user_profile = schemas.UserProfileFrontendOut(
         id=current_user.id,
         name=current_user.name,
         email=current_user.email,
         healthFlags=current_user.health_flags,
-        badges=badges
     )
     return Response(code=200, data=user_profile, msg="User logged in successfully")
 
@@ -82,8 +72,8 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.add(db_user)
     db.flush()
 
-    if user.health_flags: 
-        for flag_name_in in user.health_flags: 
+    if user.healthFlags: 
+        for flag_name_in in user.healthFlags: 
             flag_db = db.query(models.HealthFlag).filter(models.HealthFlag.name == flag_name_in).first()
             if not flag_db:
                 flag_db = models.HealthFlag(name=flag_name_in) 
@@ -95,18 +85,6 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
                 user_health_flag_assoc = models.UserHealthFlag(user_id=db_user.id, health_flag_id=flag_db.id)
                 db.add(user_health_flag_assoc)
     
-    if user.badges:
-        for badge_obj_in in user.badges:
-            badge_db = db.query(models.Badge).filter(models.Badge.name == badge_obj_in.name).first()
-            if not badge_db:
-                badge_db = models.Badge(name=badge_obj_in.name, description=badge_obj_in.description if hasattr(badge_obj_in, 'description') else "Default badge description")
-                db.add(badge_db)
-                db.flush()
-            existing_user_badge = db.query(models.UserBadge).filter_by(user_id=db_user.id, badge_id=badge_db.id).first()
-            if not existing_user_badge:
-                user_badge_assoc = models.UserBadge(user_id=db_user.id, badge_id=badge_db.id)
-                db.add(user_badge_assoc)
-
     db.commit()
     db.refresh(db_user)
 
@@ -142,13 +120,6 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     db.commit()
     return Response(code=200,data=None, msg="User deleted successfully")
 
-@router.get("/{user_id}/badges", response_model=Response[List[schemas.UserBadgeOut]])
-def get_user_badges(user_id: int, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    if not user:
-        raise response.not_found(msg="User not found",code=404)
-    return Response(code=200, data=user.badges, msg="User badges fetched successfully")
-
 @router.get("/{user_id}/health_flags", response_model=Response[List[schemas.UserHealthFlagOut]])
 def get_user_health_flags(user_id: int, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
@@ -178,13 +149,14 @@ def update_user(user_id: int, payload: schemas.UserUpdate, db: Session = Depends
             user_health_flag_assoc = models.UserHealthFlag(user_id=db_user.id, health_flag_id=flag_db.id)
             db.add(user_health_flag_assoc)
 
-    if "badges" in update_data:
-        for badge_obj in payload.badges:
-            badge = db.query(models.Badge).filter(models.Badge.name == badge_obj.name).first()
-            if not badge:
-                badge = models.Badge(name=badge_obj.name, description=badge_obj.description)
-                db.add(badge)
-
     db.commit()
     db.refresh(db_user)
     return Response(code=200, data=db_user, msg="User updated successfully")
+
+@router.get("/{user_id}/badges", response_model=Response[List[schemas.UserBadge]])
+def get_user_badges(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise response.not_found(msg="User not found",code=404)
+    return Response(code=200, data=user.badges, msg="User badges fetched successfully")
+
