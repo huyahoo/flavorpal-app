@@ -88,11 +88,53 @@ export const registerProductByImgBase64 = async (imageBase64: string, userId: st
       msg: "Failed to extract product information from image",
     }
   }
+
   // 2. Get the image embedding
   const imageEmbeddingResponse = await getImageEmbedding(imageBase64);
   const imageEmbeddingString = `[${imageEmbeddingResponse.textDescriptionEmbedding.join(',')}]`;
-  // 3. Initiate supabase client and save to database
+
+  // 3. Search using vector search to see if the product already exists
   const client = getSupabaseClient();
+  const minimumCosineSimilarity = parseFloat(Deno.env.get("MINIMUM_COSINE_SIMILARITY") || "0.8");
+  const { data: productSearchResult, error: productSearchError } = await client
+    .rpc("search_similar_products", {
+      query_vector: imageEmbeddingString,
+      min_similarity: minimumCosineSimilarity,     // A value between -1 and 1, where 1 is exact match (cosine similarity)
+    })
+  if (productSearchError) {
+    return {
+      success: false,
+      data: null,
+      msg: `Failed to search for similar products: ${productSearchError.message}`,
+    }
+  }
+  if (productSearchResult && productSearchResult.length > 0) {
+    // There exists a similar product.
+    // Does it exist in the user's history?
+    const existingProduct = productSearchResult[0];
+    const { data: historySearchResult, error: historySearchError } = await client
+      .from("product_interactions_view")
+      .select("*")
+      .eq("product_id", existingProduct.id)
+      .eq("user_id", userId)
+    if (historySearchError) {
+      return {
+        success: false,
+        data: null,
+        msg: `Failed to search for product history: ${historySearchError.message}`,
+      }
+    }
+    if (historySearchResult.length > 0) {
+      // The product already exists in the user's history
+      return {
+        success: false,
+        data: historySearchResult[0],
+        msg: "Product already exists in your history",
+      }
+    }
+  }
+
+  // 4. Initiate supabase client and save to database, if it does not exist in the user's history
   const productInsertionData = {
     barcode: null,
     image_url: imageBase64,

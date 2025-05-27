@@ -346,7 +346,14 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      search_similar_products: {
+        Args: { query_vector: string; min_similarity?: number }
+        Returns: {
+          id: number
+          image_embedding: string
+          similarity: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
