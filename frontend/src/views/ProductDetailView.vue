@@ -317,13 +317,12 @@ const goBack = () => {
         handlePhotoCaptureCancelled();
         return;
     }
-    if (window.history.state.back) { router.go(-1); } 
-    else { router.push({ name: 'History' }); }
+    router.push({ name: 'History' });
 };
 
 const editNotes = () => {
   if (!product.value) return;
-  router.push({ name: 'AddReview', query: { editProductId: product.value.id, fromTitle: previousRouteName.value || 'Details' } });
+  router.push({ name: 'AddReview', query: { editProductId: product.value.id, fromTitle: 'Details' } });
 };
 
 const navigateToAddReview = () => {

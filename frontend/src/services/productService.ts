@@ -4,7 +4,8 @@ import type {
     ProductInteraction, 
     ApiResponse,
     AiHealthConclusion,
-    FetchStatus
+    FetchStatus,
+    ReViewDataPayload
 } from '../types';
 
 /**
@@ -89,7 +90,6 @@ export const deleteProductApi = async (productId: number): Promise<ApiResponse<n
   }
 };
 
-// update product
 /**
  * Updates a product.
  * Endpoint: PATCH /products/{product_id}
@@ -100,5 +100,33 @@ export const deleteProductApi = async (productId: number): Promise<ApiResponse<n
 export const updateProductApi = async (productId: number, payload: ProductInteraction): Promise<ApiResponse<ProductInteraction>> => {
   console.log(`SERVICE (updateProductApi): Updating product ID ${productId} with payload:`, payload);
   const response = await apiClient.patch<ApiResponse<ProductInteraction>>(`/products/${productId}`, payload);
+  return response.data;
+};
+
+/**
+ * Adds a review for a product.
+ * Endpoint: POST /reviews/products/{product_id}
+ * @param productId - The ID of the product to add a review for.
+ * @param payload - The review data to add.
+ * @returns The added review.
+ */
+export const addReviewForProductApi = async (productId: number, payload: ReViewDataPayload): Promise<ApiResponse<ProductInteraction>> => {
+  console.log(`SERVICE (addReviewForProductApi): Adding review for product ID ${productId} with payload:`, payload);
+  const response = await apiClient.post<ApiResponse<ProductInteraction>>(`/reviews/products/${productId}`, payload);
+  console.log("SERVICE (addReviewForProductApi): API call response:", response);
+  return response.data;
+};
+
+/**
+ * Updates a review for a product.
+ * Endpoint: PATCH /reviews/products/{product_id}
+ * @param productId - The ID of the product to update the review for.
+ * @param payload - The review data to update.
+ * @returns The updated review.
+ */
+export const updateReviewForProductApi = async (productId: number, payload: ReViewDataPayload): Promise<ApiResponse<ProductInteraction>> => {
+  console.log(`SERVICE (updateReviewForProductApi): Updating review for product ID ${productId} with payload:`, payload);
+  const response = await apiClient.patch<ApiResponse<ProductInteraction>>(`/reviews/products/${productId}`, payload);
+  console.log("SERVICE (updateReviewForProductApi): API call response:", response);
   return response.data;
 };

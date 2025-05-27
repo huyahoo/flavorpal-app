@@ -1,8 +1,8 @@
 // src/store/historyStore.ts
 import { defineStore } from 'pinia';
-import type { ProductInteraction, AiHealthConclusion } from '../types';
+import type { ProductInteraction, AiHealthConclusion, ReViewDataPayload } from '../types';
 import { fetchProductInteractionsApi, fetchScanStatisticsApi } from '../services/historyService';
-import { getAllProductsApi } from '../services/productService';
+import { getAllProductsApi, addReviewForProductApi, updateReviewForProductApi } from '../services/productService';
 
 export type ReviewedFilterStatus = 'all' | 'reviewed_only' | 'scanned_only';
 
@@ -155,6 +155,7 @@ export const useHistoryStore = defineStore('history', {
       if (state.filterReviewedStatus === 'scanned_only' && state.filterAiConclusion) count++;
       return count;
     },
+    // TODO: change to get product details from api
     getProductInteractionById: (state) => {
       return (id: number): ProductInteraction | undefined => {
         return state.allProductInteractions.find(item => item.id == id);
@@ -259,76 +260,16 @@ export const useHistoryStore = defineStore('history', {
         });
         saveInteractionsToStorage(this.allProductInteractions);
     },
+    async saveOrUpdateUserReview(productId: number, reviewData: ReViewDataPayload): Promise<Boolean> {
 
-    async saveOrUpdateUserReview(reviewData: ReviewDataPayload): Promise<ProductInteraction | null> {
-        // ... (logic remains the same, ensure it calls saveInteractionsToStorage) ...
-        this.loadingInteractions = true;
-        this.error = null;
-        await new Promise(resolve => setTimeout(resolve, 400));
-
-        try {
-            const todayISO = new Date().toISOString();
-            const displayDate = formatDateForDisplay(todayISO);
-
-            let interactionToSave: ProductInteraction;
-            let existingItemIndex = -1;
-
-            if (this.allProductInteractions.length === 0 && !this.loadingInteractions) {
-                await this.loadProductInteractions();
-            }
-
-            if (reviewData.productIdToUpdate) {
-                existingItemIndex = this.allProductInteractions.findIndex(item => item.id === reviewData.productIdToUpdate);
-            }
-
-            if (existingItemIndex !== -1) {
-                const existingItem = this.allProductInteractions[existingItemIndex];
-                interactionToSave = {
-                    ...existingItem,
-                    name: reviewData.productName,
-                    isReviewed: true,
-                    userRating: reviewData.userRating,
-                    userNotes: reviewData.userNotes,
-                    dateReviewed: displayDate,
-                    imageUrl: reviewData.imageUrl || existingItem.imageUrl,
-                    barcode: reviewData.barcode || existingItem.barcode,
-                    aiHealthSummary: existingItem.aiHealthSummary || reviewData.aiHealthSummary,
-                    aiHealthConclusion: existingItem.aiHealthConclusion || reviewData.aiHealthConclusion,
-                };
-                this.allProductInteractions[existingItemIndex] = interactionToSave;
-            } else {
-                interactionToSave = {
-                    id: reviewData.productIdToUpdate || generateInteractionId('review_'),
-                    name: reviewData.productName,
-                    imageUrl: reviewData.imageUrl,
-                    dateScanned: displayDate,
-                    aiHealthSummary: reviewData.aiHealthSummary,
-                    aiHealthConclusion: reviewData.aiHealthConclusion,
-                    isReviewed: true,
-                    userRating: reviewData.userRating,
-                    userNotes: reviewData.userNotes,
-                    dateReviewed: displayDate,
-                    barcode: reviewData.barcode,
-                };
-                this.allProductInteractions.unshift(interactionToSave);
-                this.totalScanned++;
-            }
-
-            this.allProductInteractions.sort((a, b) => {
-                const dateA = new Date((a.isReviewed && a.dateReviewed) ? a.dateReviewed : a.dateScanned).getTime();
-                const dateB = new Date((b.isReviewed && b.dateReviewed) ? b.dateReviewed : b.dateScanned).getTime();
-                return dateB - dateA;
-            });
-
-            saveInteractionsToStorage(this.allProductInteractions);
-            this.loadingInteractions = false;
-            return interactionToSave;
-
-        } catch (err: any) {
-            this.error = err.message || "Failed to save review.";
-            this.loadingInteractions = false;
-            return null;
-        }
+      const product = this.allProductInteractions.find(item => item.id === productId);
+      if (product?.isReviewed) {
+        const response = await updateReviewForProductApi(productId, reviewData);
+        return response.code == 201;
+      } else {
+        const response = await addReviewForProductApi(productId, reviewData);
+        return response.code == 200;
+      }
     },
 
     /**

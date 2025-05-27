@@ -64,6 +64,15 @@ export interface ApiResponse<T = any> {
 }
 
 /**
+ * Interface for review data payload
+ */
+export interface ReViewDataPayload {
+  name: string;
+  rating: number;
+  note: string;
+}
+
+/**
  * Interface for badge data as it might come from an API or database.
  */
 export interface ApiBadge {
