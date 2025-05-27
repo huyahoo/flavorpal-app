@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import auth, users, history, products, reviews
+from app.routers import auth, badges, users, history, products, reviews
 
 app = FastAPI(title="FlavorPal API")
 
@@ -25,6 +25,7 @@ app.include_router(users.router)
 app.include_router(history.router)
 app.include_router(products.router)
 app.include_router(reviews.router)
+app.include_router(badges.router)
 
 
 @app.get("/")

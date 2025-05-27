@@ -76,15 +76,24 @@ export interface ReViewDataPayload {
  * Interface for badge data as it might come from an API or database.
  */
 export interface ApiBadge {
-  id: string;
-  dateEarned: string | null;
+  id: number;
+  ref: string;
+}
+
+/**
+ * Interface for badge data as it might come from an API or database.
+ */
+export interface UserBadge {
+  id: number;
+  badge: ApiBadge;
+  createdAt: string | null;
 }
 
 /**
  * Interface for mapping other badge data apart from API badge data
  */
 export interface BadgeMapping {
-  id: string
+  ref: string
   name: string
   description: string
   imageUrl: string
@@ -92,9 +101,12 @@ export interface BadgeMapping {
 }
 
 /**
- * Interface for badge data specific to user for frontend display
+ * Interface for badge data for frontend display
  */
-export interface DisplayBadge extends BadgeMapping, ApiBadge {}
+export interface DisplayBadge extends BadgeMapping {
+  id: number
+  createdAt: string | null;
+}
 
 /**
  * Interface for value to pass into badge checking logic
@@ -119,15 +131,15 @@ export interface ProductInteraction {
   barcode?: string;              // Barcode if scanned
   brands?: string[];             // Product brands -> TODO: Should be string
   categories?: string[];         // Product categories -> TODO:Should be string
-  
+
   // Data from Open Food Facts (or similar API)
   ingredientsText?: string;      // Raw ingredients string
   genericName?: string;          // Generic name from OFF
-  
+
   // AI-generated insights (can be client-side mock based on ingredientsText and healthFlags)
   aiHealthSummary?: string;
   aiHealthConclusion?: AiHealthConclusion;
-  
+
   // User Review Details
   isReviewed: boolean;
   userRating?: number;

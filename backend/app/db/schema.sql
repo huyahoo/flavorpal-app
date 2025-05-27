@@ -46,14 +46,13 @@ CREATE TABLE History (
 
 CREATE TABLE Badges (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    description TEXT
+    ref VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE User_Badges (
     user_id INT NOT NULL REFERENCES Users(id) ON DELETE CASCADE,
     badge_id INT NOT NULL REFERENCES Badges(id) ON DELETE CASCADE,
-    earned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, badge_id)
 );
 

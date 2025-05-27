@@ -1,23 +1,56 @@
 // src/store/badgeStore.ts
 import { defineStore } from 'pinia';
 import type { ApiBadge, BadgeStatistic, DisplayBadge } from '../types';
-import { formatDateForDisplay } from './historyStore';
+import { getAllBadgesApi, getAllUserBadgesApi, updateUserBadgeApi } from '@/services/badgeService';
+import { processBadgesData } from './badgeLogic';
 
 export interface BadgeStoreState {
+  badges: DisplayBadge[]
   selectedPopupBadges: DisplayBadge[]
+  isLoading: boolean
+  error: string | null
 }
 
 export const useBadgeStore = defineStore('badge', {
   state: (): BadgeStoreState => ({
-    selectedPopupBadges: []
+    badges: [],
+    selectedPopupBadges: [],
+    isLoading: false,
+    error: null
   }),
 
   getters: {
     // Getter to access the list selected badges to show popup
     getSelectedBadges: (state): DisplayBadge[] => state.selectedPopupBadges,
+
+    /**
+   * Retrieves a limited number of badges, e.g., for a summary display.
+   * @param state - The current store state.
+   * @returns A function that takes a count and returns an array of DisplayBadge.
+   */
+    getProfileSummaryBadges: (state: BadgeStoreState) => (count: number = 4): DisplayBadge[] => {
+      return state.badges.filter(badge => badge.createdAt).slice(0, count);
+    },
   },
 
   actions: {
+    /**
+     * Push badges to show on popup
+     */
+    async loadAllUserBadges() {
+      this.isLoading = true
+      try {
+        const allApiBadges = await getAllBadgesApi()
+        const currentUserBadges = await getAllUserBadgesApi()
+        this.badges = processBadgesData(allApiBadges.data, currentUserBadges.data)
+      } catch (err: any) {
+        console.error('Error loading user badges', err);
+        this.error = err.message || 'Failed to fetch user badges data. Please try again.';
+      } finally {
+        this.isLoading = false
+      }
+    },
+
     /**
      * Push badges to show on popup
      */
@@ -36,21 +69,22 @@ export const useBadgeStore = defineStore('badge', {
      * Check all badges logic to display popup
      * @return array of ApiBadge objects to update on user profile
      */
-    async checkAllBadgesLogic(value: BadgeStatistic, userBadges: DisplayBadge[]): Promise<ApiBadge[]> {
-      userBadges.forEach(badge => {
+    checkAllBadgesLogic(value: BadgeStatistic, userBadges: DisplayBadge[]) {
+      userBadges.forEach((badge) => {
         // Skip earned badges and badges that are not unlocked
-        if (badge.dateEarned || !badge.isUnlockable(value)) {
+        if (badge.createdAt || !badge.isUnlockable(value) || !badge.id) {
           return
         }
         // Badges that went up to this part can be assumed as a new one
-        const todayISO = new Date().toISOString();
-        const dateEarned = formatDateForDisplay(todayISO);
-        this.pushBadgeToShow({
-          ...badge,
-          dateEarned
-        })
+        updateUserBadgeApi(badge.id)
+          .then(response => {
+            this.pushBadgeToShow({
+              ...badge,
+              createdAt: response.data.createdAt?.slice(0, 10) ?? null
+            })
+            this.loadAllUserBadges()
+          })
       })
-      return this.selectedPopupBadges.map(badge => ({ id: badge.id, dateEarned: badge.dateEarned }))
     },
 
     /**
@@ -58,6 +92,9 @@ export const useBadgeStore = defineStore('badge', {
      */
     clearBadgesData() {
       this.selectedPopupBadges = [];
+      this.badges = [];
+      this.isLoading = false;
+      this.error = null;
     }
   },
 });
