@@ -43,7 +43,7 @@ productRouter.get("/", async (c) => {
       dateScanned: item.date_scanned,
       likeCounts: item.likes_count,
       aiHealthConclusion: item.ai_opinion,
-      aiHealthSummary: item.ai_opinion,
+      aiHealthSummary: item.ai_reason,
     };
   });
 
@@ -98,7 +98,7 @@ productRouter.get("/:id", async (c) => {
     dateScanned: data.date_scanned,
     likeCounts: data.likes_count,
     aiHealthConclusion: data.ai_opinion,
-    aiHealthSummary: data.ai_opinion,
+    aiHealthSummary: data.ai_reason,
   };
 
   return c.json({
@@ -150,7 +150,7 @@ productRouter.post("register/barcode", async (c) => {
       dateScanned: data.date_scanned,
       likeCounts: data.likes_count,
       aiHealthConclusion: data.ai_opinion,
-      aiHealthSummary: data.ai_opinion,
+      aiHealthSummary: data.ai_reason,
     };
     return c.json({
       code: 200,
@@ -197,7 +197,7 @@ productRouter.post("register/barcode", async (c) => {
     dateScanned: newData.date_scanned,
     likeCounts: newData.likes_count,
     aiHealthConclusion: newData.ai_opinion,
-    aiHealthSummary: newData.ai_opinion,
+    aiHealthSummary: newData.ai_reason,
   };
   return c.json({
     code: 200,
@@ -254,7 +254,7 @@ productRouter.post("register/photo", async (c) => {
     dateScanned: data.date_scanned,
     likeCounts: data.likes_count,
     aiHealthConclusion: data.ai_opinion,
-    aiHealthSummary: data.ai_opinion,
+    aiHealthSummary: data.ai_reason,
   };
   return c.json({
     code: 200,
