@@ -8,12 +8,13 @@ class ProductBase(BaseModel):
 
 
 class ProductCreate(ProductBase):
+    name: str # Required for creation
     image_url: Optional[str] = None
     barcode: Optional[str] = None
     generic_name: Optional[str] = None
     ingredients: Optional[str] = None
-    categories: Optional[str] = None
-    brands: Optional[str] = None
+    categories: Optional[List[str]] = None
+    brands: Optional[List[str]] = None
     image_embedding: Optional[List[float]] = None  
     model_config = ConfigDict(from_attributes=True)
 
@@ -22,8 +23,8 @@ class ProductOut(ProductBase):
     name: Optional[str] = None
     generic_name: Optional[str] = None
     ingredients: Optional[str] = None
-    categories: Optional[str] = None
-    brands: Optional[str] = None
+    categories: Optional[List[str]] = None
+    brands: Optional[List[str]] = None
     model_config = ConfigDict(from_attributes=True)
         
 class ProductUpdate(ProductBase):

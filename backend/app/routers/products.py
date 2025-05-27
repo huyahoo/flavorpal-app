@@ -82,6 +82,22 @@ def get_product(product_id: int, db: Session = Depends(get_db),current_user: mod
             data_scanned_at=product.last_updated,
             data_reviewed=review.note
         )
+    else:
+        product_details = schemas.ProductDetailsFrontend(
+            id=product.id,
+            name=product.name,
+            brands=product.brands,
+            barcode=product.barcode,
+            image_url=product.image_url,
+            categories=product.categories,
+            isReviewed=False,
+            user_rating=None,
+            user_note=None,
+            ai_health_summary=product.ai_health_summary,
+            ai_health_conclusion=product.ai_health_conclusion,
+            data_scanned_at=product.last_updated,
+            data_reviewed=None
+        )
     product_info = schemas.ProductDetailsFrontendOut(product=product_details)
     return Response(code=200, data=product_info, msg="Product fetched successfully")
 
@@ -129,14 +145,14 @@ def add_by_image(request: schemas.ProductImageRequest,  db: Session = Depends(ge
 #     db.commit()
 #     return Response(code=200, data=db_product, msg="Product updated successfully")
 
-@router.delete("/{product_id}", status_code=204)
+@router.delete("/{product_id}", response_model=Response[None])
 def delete_product(product_id: int, db: Session = Depends(get_db)):
     db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
     if not db_product:
         return response.not_found(msg="Product not found",code=404)
     db.delete(db_product)
     db.commit()
-    return Response(code=200, msg="Product deleted successfully")
+    return Response(code=200, msg="Product deleted successfully",data=None)
 
 @router.get("/product/{barcode}", response_model=Response[schemas.ProductDetailsThroughBarcodeOut])
 def get_product_by_barcode(barcode: str, db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):
