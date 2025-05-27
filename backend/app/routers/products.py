@@ -17,7 +17,7 @@ router = APIRouter(
 
 
 
-@router.get("/",response_model=Response[List[schemas.ProductDetailsFrontendOut]])
+@router.get("/",response_model=Response[List[schemas.ProductDetailsFrontend]])
 def get_all_products(db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):
     products = db.query(models.Product).all()
     user_id = current_user.id
@@ -56,10 +56,10 @@ def get_all_products(db: Session = Depends(get_db),current_user: models.User = D
                 data_scanned_at=product.last_updated,
                 data_reviewed=None
             )
-        product_details.append(schemas.ProductDetailsFrontendOut(product=product_info))
+        product_details.append(product_info)
     return Response(code=200, data=product_details, msg="Products fetched successfully")
     
-@router.get("/{product_id}", response_model=Response[schemas.ProductDetailsFrontendOut])
+@router.get("/{product_id}", response_model=Response[schemas.ProductDetailsFrontend])
 def get_product(product_id: int, db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):
     product = db.query(models.Product).filter(models.Product.id == product_id).first()
     if not product:
@@ -94,25 +94,12 @@ def get_product(product_id: int, db: Session = Depends(get_db),current_user: mod
             isReviewed=False,
             user_rating=None,
             user_note=None,
-        )
-    else:
-        product_details = schemas.ProductDetailsFrontend(
-            id=product.id,
-            name=product.name,
-            brands=product.brands,
-            barcode=product.barcode,
-            image_url=product.image_url,
-            categories=product.categories,
-            isReviewed=False,
-            user_rating=None,
-            user_note=None,
             ai_health_summary=product.ai_health_summary,
             ai_health_conclusion=product.ai_health_conclusion,
             data_scanned_at=product.last_updated,
             data_reviewed=None
         )
-    product_info = schemas.ProductDetailsFrontendOut(product=product_details)
-    return Response(code=200, data=product_info, msg="Product fetched successfully")
+    return Response(code=200, data=product_details, msg="Product fetched successfully")
 
 @router.post("/", response_model=Response[schemas.ProductOut])
 def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)):
@@ -172,14 +159,14 @@ def add_by_image(request: schemas.ProductImageRequest,  db: Session = Depends(ge
 #     db.commit()
 #     return Response(code=200, data=db_product, msg="Product updated successfully")
 
-@router.delete("/{product_id}", status_code=204)
+@router.delete("/{product_id}")
 def delete_product(product_id: int, db: Session = Depends(get_db)):
     db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
     if not db_product:
         return response.not_found(msg="Product not found",code=404)
     db.delete(db_product)
     db.commit()
-    return Response(code=200, msg="Product deleted successfully")
+    return Response(code=200,data=None, msg="Product deleted successfully")
 
 @router.get("/product/{barcode}", response_model=Response[schemas.ProductDetailsThroughBarcodeOut])
 def get_product_by_barcode(barcode: str, db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):

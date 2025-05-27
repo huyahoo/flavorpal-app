@@ -63,11 +63,12 @@ class ProductDetailsFrontend(BaseModel):
         orm_mode = True
 
 class ProductDetailsFrontendOut(BaseModel):
-    product:ProductDetailsFrontend
+    product:List[ProductDetailsFrontend]
     class Config:
         orm_mode = True
 
 class ProductDetailsThroughBarcode(BaseModel):
+    id:int
     name:str
     barcode:str
     brand:Optional[List[str]] = None
