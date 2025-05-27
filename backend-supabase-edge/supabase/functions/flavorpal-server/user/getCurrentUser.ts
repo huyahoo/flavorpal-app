@@ -1,5 +1,6 @@
 import { Context } from "jsr:@hono/hono";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { getCommonError } from "../utils/commonResponse.ts";
 
 
 const getCurrentUserFn = async (c: Context) => {
@@ -31,6 +32,14 @@ const getCurrentUserFn = async (c: Context) => {
       error: "Not authenticated or session invalid.",
     }, 401);
   }
+  // Get the badges
+  const { data: badgesData, error: badgesError } = await supabaseClient
+    .from('user_badges')
+    .select('badge_id')
+    .eq('user_id', data.user.id);
+  if (badgesError) {
+    return c.json(getCommonError(badgesError.message));
+  }
   return c.json({
     code: 200,
     data: {
@@ -38,7 +47,7 @@ const getCurrentUserFn = async (c: Context) => {
       name: data.user.user_metadata?.username || null,
       email: data.user.email,
       healthFlags: data.user.user_metadata?.healthFlags || [],
-      badges: data.user.user_metadata?.badges || [],
+      badges: badgesData ? badgesData.map(badge => badge.badge_id) : [],
       createdAt: data.user.created_at,
       updatedAt: data.user.updated_at,
     },
