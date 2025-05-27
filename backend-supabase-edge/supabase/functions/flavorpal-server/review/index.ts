@@ -17,9 +17,11 @@ reviewRouter.use("*", requireAuth);
 // Gets all reviews
 reviewRouter.get("/", async (c) => {
   const client = getSupabaseClient();
+  const userId = c.get("user").id;
   const { data: reviewData, error: reviewError } = await client
     .from("reviews_view")
     .select()
+    .eq("ai_suggestions.user_id", userId)
     .order("date_reviewed", { ascending: false });
   if (reviewError) {
     return c.json(getCommonError(reviewError.message));
@@ -58,6 +60,7 @@ reviewRouter.get("/", async (c) => {
 // Gets a review by ID
 reviewRouter.get("/:id", async (c) => {
   const reviewId = parseInt(c.req.param("id"), 10);
+  const userId = c.get("user").id; // Get user ID from auth middleware
   if (!reviewId) {
     return c.json(getCommonError("Review ID is required", 400));
   }
@@ -66,6 +69,7 @@ reviewRouter.get("/:id", async (c) => {
     .from("reviews_view")
     .select()
     .eq("review_id", reviewId)
+    .eq("ai_suggestions.user_id", userId)
     .single();
   if (reviewError) {
     return c.json(getCommonError(reviewError.message));

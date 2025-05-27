@@ -7,31 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          operationName?: string
-          query?: string
-          variables?: Json
-          extensions?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       ai_suggestions: {
@@ -320,15 +295,25 @@ export type Database = {
           likes_count: number | null
           name: string | null
           product_id: number | null
+          user_id: string | null
           user_note: string | null
           user_rating: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "reviews_view"
+            referencedColumns: ["reviewer_id"]
+          },
+        ]
       }
       reviews_view: {
         Row: {
           ai_health_opinion: string | null
           ai_health_reason: string | null
+          ai_health_user_id: string | null
           date_reviewed: string | null
           likes_count: number | null
           product_barcode: string | null
@@ -342,10 +327,74 @@ export type Database = {
           reviewer_id: string | null
           reviewer_metadata: Json | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ai_suggestions_user_id_fkey"
+            columns: ["ai_health_user_id"]
+            isOneToOne: false
+            referencedRelation: "reviews_view"
+            referencedColumns: ["reviewer_id"]
+          },
+        ]
       }
     }
     Functions: {
+      binary_quantize: {
+        Args: { "": string } | { "": unknown }
+        Returns: unknown
+      }
+      halfvec_avg: {
+        Args: { "": number[] }
+        Returns: unknown
+      }
+      halfvec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      halfvec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      halfvec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
+      hnsw_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_sparsevec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnswhandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflat_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflat_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflathandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      l2_norm: {
+        Args: { "": unknown } | { "": unknown }
+        Returns: number
+      }
+      l2_normalize: {
+        Args: { "": string } | { "": unknown } | { "": unknown }
+        Returns: string
+      }
       search_similar_products: {
         Args: { query_vector: string; min_similarity?: number }
         Returns: {
@@ -353,6 +402,42 @@ export type Database = {
           image_embedding: string
           similarity: number
         }[]
+      }
+      sparsevec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      sparsevec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      sparsevec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
+      vector_avg: {
+        Args: { "": number[] }
+        Returns: string
+      }
+      vector_dims: {
+        Args: { "": string } | { "": unknown }
+        Returns: number
+      }
+      vector_norm: {
+        Args: { "": string }
+        Returns: number
+      }
+      vector_out: {
+        Args: { "": string }
+        Returns: unknown
+      }
+      vector_send: {
+        Args: { "": string }
+        Returns: string
+      }
+      vector_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
       }
     }
     Enums: {
@@ -470,11 +555,7 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },
 } as const
-

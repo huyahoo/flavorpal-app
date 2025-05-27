@@ -18,7 +18,8 @@ productRouter.get("/", async (c) => {
   const client = getSupabaseClient();
   const { data, error } = await client
     .from("product_interactions_view")
-    .select("*");
+    .select("*")
+    .eq("user_id", c.get("user").id)
   if (error) {
     return c.json({
       code: 500,
@@ -63,6 +64,7 @@ productRouter.get("/:id", async (c) => {
     .from("product_interactions_view")
     .select("*")
     .eq("product_id", parsedProductId)
+    .eq("user_id", c.get("user").id)
     .limit(1)
     .single();
   
@@ -122,6 +124,7 @@ productRouter.post("register/barcode", async (c) => {
     .from("product_interactions_view")
     .select("*")
     .eq("barcode", barcode)
+    .eq("user_id", c.get("user").id)
     .limit(1);
   if (viewResponsePrecheck.error) {
     return c.json({
@@ -170,6 +173,7 @@ productRouter.post("register/barcode", async (c) => {
     .from("product_interactions_view")
     .select("*")
     .eq("barcode", barcode)
+    .eq("user_id", c.get("user").id)
     .limit(1)
     .single();
   if (newError) {
@@ -225,6 +229,7 @@ productRouter.post("register/photo", async (c) => {
   const { data, error } = await client
     .from("product_interactions_view")
     .select("*")
+    .eq("user_id", c.get("user").id)
     .eq("product_id", result!.data!.id)
     .limit(1)
     .single();
@@ -316,6 +321,7 @@ productRouter.patch("ai-suggestions", async (c) => {
     .from("product_interactions_view")
     .select("*")
     .eq("product_id", productId)
+    .eq("user_id", c.get("user").id)
     .limit(1)
     .single();
   if (error) {
