@@ -20,7 +20,8 @@ const schema = z.object({
   reason: z.string(),
 })
 
-export const getHealthSuggestion = async (dietaryPref: string, imageBase64: string, client: OpenAI) => {
+export const getHealthSuggestion = async (dietaryPref: string, imageBase64: string) => {
+  const client = new OpenAI();
   // Retrieve the text description of the image
   const response = await client.responses.parse({
     model,

@@ -1,8 +1,9 @@
 import { Hono } from "jsr:@hono/hono";
 import getSupabaseClient from "../client.ts";
 import { requireAuth } from "../middleware/auth.ts";
-import { registerProductByBarcode } from "./productRegister.ts";
+import { registerProductByBarcode, registerProductByImgBase64 } from "./productRegister.ts";
 import { User } from "npm:@supabase/auth-js@2.69.1";
+import { getHealthSuggestion } from "../integration/openai/healthSuggestion.ts";
 
 type Variables = {
   user: User
@@ -199,5 +200,150 @@ productRouter.post("register/barcode", async (c) => {
     msg: "Product registered successfully",
   });
 })
+
+
+productRouter.post("register/photo", async (c) => {
+  const { imageBase64 } = await c.req.json();
+  if (!imageBase64) {
+    return c.json({
+      code: 400,
+      data: null,
+      msg: "Image base64 is required",
+    });
+  }
+  const userId = c.get("user").id;
+  const result = await registerProductByImgBase64(imageBase64, userId);
+  if (!result.success) {
+    return c.json({
+      code: 500,
+      data: null,
+      msg: result.msg,
+    }, 500);
+  }
+  const client = getSupabaseClient();
+  const { data, error } = await client
+    .from("product_interactions_view")
+    .select("*")
+    .eq("product_id", result!.data!.id)
+    .limit(1)
+    .single();
+  if (error) {
+    return c.json({
+      code: 500,
+      data: null,
+      msg: error.message,
+    });
+  }
+  const productInfo = {
+    id: data.product_id,
+    name: data.name,
+    barcode: data.barcode,
+    brands: data.brands,
+    imageUrl: data.image_url,
+    categories: data.categories,
+    isReviewed: data.is_reviewed,
+    userRating: data.user_rating,
+    userNotes: data.user_note,
+    dateReviewed: data.date_reviewed,
+    dateScanned: data.date_scanned,
+    likeCounts: data.likes_count,
+    aiHealthConclusion: data.ai_opinion,
+    aiHealthSummary: data.ai_opinion,
+  };
+  return c.json({
+    code: 200,
+    data: productInfo,
+    msg: "Product registered successfully",
+  });
+});
+
+
+productRouter.patch("ai-suggestions", async (c) => {
+  const { productId, imageBase64 } = await c.req.json();
+  if (!imageBase64 || !productId) {
+    return c.json({
+      code: 400,
+      data: null,
+      msg: "Image base64 and product ID are required",
+    })
+  }
+  const userId = c.get("user").id;
+  // Get the user health flags
+  const client = getSupabaseClient();
+  const { data: userData, error: userError } = await client.auth.admin.getUserById(userId);
+  if (userError) {
+    return c.json({
+      code: 500,
+      data: null,
+      msg: "Error retrieving user data: " + userError.message,
+    });
+  }
+  const userHealthFlags = userData.user.user_metadata?.healthFlags || [];
+  // Call OpenAI for analytics
+  const result = await getHealthSuggestion(
+    userHealthFlags.join(","),
+    imageBase64,
+  )
+  if (!result.response?.success) {
+    return c.json({
+      code: 500,
+      data: null,
+      msg: "Error retrieving health suggestions from OpenAI",
+    });
+  }
+  // Update the AI suggestions in the database
+  const aiSuggestionResponse = await client
+    .from("ai_suggestions")
+    .update({
+      opinion: result.response.opinion,
+      reason: result.response.reason,
+    })
+    .eq("product_id", productId)
+    .eq("user_id", userId)
+    .select()
+    .single();
+  if (aiSuggestionResponse.error) {
+    return c.json({
+      code: 500,
+      data: null,
+      msg: "Error updating AI suggestions in the database: " + aiSuggestionResponse.error.message,
+    });
+  }
+  // Return the full product interaction
+  const { data, error } = await client
+    .from("product_interactions_view")
+    .select("*")
+    .eq("product_id", productId)
+    .limit(1)
+    .single();
+  if (error) {
+    return c.json({
+      code: 500,
+      data: null,
+      msg: error.message,
+    });
+  }
+  const productInfo = {
+    id: data.product_id,
+    name: data.name,
+    barcode: data.barcode,
+    brands: data.brands,
+    imageUrl: data.image_url,
+    categories: data.categories,
+    isReviewed: data.is_reviewed,
+    userRating: data.user_rating,
+    userNotes: data.user_note,
+    dateReviewed: data.date_reviewed,
+    dateScanned: data.date_scanned,
+    likeCounts: data.likes_count,
+    aiHealthConclusion: data.ai_opinion,
+    aiHealthSummary: data.ai_opinion,
+  };
+  return c.json({
+    code: 200,
+    data: productInfo,
+    msg: "Product registered successfully",
+  });
+});
 
 export default productRouter;
