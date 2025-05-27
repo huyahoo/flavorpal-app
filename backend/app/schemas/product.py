@@ -57,8 +57,8 @@ class ProductDetailsFrontend(BaseModel):
     user_note:Optional[str] = None
     ai_health_summary:Optional[str] = None
     ai_health_conclusion:Optional[str] = None
-    data_scanned_at:Optional[datetime] = None
-    data_reviewed:Optional[str] = None
+    date_scanned:Optional[datetime] = None
+    date_reviewed:Optional[datetime] = None
     class Config:
         orm_mode = True
 
@@ -90,8 +90,4 @@ class ProductDetailsThroughBarcodeOut(ProductDetailsThroughBarcode):
 class ProductImageRequest(BaseModel):
     base64image: str
 
-class ProductDetailsThroughBarcodeOut(ProductDetailsThroughBarcode):
-    pass
-    class Config:
-        orm_mode = True
 

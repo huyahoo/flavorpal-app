@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text
+from sqlalchemy import Column, Integer, String, DateTime, Text, ARRAY
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .base import Base
@@ -9,18 +9,19 @@ from pgvector.sqlalchemy import Vector
 class Product(Base):
     __tablename__ = "products"
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True, nullable=False)
-    barcode = Column(String, unique=True, index=True)
-    image_url = Column(String)
+    name = Column(String(255), nullable=False)
+    barcode = Column(String(255))
+    image_url = Column(Text)
     image_embedding = Column(Vector(1536))
-    last_updated = Column(
-        DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-    generic_name = Column(String)
-    ingredients = Column(Text)  
-    categories = Column(String) 
-    brands = Column(String)  
+    last_updated = Column(DateTime, default=datetime.datetime.utcnow)
+    generic_name = Column(String(255))
+    ingredients = Column(Text)
+    categories = Column(ARRAY(String))
+    brands = Column(ARRAY(String))
     ai_health_summary = Column(Text)
     ai_health_conclusion = Column(Text)
 
-    reviews = relationship("Review", back_populates="product")
-    history = relationship("History", back_populates="product")
+    reviews = relationship(
+        "Review", back_populates="product", cascade="all, delete-orphan")
+    history = relationship(
+        "History", back_populates="product", cascade="all, delete-orphan")

@@ -66,6 +66,7 @@ def get_product(product_id: int, db: Session = Depends(get_db),current_user: mod
         return response.not_found(msg="Product not found",code=404)
     user_id = current_user.id
     review = db.query(models.Review).filter(models.Review.product_id == product_id, models.Review.user_id == user_id).first()
+    product_details = None
     if review:
         product_details = schemas.ProductDetailsFrontend(
             id=product.id,
@@ -79,8 +80,20 @@ def get_product(product_id: int, db: Session = Depends(get_db),current_user: mod
             user_note=review.note,
             ai_health_summary=product.ai_health_summary,
             ai_health_conclusion=product.ai_health_conclusion,
-            data_scanned_at=product.last_updated,
-            data_reviewed=review.note
+            date_scanned=product.last_updated,
+            date_reviewed=review.updated_at
+        )
+    else:
+        product_details = schemas.ProductDetailsFrontend(
+            id=product.id,
+            name=product.name,
+            brands=product.brands,
+            barcode=product.barcode,
+            image_url=product.image_url,
+            categories=product.categories,
+            isReviewed=False,
+            user_rating=None,
+            user_note=None,
         )
     else:
         product_details = schemas.ProductDetailsFrontend(
@@ -106,7 +119,21 @@ def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)
     db_product = models.Product(**product.dict())
     db.add(db_product)
     db.commit()
-    return Response(code=200, data=db_product, msg="Product created successfully")
+    db.refresh(db_product)
+    product_info = schemas.ProductOut(
+        id=db_product.id,
+        name=db_product.name,
+        generic_name=db_product.generic_name,
+        ingredients=db_product.ingredients,
+        categories=db_product.categories,
+        brands=db_product.brands,
+        image_url=db_product.image_url,
+        image_embedding=db_product.image_embedding,
+        last_updated=db_product.last_updated,
+        ai_health_summary=db_product.ai_health_summary,
+        ai_health_conclusion=db_product.ai_health_conclusion,
+    )
+    return Response(code=200, data=product_info, msg="Product created successfully")
 
 @router.post("/image", response_model=Response[schemas.ProductOut])
 def add_by_image(request: schemas.ProductImageRequest,  db: Session = Depends(get_db)):
@@ -145,14 +172,14 @@ def add_by_image(request: schemas.ProductImageRequest,  db: Session = Depends(ge
 #     db.commit()
 #     return Response(code=200, data=db_product, msg="Product updated successfully")
 
-@router.delete("/{product_id}", response_model=Response[None])
+@router.delete("/{product_id}", status_code=204)
 def delete_product(product_id: int, db: Session = Depends(get_db)):
     db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
     if not db_product:
         return response.not_found(msg="Product not found",code=404)
     db.delete(db_product)
     db.commit()
-    return Response(code=200, msg="Product deleted successfully",data=None)
+    return Response(code=200, msg="Product deleted successfully")
 
 @router.get("/product/{barcode}", response_model=Response[schemas.ProductDetailsThroughBarcodeOut])
 def get_product_by_barcode(barcode: str, db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):
