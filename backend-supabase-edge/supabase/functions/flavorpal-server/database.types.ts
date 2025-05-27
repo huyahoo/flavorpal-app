@@ -74,6 +74,20 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ai_suggestions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "reviews_view"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "ai_suggestions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "reviews_view"
+            referencedColumns: ["reviewer_id"]
+          },
         ]
       }
       badges: {
@@ -133,6 +147,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "reviews_view"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "reviews_view"
+            referencedColumns: ["reviewer_id"]
           },
         ]
       }
@@ -224,6 +252,20 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "reviews_view"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "reviews_view"
+            referencedColumns: ["reviewer_id"]
+          },
         ]
       }
       user_badges: {
@@ -253,6 +295,13 @@ export type Database = {
             referencedRelation: "badges"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "user_badges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "reviews_view"
+            referencedColumns: ["reviewer_id"]
+          },
         ]
       }
     }
@@ -273,6 +322,25 @@ export type Database = {
           product_id: number | null
           user_note: string | null
           user_rating: number | null
+        }
+        Relationships: []
+      }
+      reviews_view: {
+        Row: {
+          ai_health_opinion: string | null
+          ai_health_reason: string | null
+          date_reviewed: string | null
+          likes_count: number | null
+          product_barcode: string | null
+          product_brands: string | null
+          product_id: number | null
+          product_image_url: string | null
+          product_name: string | null
+          review_id: number | null
+          review_note: string | null
+          review_rating: number | null
+          reviewer_id: string | null
+          reviewer_metadata: Json | null
         }
         Relationships: []
       }
