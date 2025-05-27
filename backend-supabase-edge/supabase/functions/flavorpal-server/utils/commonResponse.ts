@@ -6,7 +6,7 @@ export const getCommonError = (errorMsg: string, errorCode: number = 500) => {
   }
 }
 
-export const getCommonSuccess = (data: object, msg: string = "Success", code = 200) => {
+export const getCommonSuccess = (data: object | null, msg: string = "Success", code = 200) => {
   return {
     code,
     data,
