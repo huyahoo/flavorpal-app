@@ -2,7 +2,7 @@
 import { defineStore } from 'pinia';
 import type { ProductInteraction, AiHealthConclusion, ReViewDataPayload } from '../types';
 import { fetchProductInteractionsApi, fetchScanStatisticsApi } from '../services/historyService';
-import { getAllProductsApi, getProductByIdApi, addReviewForProductApi, updateReviewForProductApi } from '../services/productService';
+import { getAllProductsApi, getProductByIdApi, addReviewForProductApi, updateReviewForProductApi, deleteProductByIdApi } from '../services/productService';
 
 export type ReviewedFilterStatus = 'all' | 'reviewed_only' | 'scanned_only';
 
@@ -221,9 +221,15 @@ export const useHistoryStore = defineStore('history', {
     },
 
     async getProductInteractionById(id: number): Promise<ProductInteraction | undefined> {
-      const response = await getProductByIdApi(id);
-      console.log("STORE (getProductInteractionById): API call response:", response);
-      return response;
+      const product = await getProductByIdApi(id);
+      console.log("STORE (getProductInteractionById): API call response:", product);
+      return product;
+    },
+
+    async deleteProductInteraction(id: number): Promise<boolean> {
+      const response = await deleteProductByIdApi(id);
+      console.log("STORE (deleteProductInteraction): API call response:", response);
+      return response.code == 200;
     },
 
     setFilters(filters: Partial<HistoryFilters>) { /* ... */ },
@@ -271,49 +277,5 @@ export const useHistoryStore = defineStore('history', {
         return response.code == 200;
       }
     },
-
-    /**
-     * Deletes a product interaction from history.
-     * @param itemId - The ID of the ProductInteraction to delete.
-     * @returns True if deletion was successful, false otherwise.
-     */
-    async deleteProductInteraction(itemId: number): Promise<boolean> {
-        this.loadingInteractions = true; // Indicate an operation is in progress
-        this.error = null;
-        await new Promise(resolve => setTimeout(resolve, 300)); // Simulate API delay
-
-        try {
-            const itemIndex = this.allProductInteractions.findIndex(item => item.id === itemId);
-            if (itemIndex !== -1) {
-                this.allProductInteractions.splice(itemIndex, 1); // Remove from array
-
-                // Decrement totalScanned.
-                // This is a simple decrement; more complex logic might be needed if an item
-                // could be "scanned" multiple times under the same ID before being deleted.
-                // For MVP, if it's removed from the list, we reduce the count.
-                if (this.totalScanned > 0) {
-                    this.totalScanned--;
-                }
-                // Note: Accurately adjusting discoveredThisMonth on client-side delete is complex.
-                // For MVP, we might accept this stat becomes slightly off or trigger a full stat reload (heavier).
-                // Let's keep it simple and just adjust totalScanned.
-
-                saveInteractionsToStorage(this.allProductInteractions); // Persist changes
-                console.log('HistoryStore: Deleted interaction -', itemId);
-                this.loadingInteractions = false;
-                return true;
-            } else {
-                console.warn('HistoryStore: Item to delete not found -', itemId);
-                this.error = "Item not found for deletion.";
-                this.loadingInteractions = false;
-                return false;
-            }
-        } catch (err: any) {
-            console.error('HistoryStore: Error deleting interaction -', err);
-            this.error = err.message || "Failed to delete item.";
-            this.loadingInteractions = false;
-            return false;
-        }
-    }
   },
 });

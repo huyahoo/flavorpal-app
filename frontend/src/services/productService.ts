@@ -84,7 +84,7 @@ export const getProductByBarcodeApi = async (barcode: string): Promise<ApiRespon
  * @param productId - The ID of the product to fetch.
  * @returns The product.
  */
-export const getProductByIdApi = async (productId: number): Promise<ApiResponse<ProductInteraction>> => {
+export const getProductByIdApi = async (productId: number): Promise<ProductInteraction> => {
   console.log(`SERVICE (getProductByIdApi): Fetching product ID ${productId}...`);
   const response = await apiClient.get<ApiResponse<ProductInteraction>>(`/products/${productId}`);
   console.log("SERVICE (getProductByIdApi): API call response:", response.data.data);
@@ -100,13 +100,13 @@ export const getProductByIdApi = async (productId: number): Promise<ApiResponse<
  * @param productId - The ID of the product to delete.
  * @returns The deleted product.
  */
-export const deleteProductApi = async (productId: number): Promise<ApiResponse<null>> => {
-  console.log(`SERVICE (deleteProductApi): Deleting product ID ${productId}`);
+export const deleteProductByIdApi = async (productId: number): Promise<ApiResponse<null>> => {
+  console.log(`SERVICE (deleteProductByIdApi): Deleting product ID ${productId}`);
   try {
     const response = await apiClient.delete(`/products/${productId}`);
     return response.data;
   } catch (error: any) {
-    console.error("SERVICE (deleteProductApi): API call failed:", error.response?.data || error.message);
+    console.error("SERVICE (deleteProductByIdApi): API call failed:", error.response?.data || error.message);
     return { 
       code: error.response?.status || 500, 
       msg: error.response?.data?.detail || error.response?.data?.msg || `Failed to delete product ${productId}.`,
