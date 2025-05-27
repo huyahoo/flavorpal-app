@@ -1,9 +1,14 @@
 import { Hono } from "jsr:@hono/hono";
 import getSupabaseClient from "../client.ts";
 import { requireAuth } from "../middleware/auth.ts";
+import { registerProductByBarcode } from "./productRegister.ts";
+import { User } from "npm:@supabase/auth-js@2.69.1";
 
+type Variables = {
+  user: User
+}
 
-const productRouter = new Hono();
+const productRouter = new Hono<{ Variables: Variables }>()
 
 productRouter.use(requireAuth);
 
@@ -98,3 +103,101 @@ productRouter.get("/:id", async (c) => {
     msg: "",
   });
 });
+
+
+productRouter.post("register/barcode", async (c) => {
+  const { barcode } = await c.req.json();
+  if (!barcode) {
+    return c.json({
+      code: 400,
+      data: null,
+      msg: "Barcode is required",
+    });
+  }
+  const client = getSupabaseClient();
+  // Check if the barcode already exists
+  const viewResponsePrecheck = await client
+    .from("product_interactions_view")
+    .select("*")
+    .eq("barcode", barcode)
+    .limit(1);
+  if (viewResponsePrecheck.error) {
+    return c.json({
+      code: 500,
+      data: null,
+      msg: "Error in retrieving interaction view" + viewResponsePrecheck.error.message,
+    });
+  }
+  if (viewResponsePrecheck.data.length > 0) {
+    // The product for this barcode already exists, return
+    const data = viewResponsePrecheck.data[0];
+    const productInfo = {
+      id: data.product_id,
+      name: data.name,
+      barcode: data.barcode,
+      brands: data.brands,
+      imageUrl: data.image_url,
+      categories: data.categories,
+      isReviewed: data.is_reviewed,
+      userRating: data.user_rating,
+      userNotes: data.user_note,
+      dateReviewed: data.date_reviewed,
+      dateScanned: data.date_scanned,
+      likeCounts: data.likes_count,
+      aiHealthConclusion: data.ai_opinion,
+      aiHealthSummary: data.ai_opinion,
+    };
+    return c.json({
+      code: 200,
+      data: productInfo,
+      msg: "Product already exists",
+    });
+  }
+
+  // Otherwise product does not exist. Call insertion.
+  const result = await registerProductByBarcode(barcode, c.get("user").id);
+  if (!result.success) {
+    return c.json({
+      code: 500,
+      data: null,
+      msg: result.msg,
+    }, 500);
+  }
+
+  const { data: newData, error: newError } = await client
+    .from("product_interactions_view")
+    .select("*")
+    .eq("barcode", barcode)
+    .limit(1)
+    .single();
+  if (newError) {
+    return c.json({
+      code: 500,
+      data: null,
+      msg: newError.message,
+    });
+  }
+  const productInfo = {
+    id: newData.product_id,
+    name: newData.name,
+    barcode: newData.barcode,
+    brands: newData.brands,
+    imageUrl: newData.image_url,
+    categories: newData.categories,
+    isReviewed: newData.is_reviewed,
+    userRating: newData.user_rating,
+    userNotes: newData.user_note,
+    dateReviewed: newData.date_reviewed,
+    dateScanned: newData.date_scanned,
+    likeCounts: newData.likes_count,
+    aiHealthConclusion: newData.ai_opinion,
+    aiHealthSummary: newData.ai_opinion,
+  };
+  return c.json({
+    code: 200,
+    data: productInfo,
+    msg: "Product registered successfully",
+  });
+})
+
+export default productRouter;

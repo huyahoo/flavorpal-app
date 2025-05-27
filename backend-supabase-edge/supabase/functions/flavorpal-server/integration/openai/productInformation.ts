@@ -21,8 +21,9 @@ const schema = z.object({
   productDescription: z.string(),
 })
 
-export const getProductInformation = async (imageBase64: string, client: OpenAI) => {
+export const getProductInformation = async (imageBase64OrLink: string) => {
   // Retrieve the text description of the image
+  const client = new OpenAI();
   const response = await client.responses.parse({
     model,
     input: [
@@ -39,7 +40,7 @@ export const getProductInformation = async (imageBase64: string, client: OpenAI)
           },
           {
             type: "input_image",
-            image_url: imageBase64,
+            image_url: imageBase64OrLink,
             detail: "auto",
           },
         ],

@@ -38,25 +38,25 @@ export type Database = {
         Row: {
           created_at: string
           id: number
-          opinion: string
+          opinion: string | null
           product_id: number
-          reason: string
+          reason: string | null
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: number
-          opinion: string
+          opinion?: string | null
           product_id: number
-          reason: string
+          reason?: string | null
           user_id: string
         }
         Update: {
           created_at?: string
           id?: number
-          opinion?: string
+          opinion?: string | null
           product_id?: number
-          reason?: string
+          reason?: string | null
           user_id?: string
         }
         Relationships: [
@@ -139,8 +139,8 @@ export type Database = {
       products: {
         Row: {
           barcode: string | null
-          brands: Json | null
-          categories: Json | null
+          brands: string | null
+          categories: string | null
           created_at: string
           generic_name: string | null
           id: number
@@ -152,8 +152,8 @@ export type Database = {
         }
         Insert: {
           barcode?: string | null
-          brands?: Json | null
-          categories?: Json | null
+          brands?: string | null
+          categories?: string | null
           created_at?: string
           generic_name?: string | null
           id?: number
@@ -165,8 +165,8 @@ export type Database = {
         }
         Update: {
           barcode?: string | null
-          brands?: Json | null
-          categories?: Json | null
+          brands?: string | null
+          categories?: string | null
           created_at?: string
           generic_name?: string | null
           id?: number
@@ -262,8 +262,8 @@ export type Database = {
           ai_opinion: string | null
           ai_reason: string | null
           barcode: string | null
-          brands: Json | null
-          categories: Json | null
+          brands: string | null
+          categories: string | null
           date_reviewed: string | null
           date_scanned: string | null
           image_url: string | null
