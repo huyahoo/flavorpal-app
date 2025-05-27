@@ -142,7 +142,8 @@ const productToReview = ref<ProductInteraction | null>(null);
 
 onMounted(async () => {
   if (productId) {
-    const existingItem = historyStore.getProductInteractionById(productId);
+    const existingItem = await historyStore.getProductInteractionById(productId);
+    console.log("VIEW (onMounted): existingItem:", existingItem);
     if (existingItem) {
       productToReview.value = existingItem;
       reviewData.name = existingItem.name;

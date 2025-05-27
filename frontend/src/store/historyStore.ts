@@ -2,7 +2,7 @@
 import { defineStore } from 'pinia';
 import type { ProductInteraction, AiHealthConclusion, ReViewDataPayload } from '../types';
 import { fetchProductInteractionsApi, fetchScanStatisticsApi } from '../services/historyService';
-import { getAllProductsApi, addReviewForProductApi, updateReviewForProductApi } from '../services/productService';
+import { getAllProductsApi, getProductByIdApi, addReviewForProductApi, updateReviewForProductApi } from '../services/productService';
 
 export type ReviewedFilterStatus = 'all' | 'reviewed_only' | 'scanned_only';
 
@@ -155,12 +155,6 @@ export const useHistoryStore = defineStore('history', {
       if (state.filterReviewedStatus === 'scanned_only' && state.filterAiConclusion) count++;
       return count;
     },
-    // TODO: change to get product details from api
-    getProductInteractionById: (state) => {
-      return (id: number): ProductInteraction | undefined => {
-        return state.allProductInteractions.find(item => item.id == id);
-      };
-    },
 
     getRecentlyScannedItems: (state) => (count: number = 3): ProductInteraction[] => {
         return [...state.allProductInteractions]
@@ -224,6 +218,12 @@ export const useHistoryStore = defineStore('history', {
       } finally {
         this.loadingStats = false;
       }
+    },
+
+    async getProductInteractionById(id: number): Promise<ProductInteraction | undefined> {
+      const response = await getProductByIdApi(id);
+      console.log("STORE (getProductInteractionById): API call response:", response);
+      return response;
     },
 
     setFilters(filters: Partial<HistoryFilters>) { /* ... */ },

@@ -254,7 +254,8 @@ const loadProductData = async (productId: number) => {
     await historyStore.loadProductInteractions();
   }
 
-  const foundProduct = historyStore.getProductInteractionById(productId);
+  const foundProduct = await historyStore.getProductInteractionById(productId);
+  console.log("VIEW (loadProductData): foundProduct:", foundProduct);
 
   if (foundProduct) {
     product.value = {
