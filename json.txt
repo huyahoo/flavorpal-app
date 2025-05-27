@@ -1,0 +1,122 @@
+{
+  "code": 200,
+  "data": [
+    {
+      "id": 1,
+      "name": "Twix twix ice cream bar",
+      "brands": [
+        "Twix"
+      ],
+      "barcode": "5000159484695",
+      "imageUrl": "https://images.openfoodfacts.org/images/products/500/015/948/4695/front_fr.85.200.jpg",
+      "categories": [
+        "Snacks",
+        "Desserts",
+        "Snacks sucrés",
+        "Surgelés",
+        "Desserts glacés",
+        "Barres",
+        "Glaces et sorbets",
+        "Glaces",
+        "Barres glacées"
+      ],
+      "isReviewed": true,
+      "userRating": 2,
+      "userNote": "testing review 2",
+      "aiHealthSummary": null,
+      "aiHealthConclusion": null,
+      "dateScanned": "2025-05-26T10:22:35.208843",
+      "dateReviewed": "2025-05-26T14:10:00.015281"
+    },
+    {
+      "id": 3,
+      "name": "Original Taste",
+      "brands": [
+        "Coca-Cola"
+      ],
+      "barcode": "5449000054227",
+      "imageUrl": "https://images.openfoodfacts.org/images/products/544/900/005/4227/front_en.406.200.jpg",
+      "categories": [
+        "Beverages and beverages preparations",
+        "Beverages",
+        "Carbonated drinks",
+        "Sodas",
+        "Non-alcoholic beverages",
+        "Colas",
+        "Sweetened beverages"
+      ],
+      "isReviewed": false,
+      "userRating": null,
+      "userNote": null,
+      "aiHealthSummary": null,
+      "aiHealthConclusion": null,
+      "dateScanned": "2025-05-26T10:22:35.208843",
+      "dateReviewed": null
+    },
+    {
+      "id": 5,
+      "name": "Coca-Cola",
+      "brands": null,
+      "barcode": null,
+      "imageUrl": "https://lsjrpoqmdydtndingyax.supabase.co/storage/v1/object/public/product-img/2359e99a21d14fa3b1f53e8ea94e7c2f.jpg",
+      "categories": null,
+      "isReviewed": false,
+      "userRating": null,
+      "userNote": null,
+      "aiHealthSummary": null,
+      "aiHealthConclusion": null,
+      "dateScanned": "2025-05-26T10:27:48.850569",
+      "dateReviewed": null
+    },
+    {
+      "id": 7,
+      "name": "Sprite",
+      "brands": null,
+      "barcode": null,
+      "imageUrl": "https://lsjrpoqmdydtndingyax.supabase.co/storage/v1/object/public/product-img/8d91cb4932cb4c408adc933bb103aceb.jpg",
+      "categories": null,
+      "isReviewed": false,
+      "userRating": null,
+      "userNote": null,
+      "aiHealthSummary": null,
+      "aiHealthConclusion": null,
+      "dateScanned": "2025-05-26T10:28:49.947133",
+      "dateReviewed": null
+    },
+    {
+      "id": 4,
+      "name": "おいしい牛乳",
+      "brands": null,
+      "barcode": null,
+      "imageUrl": "https://lsjrpoqmdydtndingyax.supabase.co/storage/v1/object/public/product-img/cf8c2a86991a44afb2d9604fac00d5ef.jpg",
+      "categories": null,
+      "isReviewed": false,
+      "userRating": null,
+      "userNote": null,
+      "aiHealthSummary": "avoid",
+      "aiHealthConclusion": "The product ingredient list shows it is 100% raw milk, which naturally contains lactose. For someone with lactose intolerance, consuming whole milk may cause digestive discomfort. Additionally, this product does not indicate reduced or low sugar content, so it may not meet the preference for less sugar.",
+      "dateScanned": "2025-05-27T11:50:49.926176",
+      "dateReviewed": null
+    },
+    {
+      "id": 19,
+      "name": "Albeni Bar Cake",
+      "brands": [
+        "Ülker"
+      ],
+      "barcode": "8690504063803",
+      "imageUrl": "https://images.openfoodfacts.org/images/products/869/050/406/3803/front_en.12.400.jpg",
+      "categories": [
+        "Candy chocolate bars"
+      ],
+      "isReviewed": false,
+      "userRating": null,
+      "userNote": null,
+      "aiHealthSummary": null,
+      "aiHealthConclusion": null,
+      "dateScanned": "2025-05-27T12:35:56.884500",
+      "dateReviewed": null
+    }
+  ],
+  "msg": "Products fetched successfully"
+}

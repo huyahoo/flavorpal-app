@@ -36,14 +36,14 @@ def get_me(current_user: models.User = Depends(get_current_user), db: Session = 
             badge_db = db.query(models.UserBadge).filter(models.UserBadge.badge_id == badge.id).first()
             badge_obj = schemas.UserBadgeFrontendOut(
                 id=badge_db.id,
-                date_earned=badge_db.date_earned
+                dateEarned=badge_db.date_earned
             ) 
             badges.append(badge_obj)
     user_profile = schemas.UserProfileFrontendOut(
         id=current_user.id,
         name=current_user.name,
         email=current_user.email,
-        health_flags=current_user.health_flags,
+        healthFlags=current_user.health_flags,
         badges=badges
     )
     return Response(code=200, data=user_profile, msg="User logged in successfully")
