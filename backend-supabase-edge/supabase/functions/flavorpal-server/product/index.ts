@@ -4,6 +4,7 @@ import { requireAuth } from "../middleware/auth.ts";
 import { registerProductByBarcode, registerProductByImgBase64 } from "./productRegister.ts";
 import { User } from "npm:@supabase/auth-js@2.69.1";
 import { getHealthSuggestion } from "../integration/openai/healthSuggestion.ts";
+import { getCommonError, getCommonSuccess } from "../utils/commonResponse.ts";
 
 type Variables = {
   user: User
@@ -279,6 +280,7 @@ productRouter.patch("ai-suggestions", async (c) => {
     });
   }
   const userHealthFlags = userData.user.user_metadata?.healthFlags || [];
+  console.log("User health flags:", userHealthFlags);
   // Call OpenAI for analytics
   const result = await getHealthSuggestion(
     userHealthFlags.join(","),
@@ -337,7 +339,7 @@ productRouter.patch("ai-suggestions", async (c) => {
     dateScanned: data.date_scanned,
     likeCounts: data.likes_count,
     aiHealthConclusion: data.ai_opinion,
-    aiHealthSummary: data.ai_opinion,
+    aiHealthSummary: data.ai_reason,
   };
   return c.json({
     code: 200,
@@ -345,5 +347,26 @@ productRouter.patch("ai-suggestions", async (c) => {
     msg: "Product registered successfully",
   });
 });
+
+
+productRouter.delete("/:id", async (c) => {
+  // Actually is delete the history. The product will be persisted in the database because of RLS.
+  const productId = parseInt(c.req.param("id"));
+  const userId = c.get("user").id;
+  const client = getSupabaseClient();
+  const { data, error } = await client
+    .from("history")
+    .delete()
+    .eq("product_id", productId)
+    .eq("user_id", userId)
+    .select()
+  if (error) {
+    return c.json(getCommonError(error.message, 500))
+  }
+  if (data.length === 0) {
+    return c.json(getCommonError("No history found for this product", 404))
+  }
+  return c.json(getCommonSuccess(data[0], "History deleted successfully"))
+})
 
 export default productRouter;

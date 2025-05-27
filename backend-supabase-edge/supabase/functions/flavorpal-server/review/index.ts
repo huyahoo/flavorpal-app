@@ -185,7 +185,7 @@ reviewRouter.post("like", async (c) => {
   const { data: reviewData, error: reviewError } = await client
     .from("reviews")
     .select()
-    .eq("review_id", reviewId)
+    .eq("id", reviewId)
     .single();
   if (reviewError) {
     return c.json(getCommonError(reviewError.message));
@@ -196,7 +196,7 @@ reviewRouter.post("like", async (c) => {
     .update({
       likes_count: reviewData.likes_count,
     })
-    .eq("review_id", reviewId)
+    .eq("id", reviewId)
     .select()
     .single();
   if (updateError) {
