@@ -254,8 +254,7 @@ def update_ai_health_suggestion(
         return response.not_found(msg="Product not found", code=404)
 
     health_flags = current_user.health_flags
-    health_flags = ", ".join(health_flags)
-    print(f'health_flags: {health_flags}')
+    health_flags = ", ".join(health_flags) if len(health_flags) > 0 else ""
     summary, conclusion = services.get_AI_health_suggestion(request.base64Image, health_flags)
 
     product.ai_health_summary = summary
