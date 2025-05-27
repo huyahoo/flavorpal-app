@@ -54,3 +54,5 @@ badgeRouter.post("/", async (c) => {
 
   return c.json(getCommonSuccess(null, "Badge added successfully"));
 })
+
+export default badgeRouter;

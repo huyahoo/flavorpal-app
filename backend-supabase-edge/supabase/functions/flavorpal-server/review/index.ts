@@ -204,3 +204,5 @@ reviewRouter.post("like", async (c) => {
   }
   return c.json(getCommonSuccess({}, "Successfully liked the review"));
 })
+
+export default reviewRouter;
