@@ -1,5 +1,5 @@
 from .product import ProductBase, ProductCreate, ProductOut, ProductUpdate, ProductReview, ProductAiGenerated, ProductDetailsFrontend, ProductDetailsFrontendOut, ProductDetailsThroughBarcode, ProductDetailsThroughBarcodeOut, ProductImageRequest
-from .review import ReviewBase, ReviewCreate, ReviewUpdate, ReviewOut, ReviewProductCreate, ReviewProductOut, ReviewUserCreate, ReviewUserOut, ReviewProductCreateFrontend, ReviewProductUpdateFrontend
+from .review import ReviewBase, ReviewCreate, ReviewUpdate, ReviewOut, ReviewProductCreate, ReviewProductOut, ReviewUserCreate, ReviewUserOut, ReviewProductCreateFrontend, ReviewProductUpdateFrontend, ReviewProductListFrontend, ReviewProductListFrontendOut
 from .healthflag import HealthFlag, HealthFlagOut, UserHealthFlagOut
 from .badge import Badge, BadgeCreate, BadgeOut, UserBadgeOut
 from .history import HistoryCreate, HistoryOut

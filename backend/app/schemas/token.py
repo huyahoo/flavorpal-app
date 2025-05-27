@@ -1,6 +1,7 @@
 # backend/app/schemas/token.py
 from pydantic import BaseModel
 
+
 class Token(BaseModel):
     """
     Pydantic schema for the access token response.
