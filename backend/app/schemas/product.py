@@ -8,12 +8,13 @@ class ProductBase(BaseModel):
 
 
 class ProductCreate(ProductBase):
+    name: str # Required for creation
     image_url: Optional[str] = None
     barcode: Optional[str] = None
     generic_name: Optional[str] = None
     ingredients: Optional[str] = None
-    categories: Optional[str] = None
-    brands: Optional[str] = None
+    categories: Optional[List[str]] = None
+    brands: Optional[List[str]] = None
     image_embedding: Optional[List[float]] = None  
     model_config = ConfigDict(from_attributes=True)
 
@@ -22,8 +23,8 @@ class ProductOut(ProductBase):
     name: Optional[str] = None
     generic_name: Optional[str] = None
     ingredients: Optional[str] = None
-    categories: Optional[str] = None
-    brands: Optional[str] = None
+    categories: Optional[List[str]] = None
+    brands: Optional[List[str]] = None
     model_config = ConfigDict(from_attributes=True)
         
 class ProductUpdate(ProductBase):
@@ -56,17 +57,18 @@ class ProductDetailsFrontend(BaseModel):
     user_note:Optional[str] = None
     ai_health_summary:Optional[str] = None
     ai_health_conclusion:Optional[str] = None
-    data_scanned_at:Optional[datetime] = None
-    data_reviewed:Optional[str] = None
+    date_scanned:Optional[datetime] = None
+    date_reviewed:Optional[datetime] = None
     class Config:
         orm_mode = True
 
 class ProductDetailsFrontendOut(BaseModel):
-    product:ProductDetailsFrontend
+    product:List[ProductDetailsFrontend]
     class Config:
         orm_mode = True
 
 class ProductDetailsThroughBarcode(BaseModel):
+    id:int
     name:str
     barcode:str
     brand:Optional[List[str]] = None
@@ -89,8 +91,4 @@ class ProductDetailsThroughBarcodeOut(ProductDetailsThroughBarcode):
 class ProductImageRequest(BaseModel):
     base64image: str
 
-class ProductDetailsThroughBarcodeOut(ProductDetailsThroughBarcode):
-    pass
-    class Config:
-        orm_mode = True
 

@@ -26,6 +26,7 @@ services:
     working_dir: /code
     volumes:
       - ./backend:/code
+
     command: >
       sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --ssl-keyfile /code/certs/key.pem --ssl-certfile /code/certs/cert.pem"
     ports:
