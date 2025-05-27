@@ -7,6 +7,7 @@ from typing import List
 from app.utils import response 
 from app.utils.ResponseResult import Response
 from app.utils.dependencies import get_current_user
+from datetime import datetime
 
 router = APIRouter(
     prefix="/products",
@@ -164,6 +165,8 @@ def update_ai_health_suggestion(
         return response.not_found(msg="Product not found", code=404)
 
     health_flags = current_user.health_flags
+    health_flags = ", ".join(health_flags)
+    print(f'health_flags: {health_flags}')
     summary, conclusion = services.get_AI_health_suggestion(request.base64Image, health_flags)
 
     product.ai_health_summary = summary

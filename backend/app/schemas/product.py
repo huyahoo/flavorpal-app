@@ -88,5 +88,5 @@ class ProductDetailsThroughBarcodeOut(ProductDetailsThroughBarcode):
         orm_mode = True
 
 class ProductAISuggestionRequest(BaseModel):
-    id: int
+    productId: int
     base64Image: str
