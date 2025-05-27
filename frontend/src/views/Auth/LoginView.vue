@@ -83,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useAuthStore } from '../../store/auth'; // Import the authentication store
 import { useRouter } from 'vue-router'; // Import the router for navigation
 import type { LoginCredentials } from '../../types';
@@ -120,6 +120,10 @@ const handleLogin = async () => {
   }
 
 };
+
+onMounted(() => {
+  authStore.error = null;
+});
 </script>
 
 <style scoped>

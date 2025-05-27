@@ -145,7 +145,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useAuthStore } from '../../store/auth';
 import type { UserCreatePayload } from '../../types';
 import { useRouter } from 'vue-router';
@@ -221,6 +221,10 @@ const proceedToLogin = () => {
     showSuccessModal.value = false;
     router.push({ name: 'Login' });
 };
+
+onMounted(() => {
+  authStore.error = null;
+});
 </script>
 
 <style scoped>

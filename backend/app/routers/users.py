@@ -166,13 +166,8 @@ def update_user(user_id: int, payload: schemas.UserUpdate, db: Session = Depends
 
     if "name" in update_data:
         db_user.name = update_data["name"]
-    # if "email" in update_data:
-    #     existing_email_user = db.query(models.User).filter(models.User.email == update_data["email"]).first()
-    #     if existing_email_user and existing_email_user.id != user_id:
-    #         raise HTTPException(status_code=400, detail="Email already registered by another user.")
-    #     db_user.email = update_data["email"]
-    
-    if payload.health_flags is not None:
+
+    if "health_flags" in update_data:
         db.query(models.UserHealthFlag).filter(models.UserHealthFlag.user_id == user_id).delete()
         for flag_name_in in payload.health_flags:
             flag_db = db.query(models.HealthFlag).filter(models.HealthFlag.name == flag_name_in).first()
@@ -183,7 +178,7 @@ def update_user(user_id: int, payload: schemas.UserUpdate, db: Session = Depends
             user_health_flag_assoc = models.UserHealthFlag(user_id=db_user.id, health_flag_id=flag_db.id)
             db.add(user_health_flag_assoc)
 
-    if payload.badges is not None:
+    if "badges" in update_data:
         for badge_obj in payload.badges:
             badge = db.query(models.Badge).filter(models.Badge.name == badge_obj.name).first()
             if not badge:

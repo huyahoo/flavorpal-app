@@ -58,15 +58,11 @@ export const fetchCurrentUserApi = async (): Promise<ApiResponse<User>> => {
 /**
  * Updates user data by ID.
  * @param userId - The ID of the user to update.
- * @param userData - The user data to update.
+ * @param payload - The user data to update.
  * @returns A Promise resolving to the updated user data.
  */
-export const updateUserApi = async (userId: number, userData: UserUpdatePayload): Promise<ApiResponse<User>> => {
-  const payload = {
-      ...userData,
-      health_flags: userData.health_flags,
-      badges: userData.badges,
-  };
+export const updateUserApi = async (userId: number, payload: UserUpdatePayload): Promise<ApiResponse<User>> => {
+  console.log("SERVICE (updateUserApi): Updating user ID", userId, "with payload:", payload);
   const response = await apiClient.patch<ApiResponse<User>>(`/users/${userId}`, payload);
   console.log("AuthStore: Update user response:", response);
   return response.data;
