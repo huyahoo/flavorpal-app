@@ -1,4 +1,4 @@
-from .product import ProductBase, ProductCreate, ProductOut, ProductUpdate, ProductReview, ProductAiGenerated, ProductDetailsFrontend, ProductDetailsFrontendOut, ProductDetailsThroughBarcode, ProductDetailsThroughBarcodeOut, ProductImageRequest
+from .product import ProductBase, ProductCreate, ProductOut, ProductUpdate, ProductReview, ProductAiGenerated, ProductDetailsFrontend, ProductDetailsFrontendOut, ProductDetailsThroughBarcode, ProductDetailsThroughBarcodeOut, ProductImageRequest, ProductAISuggestionRequest
 from .review import ReviewBase, ReviewCreate, ReviewUpdate, ReviewOut, ReviewProductCreate, ReviewProductOut, ReviewUserCreate, ReviewUserOut, ReviewProductCreateFrontend, ReviewProductUpdateFrontend
 from .healthflag import HealthFlag, HealthFlagOut, UserHealthFlagOut
 from .badge import Badge, BadgeCreate, BadgeOut, UserBadgeOut

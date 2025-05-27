@@ -81,3 +81,12 @@ class ProductDetailsThroughBarcodeOut(BaseModel):
         orm_mode = True
 class ProductImageRequest(BaseModel):
     base64image: str
+
+class ProductDetailsThroughBarcodeOut(ProductDetailsThroughBarcode):
+    pass
+    class Config:
+        orm_mode = True
+
+class ProductAISuggestionRequest(BaseModel):
+    id: int
+    base64Image: str
