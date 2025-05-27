@@ -9,6 +9,7 @@ from app.utils.ResponseResult import Response
 from app.utils.dependencies import get_current_user
 import requests
 from datetime import datetime
+import json
 router = APIRouter(
     prefix="/products",
     tags=["Products"]
@@ -200,13 +201,14 @@ def get_product_by_barcode(barcode: str, db: Session = Depends(get_db),current_u
                 brands = [brand.strip() for brand in product_data.get("brands").split(",")]
             if product_data.get("categories"):
                 categories = [category.strip() for category in product_data.get("categories").split(",")]
+
     if not product and  product_data:
         product = models.Product(
             barcode=barcode,
             image_url=product_data.get("image_url"),
             name=product_data.get("product_name"),
             generic_name=product_data.get("generic_name"),
-            ingredients=product_data.get("ingredients"),
+            ingredients=json.dumps(product_data.get("ingredients")),
             categories=categories,
             brands=brands,
         )
