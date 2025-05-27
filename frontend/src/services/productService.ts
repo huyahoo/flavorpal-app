@@ -87,8 +87,8 @@ export const getProductByBarcodeApi = async (barcode: string): Promise<ApiRespon
 export const getProductByIdApi = async (productId: number): Promise<ApiResponse<ProductInteraction>> => {
   console.log(`SERVICE (getProductByIdApi): Fetching product ID ${productId}...`);
   const response = await apiClient.get<ApiResponse<ProductInteraction>>(`/products/${productId}`);
-  console.log("SERVICE (getProductByIdApi): API call response:", response.data.data.product);
-  const productInteraction = mapApiProductToProductInteraction(response.data.data.product);
+  console.log("SERVICE (getProductByIdApi): API call response:", response.data.data);
+  const productInteraction = mapApiProductToProductInteraction(response.data.data);
   console.log("SERVICE (getProductByIdApi): API call response:", productInteraction);
 
   return productInteraction;
