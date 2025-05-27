@@ -157,13 +157,16 @@ def delete_product(product_id: int, db: Session = Depends(get_db)):
 @router.get("/product/{barcode}", response_model=Response[schemas.ProductDetailsThroughBarcodeOut])
 def get_product_by_barcode(barcode: str, db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):
     product = db.query(models.Product).filter(models.Product.barcode == barcode).first()
-    
+
     OPEN_FOOD_FACTS_URL = f"https://world.openfoodfacts.org/api/v2/product/{barcode}.json"
     image_ingredients_url = None
     image_nutrition_url = None
     product_info = None
     brands = None
     categories = None
+    if requests.get(OPEN_FOOD_FACTS_URL).status_code != 200 and not product:
+        return response.not_found(msg="Product not found",code=404)
+    
     if requests.get(OPEN_FOOD_FACTS_URL).status_code == 200:
         data = requests.get(OPEN_FOOD_FACTS_URL).json()
         product_data = data.get("product",{})
@@ -176,6 +179,7 @@ def get_product_by_barcode(barcode: str, db: Session = Depends(get_db),current_u
                 brands = [brand.strip() for brand in product_data.get("brands").split(",")]
             if product_data.get("categories"):
                 categories = [category.strip() for category in product_data.get("categories").split(",")]
+    
     if not product and not product_data:
         product = models.Product(
             barcode=barcode,
