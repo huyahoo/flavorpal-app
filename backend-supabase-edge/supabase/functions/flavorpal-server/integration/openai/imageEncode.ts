@@ -1,4 +1,6 @@
 import OpenAI from "jsr:@openai/openai";
+import { z } from "npm:zod";
+import { zodTextFormat } from "npm:openai/helpers/zod";
 
 const prompt = `
 You are a visual agent
@@ -9,11 +11,9 @@ Make sure your description is clear.
 Your description should be done IN ENGLISH, EXCEPT for the product name, which should be in its native language.
 
 Follow those aspects when describing the products:
-1. The name of the product, AS IN ITS DESCRIBED NATIVE LANGUAGE, DO NOT TRANSLATE ITS NAME
-2. The type of the product.
-3. The manufacturer of the product, IF IN SIGHT
-4. The appearance of the product, including color
-5. Other important aspects that can help discriminate a product from others
+- The name of the product, AS IN ITS DESCRIBED NATIVE LANGUAGE, DO NOT TRANSLATE ITS NAME
+- The type of the product.
+- The manufacturer of the product, IF IN SIGHT
 
 Describe clear yet concisely.
 Remember that your words will be served as DISCRIMINATIVE EMBEDDINGS to tell different products apart in the database
@@ -28,10 +28,16 @@ If there are multiple products in the scene, describe the ones that are:
 const descriptionModel = "gpt-4.1-mini";
 const textEmbeddingModel = "text-embedding-3-small";
 
+const schema = z.object({
+  productName: z.string(),
+  productType: z.string(),
+  productManufacturer: z.string(),
+})
+
 export const getImageEmbedding = async (imageBase64OrLink: string) => {
   const client = new OpenAI();
   // Retrieve the text description of the image
-  const textDescriptionResponse = await client.responses.create({
+  const textDescriptionResponse = await client.responses.parse({
     model: descriptionModel,
     input: [
       {
@@ -53,9 +59,12 @@ export const getImageEmbedding = async (imageBase64OrLink: string) => {
         ],
       },
     ],
+    text: {
+      format: zodTextFormat(schema, "imageDescription"),
+    },
   });
 
-  const textDescription = textDescriptionResponse.output_text;
+  const textDescription = JSON.stringify(textDescriptionResponse.output_parsed, null, 2);
 
   // Retrieve text embedding of the description
   const textDescriptionEmbeddingResponse = await client.embeddings.create({
