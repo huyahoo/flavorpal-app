@@ -9,9 +9,14 @@ from app.utils.dependencies import get_current_user
 
 router = APIRouter(prefix="/badges", tags=["Badges"])
 
-@router.get("/", response_model=Response[List[schemas.UserBadge]])
+@router.get("/", response_model=Response[List[schemas.UserBadgeFrontend]])
 def get_current_user_badges(current_user: models.User = Depends(get_current_user)):
-    user_badges = current_user.user_badges;
+    user_badges = [
+        schemas.UserBadgeFrontend(
+            badge=user_badge.badge,
+            createdAt=user_badge.created_at
+        ) for user_badge in current_user.user_badges
+    ];
     if not current_user:
         raise response.not_found(msg="User not found",code=404)
     return Response(code=200, data=user_badges, msg="User badges fetched successfully")
@@ -22,12 +27,15 @@ def get_all_badges(db: Session = Depends(get_db)):
     print(badges)
     return Response(code=200, data=badges, msg="All badges fetched successfully")
 
-@router.patch("/{badge_id}", response_model=Response[List[schemas.UserBadge]])
+@router.patch("/update/{badge_id}", response_model=Response[schemas.UserBadgeFrontend])
 def update_current_user_badges(badge_id: int, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
     if not current_user:
         raise response.not_found(msg="User not found",code=404)
-    badge = db.query(models.Badge).filter(models.Badge.id == badge_id)
     user_badge = models.UserBadge(user_id=current_user.id, badge_id=badge_id)
     db.add(user_badge)
     db.commit()
-    return Response(code=200, data=badge, msg="User badges fetched successfully")
+    user_badge_return = schemas.UserBadgeFrontend(
+        badge=user_badge.badge,
+        createdAt=user_badge.created_at
+    )
+    return Response(code=200, data=user_badge_return, msg="User badges updated successfully")

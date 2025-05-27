@@ -27,8 +27,8 @@ class UserProfileOut(UserBase):
     id: int
     healthFlags: List[str] = []
     badges: List[str] = []
-    createdAt: datetime
-    updatedAt: datetime
+    created_at: datetime
+    updated_at: datetime
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -81,21 +81,11 @@ class UserCreateFrontendOut(BaseModel):
     class Config:
         orm_mode = True
 
-
-class UserBadgeFrontendOut(BaseModel):
-    id: int
-    dateEarned: datetime
-
-    class Config:
-        orm_mode = True
-
-
 class UserProfileFrontendOut(BaseModel):
     id: int
     name: str
     email: EmailStr
     healthFlags: Optional[List[str]] = []
-    badges: Optional[List[UserBadgeFrontendOut]] = []
 
     class Config:
         orm_mode = True
