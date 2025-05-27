@@ -152,7 +152,7 @@ onMounted(async () => {
 
   const productId = route.query.editProductId as string || route.query.scanId as string;
   if (productId) {
-    const existingItem = historyStore.getProductInteractionById(productId);
+    const existingItem = historyStore.getProductInteractionById(Number(productId));
     if (existingItem) {
       productToReview.value = existingItem; // Store for AI summary display
       reviewData.productName = existingItem.name;

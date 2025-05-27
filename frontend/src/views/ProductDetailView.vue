@@ -234,12 +234,11 @@ const router = useRouter();
 const uiStore = useUiStore();
 const route = useRoute();
 const historyStore = useHistoryStore();
-
-const product = ref<(ProductInteraction & { isNewForUser?: boolean }) | null>(null); 
-const relatedProducts = ref<Partial<ProductInteraction & {isReviewed?: boolean, id?: string}>[]>([]); 
-const loadingProduct = ref<boolean>(true); 
-const productUpdateError = ref<string | null>(null); 
-const previousRouteName = ref<string | null>(null);
+const product = ref<ProductInteraction | null>(null);
+const relatedProducts = ref<ProductInteraction[]>([]);
+const loadingProduct = ref<boolean>(true);
+const productUpdateError = ref<string | null>(null);
+const previousRouteName = ref<string | null>(null); 
 const showDeleteConfirmModal = ref(false);
 
 const showImageSourceModal = ref(false);
@@ -249,7 +248,7 @@ let analysisController: AbortController | null = null;
 const showPhotoCapturer = ref(false);
 
 
-const loadProductData = async (productId: string) => {
+const loadProductData = async (productId: number) => {
   loadingProduct.value = true;
   if (historyStore.allProductInteractions.length === 0 && !historyStore.loadingInteractions) {
     await historyStore.loadProductInteractions();
@@ -260,7 +259,6 @@ const loadProductData = async (productId: string) => {
   if (foundProduct) {
     product.value = {
         ...foundProduct,
-        isNewForUser: (foundProduct as any).isNewForUser === undefined ? undefined : (foundProduct as any).isNewForUser
     };
 
     relatedProducts.value = historyStore.allProductInteractions
@@ -431,7 +429,7 @@ const processIngredientImageFile = async (imageFile: File) => {
         if (analysisController.signal.aborted) { console.log("Ingredient analysis was cancelled."); return; }
         if (success) {
             const updatedItem = historyStore.getProductInteractionById(product.value.id);
-            if (updatedItem) product.value = { ...updatedItem, isNewForUser: product.value.isNewForUser };
+            if (updatedItem) product.value = { ...updatedItem };
         } else {
             productUpdateError.value = historyStore.error || "Failed to update insights from image.";
         }

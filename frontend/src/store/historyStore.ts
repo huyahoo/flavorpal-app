@@ -2,6 +2,7 @@
 import { defineStore } from 'pinia';
 import type { ProductInteraction, AiHealthConclusion } from '../types';
 import { fetchProductInteractionsApi, fetchScanStatisticsApi } from '../services/historyService';
+import { getAllProductsApi } from '../services/productService';
 
 export type ReviewedFilterStatus = 'all' | 'reviewed_only' | 'scanned_only';
 
@@ -69,6 +70,28 @@ export const formatDateForDisplay = (dateInput?: string | Date): string => {
     }
 };
 
+const convertDateToDate = (dateString: string): string => {
+  return new Date(dateString).toLocaleString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+};
+
+const mapApiProductToProductInteraction = (productList: any[]): ProductInteraction[] => {
+  return productList.map((item: any) => ({
+    id: item.product.id,
+    name: item.product.name,
+    barcode: item.product.barcode,
+    brands: item.product.brands,
+    categories: item.product.categories,
+    dateScanned: convertDateToDate(item.product.data_scanned_at),
+    dateReviewed: convertDateToDate(item.product.data_reviewed),
+    isReviewed: item.product.isReviewed,
+    imageUrl: item.product.image_url,
+    userRating: item.product.user_rating,
+    userNotes: item.product.user_note,
+    aiHealthSummary: item.product.ai_health_summary || "No summary available",
+    aiHealthConclusion: item.product.ai_health_conclusion || "info_needed",
+  }));
+};
+
 export const useHistoryStore = defineStore('history', {
   state: (): HistoryStoreState => ({
     allProductInteractions: [],
@@ -85,7 +108,6 @@ export const useHistoryStore = defineStore('history', {
   }),
 
   getters: {
-    // ... (processedHistoryItems, activeFilterCount, getProductInteractionById, getRecentlyScannedItems remain the same) ...
     processedHistoryItems: (state): ProductInteraction[] => {
       let items = [...state.allProductInteractions];
       if (state.filterSearchQuery.trim()) {
@@ -134,10 +156,11 @@ export const useHistoryStore = defineStore('history', {
       return count;
     },
     getProductInteractionById: (state) => {
-      return (id: string): ProductInteraction | undefined => {
-        return state.allProductInteractions.find(item => item.id === id);
+      return (id: number): ProductInteraction | undefined => {
+        return state.allProductInteractions.find(item => item.id == id);
       };
     },
+
     getRecentlyScannedItems: (state) => (count: number = 3): ProductInteraction[] => {
         return [...state.allProductInteractions]
             .sort((a, b) => new Date(b.dateScanned).getTime() - new Date(a.dateScanned).getTime())
@@ -152,25 +175,24 @@ export const useHistoryStore = defineStore('history', {
             this.loadScanStatistics(forceReload)
         ]);
     },
+
     async loadProductInteractions(forceReload: boolean = false) {
-      // ... (logic remains the same) ...
       if (this.allProductInteractions.length > 0 && !forceReload && !this.error) {
-        // return;
+        return;
       }
       this.loadingInteractions = true;
       this.error = null;
+    
       try {
-        let interactions = null;
-        if (!forceReload) {
-          interactions = getInteractionsFromStorage();
-        }
-        if (interactions) {
-          this.allProductInteractions = interactions;
+        const response = await getAllProductsApi();
+        console.log("STORE (loadProductInteractions): API call response:", response);
+        if (response.code === 200 && response.data) {
+          this.allProductInteractions = mapApiProductToProductInteraction(response.data);
         } else {
-          interactions = await fetchProductInteractionsApi();
-          this.allProductInteractions = interactions;
-          saveInteractionsToStorage(this.allProductInteractions);
+          this.error = (response && response.msg) || 'Failed to load history or data is not in expected format.';
+          this.allProductInteractions = [];
         }
+        console.log("STORE (loadProductInteractions): API call response:", this.allProductInteractions);
       } catch (err: any) {
         this.error = err.message || 'Failed to load history.';
         this.allProductInteractions = [];
@@ -180,16 +202,15 @@ export const useHistoryStore = defineStore('history', {
     },
 
     async loadScanStatistics(forceReload: boolean = false) {
-      // ... (logic remains the same) ...
-       if (this.totalScanned > 0 && this.discoveredThisMonth > 0 && !forceReload && !this.error && !this.loadingStats) {
-        // return;
+      if (this.totalScanned > 0 && this.discoveredThisMonth > 0 && !forceReload && !this.error && !this.loadingStats) {
+        return;
       }
       this.loadingStats = true;
       try {
         const stats = await fetchScanStatisticsApi();
         this.discoveredThisMonth = stats.discoveredThisMonth;
         if (this.allProductInteractions.length === 0 || forceReload) {
-             this.totalScanned = stats.totalScanned;
+            this.totalScanned = stats.totalScanned;
         } else if (this.totalScanned < stats.totalScanned) {
             this.totalScanned = stats.totalScanned;
         }
@@ -311,11 +332,11 @@ export const useHistoryStore = defineStore('history', {
     },
 
     /**
-     * NEW ACTION: Deletes a product interaction from history.
+     * Deletes a product interaction from history.
      * @param itemId - The ID of the ProductInteraction to delete.
      * @returns True if deletion was successful, false otherwise.
      */
-    async deleteProductInteraction(itemId: string): Promise<boolean> {
+    async deleteProductInteraction(itemId: number): Promise<boolean> {
         this.loadingInteractions = true; // Indicate an operation is in progress
         this.error = null;
         await new Promise(resolve => setTimeout(resolve, 300)); // Simulate API delay

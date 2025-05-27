@@ -104,32 +104,29 @@ export type AiHealthConclusion = 'good' | 'caution' | 'avoid' | 'neutral' | 'inf
  * This can be a scan, a review, or both.
  */
 export interface ProductInteraction {
-  id: string;                    // Unique identifier (can be barcode for scanned items from OFF)
+  id: number;                    // Unique identifier (can be barcode for scanned items from OFF)
   name: string;                  // Name of the product
   imageUrl?: string;             // Optional URL for the product image
-
-  // Scanning-related data
-  dateScanned: string;           // Date when the product was first scanned/encountered
   barcode?: string;              // Barcode if scanned
-
+  brands?: string[];             // Product brands -> TODO: Should be string
+  categories?: string[];         // Product categories -> TODO:Should be string
+  
   // Data from Open Food Facts (or similar API)
   ingredientsText?: string;      // Raw ingredients string
-  categories?: string[];         // Product categories
-  brands?: string[];             // Product brands
   genericName?: string;          // Generic name from OFF
-
+  
   // AI-generated insights (can be client-side mock based on ingredientsText and healthFlags)
   aiHealthSummary?: string;
   aiHealthConclusion?: AiHealthConclusion;
-
+  
   // User Review Details
   isReviewed: boolean;
   userRating?: number;
   userNotes?: string;
   dateReviewed?: string;
 
-  // For local UI state in ProductDetailView for "Is this a new product for you?"
-  isNewForUser?: boolean;
+  // Scanning-related data
+  dateScanned: string;           // Date when the product was first scanned/encountered
 }
 
 export interface PublicReviewItem {

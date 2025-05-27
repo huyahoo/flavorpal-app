@@ -86,7 +86,7 @@
             class="text-flavorpal-gray line-clamp-2"
             :class="viewMode === 'list' ? 'text-sm' : 'text-xs'"
         >
-          {{ item.aiHealthSummary }}
+          {{ item.aiHealthSummary || "No summary available" }}
         </p>
         <div v-show="item.aiHealthConclusion" class="flex items-center mt-1.5">
           <span 
