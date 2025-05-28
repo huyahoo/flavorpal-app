@@ -1,7 +1,7 @@
 // src/store/historyStore.ts
 import { defineStore } from 'pinia';
 import type { ProductInteraction, AiHealthConclusion, ReViewDataPayload } from '../types';
-import { fetchProductInteractionsApi, fetchScanStatisticsApi } from '../services/historyService';
+import { fetchScanStatisticsApi } from '../services/historyService';
 import { getAllProductsApi, getProductByIdApi, addReviewForProductApi, updateReviewForProductApi, deleteProductByIdApi, getProductHealthInsightApi } from '../services/productService';
 import type { CapturedPhoto } from '@/views/Scan/components/PhotoCapturer.vue';
 
@@ -41,35 +41,35 @@ export interface HistoryStoreState {
 
 const HISTORY_INTERACTIONS_STORAGE_KEY = 'flavorpal_history_interactions_v1';
 
-const getInteractionsFromStorage = (): ProductInteraction[] | null => {
-  const interactionsJson = localStorage.getItem(HISTORY_INTERACTIONS_STORAGE_KEY);
-  try {
-    return interactionsJson ? JSON.parse(interactionsJson) : null;
-  } catch (e) {
-    console.error("Error parsing history interactions from localStorage:", e);
-    localStorage.removeItem(HISTORY_INTERACTIONS_STORAGE_KEY);
-    return null;
-  }
-};
+// const getInteractionsFromStorage = (): ProductInteraction[] | null => {
+//   const interactionsJson = localStorage.getItem(HISTORY_INTERACTIONS_STORAGE_KEY);
+//   try {
+//     return interactionsJson ? JSON.parse(interactionsJson) : null;
+//   } catch (e) {
+//     console.error("Error parsing history interactions from localStorage:", e);
+//     localStorage.removeItem(HISTORY_INTERACTIONS_STORAGE_KEY);
+//     return null;
+//   }
+// };
 
-const saveInteractionsToStorage = (interactions: ProductInteraction[]) => {
-  try {
-    localStorage.setItem(HISTORY_INTERACTIONS_STORAGE_KEY, JSON.stringify(interactions));
-  } catch (e) {
-    console.error("Error saving history interactions to localStorage:", e);
-  }
-};
+// const saveInteractionsToStorage = (interactions: ProductInteraction[]) => {
+//   try {
+//     localStorage.setItem(HISTORY_INTERACTIONS_STORAGE_KEY, JSON.stringify(interactions));
+//   } catch (e) {
+//     console.error("Error saving history interactions to localStorage:", e);
+//   }
+// };
 
-const generateInteractionId = (prefix: string = 'item_') => `${prefix}${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+// const generateInteractionId = (prefix: string = 'item_') => `${prefix}${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
-export const formatDateForDisplay = (dateInput?: string | Date): string => {
-    if (!dateInput) return '';
-    try {
-        return new Date(dateInput).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    } catch (e) {
-        return dateInput.toString();
-    }
-};
+// export const formatDateForDisplay = (dateInput?: string | Date): string => {
+//     if (!dateInput) return '';
+//     try {
+//         return new Date(dateInput).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+//     } catch (e) {
+//         return dateInput.toString();
+//     }
+// };
 
 export const useHistoryStore = defineStore('history', {
   state: (): HistoryStoreState => ({
@@ -114,15 +114,14 @@ export const useHistoryStore = defineStore('history', {
           filterDate.setHours(0, 0, 0, 0);
           items = items.filter(item => {
             const itemDateString = (item.isReviewed && item.dateReviewed) ? item.dateReviewed : item.dateScanned;
-            const itemDate = new Date(itemDateString);
-            itemDate.setHours(0, 0, 0, 0);
+            const itemDate = new Date(itemDateString || '');
             return itemDate >= filterDate;
           });
         } catch (e) { console.error("Error parsing date for history filtering:", e); }
       }
       return items.sort((a, b) => {
-        const dateA = new Date((a.isReviewed && a.dateReviewed) ? a.dateReviewed : a.dateScanned).getTime();
-        const dateB = new Date((b.isReviewed && b.dateReviewed) ? b.dateReviewed : b.dateScanned).getTime();
+        const dateA = new Date((a.isReviewed && a.dateReviewed) ? a.dateReviewed : a.dateScanned || '').getTime();
+        const dateB = new Date((b.isReviewed && b.dateReviewed) ? b.dateReviewed : b.dateScanned || '').getTime();
         return dateB - dateA;
       });
     },
@@ -136,9 +135,13 @@ export const useHistoryStore = defineStore('history', {
     },
 
     getRecentlyScannedItems: (state) => (count: number = 3): ProductInteraction[] => {
-        return [...state.allProductInteractions]
-            .sort((a, b) => new Date(b.dateScanned).getTime() - new Date(a.dateScanned).getTime())
-            .slice(0, count);
+      return [...state.allProductInteractions]
+          .sort((a, b) => {
+            const dateA = b.dateScanned ? new Date(b.dateScanned).getTime() : 0;
+            const dateB = a.dateScanned ? new Date(a.dateScanned).getTime() : 0;
+            return dateA - dateB;
+          })
+          .slice(0, count);
     }
   },
 
@@ -243,25 +246,25 @@ export const useHistoryStore = defineStore('history', {
       localStorage.removeItem(HISTORY_INTERACTIONS_STORAGE_KEY);
     },
 
-    addOrUpdateInteraction(interaction: ProductInteraction) {
-        const index = this.allProductInteractions.findIndex(item => item.id === interaction.id);
-        let isNewToList = false;
-        if (index !== -1) {
-            this.allProductInteractions[index] = { ...this.allProductInteractions[index], ...interaction };
-        } else {
-            this.allProductInteractions.unshift(interaction);
-            isNewToList = true;
-        }
-        if (isNewToList) {
-            this.totalScanned++;
-        }
-        this.allProductInteractions.sort((a, b) => {
-          const dateA = new Date((a.isReviewed && a.dateReviewed) ? a.dateReviewed : a.dateScanned).getTime();
-          const dateB = new Date((b.isReviewed && b.dateReviewed) ? b.dateReviewed : b.dateScanned).getTime();
-          return dateB - dateA;
-        });
-        saveInteractionsToStorage(this.allProductInteractions);
-    },
+    // addOrUpdateInteraction(interaction: ProductInteraction) {
+    //     const index = this.allProductInteractions.findIndex(item => item.id === interaction.id);
+    //     let isNewToList = false;
+    //     if (index !== -1) {
+    //         this.allProductInteractions[index] = { ...this.allProductInteractions[index], ...interaction };
+    //     } else {
+    //         this.allProductInteractions.unshift(interaction);
+    //         isNewToList = true;
+    //     }
+    //     if (isNewToList) {
+    //         this.totalScanned++;
+    //     }
+    //     this.allProductInteractions.sort((a, b) => {
+    //       const dateA = new Date((a.isReviewed && a.dateReviewed) ? a.dateReviewed : a.dateScanned).getTime();
+    //       const dateB = new Date((b.isReviewed && b.dateReviewed) ? b.dateReviewed : b.dateScanned).getTime();
+    //       return dateB - dateA;
+    //     });
+    //     saveInteractionsToStorage(this.allProductInteractions);
+    // },
     async saveOrUpdateUserReview(productId: number, reviewData: ReViewDataPayload): Promise<Boolean> {
 
       const product = this.allProductInteractions.find(item => item.id === productId);

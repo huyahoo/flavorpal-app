@@ -3,8 +3,6 @@ import apiClient from './apiClient';
 import type { 
     ProductInteraction, 
     ApiResponse,
-    AiHealthConclusion,
-    FetchStatus,
     ReViewDataPayload
 } from '../types';
 import type { CapturedPhoto } from '@/views/Scan/components/PhotoCapturer.vue';
@@ -24,7 +22,11 @@ export const createProductApi = async (payload: ProductInteraction): Promise<Api
   } catch (error: any) {
     console.log("SERVICE (createProductApi): API call failed:", error);
     console.error("SERVICE (createProductApi): API call failed:", error.response?.data || error.message);
-    return { code: error.response?.status || 500, msg: error.response?.data?.detail || error.response?.data?.msg || "Failed to create product." };
+    return {
+      code: error.response?.status || 500,
+      msg: error.response?.data?.detail || error.response?.data?.msg || "Failed to create product.",
+      data: {} as ProductInteraction,
+    };
   }
 };
 
@@ -114,7 +116,7 @@ export const deleteProductByIdApi = async (productId: number): Promise<ApiRespon
     return { 
       code: error.response?.status || 500, 
       msg: error.response?.data?.detail || error.response?.data?.msg || `Failed to delete product ${productId}.`,
-      data: null
+      data: null,
     };
   }
 };

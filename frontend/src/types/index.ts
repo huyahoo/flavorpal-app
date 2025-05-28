@@ -55,8 +55,8 @@ export interface TokenResponse {
  * Generic API response structure from backend.
  */
 export interface ApiResponse<T = any> {
-    access_token: string | null;
-    token_type: string;
+    access_token?: string | null;
+    token_type?: string;
     code: number;
     data: T;
     msg: string;

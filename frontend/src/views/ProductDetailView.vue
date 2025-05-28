@@ -339,7 +339,7 @@ const markAsNewProductUserChoice = (isNew: boolean) => {
   // }
 };
 
-const viewRelatedItemDetail = (itemId: string) => {
+const viewRelatedItemDetail = (itemId: number) => {
   router.push({ name: 'ProductDetail', params: { id: itemId } });
 };
 

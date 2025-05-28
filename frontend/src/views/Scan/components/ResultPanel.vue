@@ -123,7 +123,7 @@ import StarRating from '@/components/common/StarRating.vue';
 interface Props {
   productForDisplay: ProductInteraction;
   scanAnotherCallback: () => void;
-  navigateToProductDetailCallback: (product_id: string) => void;
+  navigateToProductDetailCallback: (product_id: number) => void;
 }
 
 const props = defineProps<Props>();

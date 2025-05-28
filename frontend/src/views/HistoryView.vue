@@ -174,11 +174,11 @@ const reviewedStatusOptions = [
 ];
 
 const aiConclusionOptions: { label: string, value: AiHealthConclusion }[] = [
-  { label: 'Good for you', value: 'good' },
-  { label: 'Use with caution', value: 'caution' },
+  { label: 'Looks good for you', value: 'ok' },
+  { label: 'Use with caution', value: 'neutral' },
   { label: 'Best to avoid', value: 'avoid' },
-  { label: 'Neutral', value: 'neutral' },
-  { label: 'Info Needed', value: 'info_needed' },
+  { label: 'More info needed', value: 'unknown' },
+  { label: 'Analysis Error', value: 'error_analyzing' },
 ];
 
 

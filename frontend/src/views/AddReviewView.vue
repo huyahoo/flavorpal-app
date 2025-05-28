@@ -62,17 +62,17 @@
 
         <div v-if="currentStep === 4" class="animate-fade-in">
           <h2 class="text-lg font-semibold text-flavorpal-gray-dark mb-3 text-center">Almost there!</h2>
-          <div v-if="productToReview?.aiHealthConclusion && productToReview.aiHealthConclusion !== 'good' && productToReview.aiHealthConclusion !== 'neutral'"
+          <div v-if="productToReview?.aiHealthConclusion && productToReview.aiHealthConclusion !== 'ok'"
                class="p-3 mb-4 rounded-md border"
                :class="{
-                    'bg-yellow-50 border-yellow-400 text-yellow-700': productToReview.aiHealthConclusion === 'caution',
+                    'bg-yellow-50 border-yellow-400 text-yellow-700': productToReview.aiHealthConclusion === 'neutral',
                     'bg-red-50 border-red-400 text-red-700': productToReview.aiHealthConclusion === 'avoid',
-                    'bg-blue-50 border-blue-400 text-blue-700': productToReview.aiHealthConclusion === 'info_needed',
+                    'bg-blue-50 border-blue-400 text-blue-700': productToReview.aiHealthConclusion === 'unknown',
                }">
             <div class="flex items-center">
-                <svg v-if="productToReview.aiHealthConclusion === 'caution'" class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.636-1.178 2.364-1.178 3 0l6.257 11.526A1.75 1.75 0 0115.752 17H4.248a1.75 1.75 0 01-1.507-2.375L8.257 3.099zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg>
+                <svg v-if="productToReview.aiHealthConclusion === 'neutral'" class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" /></svg>
                 <svg v-if="productToReview.aiHealthConclusion === 'avoid'" class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" /></svg>
-                <svg v-if="productToReview.aiHealthConclusion === 'info_needed'" class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                <svg v-if="productToReview.aiHealthConclusion === 'unknown'" class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
                 <p class="text-sm font-medium">
                     <strong class="capitalize">{{ productToReview.aiHealthConclusion }}:</strong>
                     {{ productToReview.aiHealthSummary || "Please review product ingredients based on your health profile." }}

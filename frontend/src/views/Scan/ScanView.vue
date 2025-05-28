@@ -109,7 +109,7 @@ const handleBarcodeSubmission = async (barcodeValue: string) => {
     productForDisplay.value = productInteraction.data as ProductInteraction
   }
   // DELETE AFTER BACKEND INTEGRATION
-  historyStore.addOrUpdateInteraction(productForDisplay.value as ProductInteraction)
+  // historyStore.addOrUpdateInteraction(productForDisplay.value as ProductInteraction)
   //////////////////////////////////////
   state.value = 'result_display'
 }
