@@ -68,9 +68,18 @@ export const getProductByImageApi = async (imgData: CapturedPhoto): Promise<ApiR
     base64image: imgData.data
   }
   console.log(imgData.data)
-  const response = await apiClient.post<ApiResponse<ProductInteraction>>(`/products/image`, payload);
-  console.log("SERVICE (getProductByImageApi): API call response:", response);
-  return response.data;
+  try {
+    const response = await apiClient.post<ApiResponse<ProductInteraction>>(`/products/image`, payload);
+    console.log("SERVICE (getProductByImageApi): API call response:", response);
+    return response.data;
+  } catch (error: any) {
+    console.error("SERVICE (getProductByImageApi): API call failed:", error.response?.data || error.message);
+    return {
+      code: error.response?.status || 500,
+      msg: error.response?.data?.detail || error.response?.data?.msg || "Failed to get product by image.",
+      data: {} as ProductInteraction,
+    };
+  }
 };
 
 /**

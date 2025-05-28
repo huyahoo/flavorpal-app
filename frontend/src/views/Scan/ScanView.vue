@@ -105,13 +105,16 @@ const handleBarcodeSubmission = async (barcodeValue: string) => {
   console.log('Processing submitted barcode:', barcodeValue)
   state.value = 'analyzing'
   const productInteraction = await getProductByBarcodeApi(barcodeValue)
-  if (productInteraction) {
+  if (productInteraction.data) {
     productForDisplay.value = productInteraction.data as ProductInteraction
+    state.value = 'result_display'
+  } else {
+    state.value = 'error'
+    errorMessage.value = 'Product not found'
   }
   // DELETE AFTER BACKEND INTEGRATION
   // historyStore.addOrUpdateInteraction(productForDisplay.value as ProductInteraction)
   //////////////////////////////////////
-  state.value = 'result_display'
 }
 
 const handleNavigateToProductDetail = () => {
@@ -127,10 +130,13 @@ const handlePhotoCapture = async (photo: CapturedPhoto) => {
   state.value = 'analyzing'
   const result = await getProductByImageApi(photo)
   console.log('Photo analysis result:', result)
-  if (result?.data) {
+  if (result.data && result.code === 200) {
     productForDisplay.value = result.data as ProductInteraction
+    state.value = 'result_display'
+  } else {
+    state.value = 'error'
+    errorMessage.value = 'Product not found'
   }
-  state.value = 'result_display'
 }
 
 
