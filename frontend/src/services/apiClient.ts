@@ -2,7 +2,8 @@
 import axios from 'axios';
 import { useAuthStore } from '@/store/auth';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = 'http://54.238.179.149:8000';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
