@@ -116,7 +116,8 @@ export interface BadgeStatistic {
 /**
  * Defines the possible AI health conclusions for a scanned product.
  */
-export type AiHealthConclusion = 'good' | 'caution' | 'avoid' | 'neutral' | 'info_needed' | 'error_analyzing';
+// export type AiHealthConclusion = 'good' | 'caution' | 'avoid' | 'neutral' | 'info_needed' | 'error_analyzing';
+export type AiHealthConclusion = 'ok' | 'neutral' | 'avoid' | 'unknown' | 'error_analyzing';
 
 /**
  * Represents a user's interaction with a product.

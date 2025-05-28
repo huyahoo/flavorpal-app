@@ -145,3 +145,20 @@ export const updateReviewForProductApi = async (productId: number, payload: ReVi
   console.log("SERVICE (updateReviewForProductApi): API call response:", response.data);
   return response.data;
 };
+
+
+export const updateAiSuggestionApi = async (productId: number, imageBase64: string): Promise<ApiResponse<null>> => {
+  console.log(`SERVICE (updateAiSuggestionApi): Updating AI suggestion for product ID ${productId} with image...`);
+  try {
+    const response = await apiClient.patch<ApiResponse<null>>(`/product/ai-suggestions`, { productId, imageBase64 });
+    console.log("SERVICE (updateAiSuggestionApi): API call response:", response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error("SERVICE (updateAiSuggestionApi): API call failed:", error.response?.data || error.message);
+    return { 
+      code: error.response?.status || 500, 
+      msg: error.response?.data?.detail || error.response?.data?.msg || `Failed to update AI suggestion for product ${productId}.`,
+      data: null
+    };
+  }
+}

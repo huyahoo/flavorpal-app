@@ -11,7 +11,7 @@ const app = new Hono().basePath(`/${functionName}`)
 app.use('*', cors({
   origin: 'https://localhost:5173',
   allowHeaders: ['Content-Type', 'Authorization'],
-  allowMethods: ['POST', 'GET', 'OPTIONS', 'PUT', 'DELETE'],
+  allowMethods: ['POST', 'GET', 'OPTIONS', 'PUT', 'DELETE', 'PATCH'],
   exposeHeaders: ['Content-Length'],
   maxAge: 600,
   credentials: true,

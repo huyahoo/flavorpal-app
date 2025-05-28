@@ -228,6 +228,7 @@ import ConfirmationModal from '@/components/common/ConfirmationModal.vue';
 import IconArrowBack from '@/components/icons/IconArrowBack.vue';
 import ImageSourceChoiceModal from '@/components/common/ImageSourceChoiceModal.vue';
 import PhotoCapturer, { type CapturedPhoto } from '@/components/common/PhotoCapturer.vue';
+import { updateAiSuggestionApi } from '@/services/productService';
 
 const props = defineProps<{ id: string; }>();
 const router = useRouter();
@@ -384,18 +385,26 @@ const handleImageSourceSelected = (source: 'camera' | 'upload') => {
 const handlePhotoSuccessfullyCaptured = async (capturedPhoto: CapturedPhoto) => {
     console.log('Photo captured by component:', capturedPhoto.mimeType);
     showPhotoCapturer.value = false; // Hide the capturer
-
-    // Convert base64 to File object
-    try {
-        const response = await fetch(capturedPhoto.data);
-        const blob = await response.blob();
-        const imageFile = new File([blob], `ingredient_capture_${Date.now()}.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type });
-        await processIngredientImageFile(imageFile);
-        uiStore.setCameraOverlayActive(true);
-    } catch (error) {
-        console.error("Error converting base64 to File:", error);
-        productUpdateError.value = "Failed to process captured image.";
+    const productId = product.value?.id;
+    if (!productId) {
+        console.error("No product ID available for captured photo.");
+        productUpdateError.value = "No product selected for image upload.";
+        return;
     }
+    await updateAiSuggestionApi(productId, capturedPhoto.data)
+    uiStore.setCameraOverlayActive(true);
+
+    // // Convert base64 to File object
+    // try {
+    //     const response = await fetch(capturedPhoto.data);
+    //     const blob = await response.blob();
+    //     const imageFile = new File([blob], `ingredient_capture_${Date.now()}.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type });
+    //     await processIngredientImageFile(imageFile);
+    //     uiStore.setCameraOverlayActive(true);
+    // } catch (error) {
+    //     console.error("Error converting base64 to File:", error);
+    //     productUpdateError.value = "Failed to process captured image.";
+    // }
 };
 
 // Callback for when PhotoCapturer is cancelled by its own cancel button
@@ -407,12 +416,13 @@ const handlePhotoCaptureCancelled = () => {
 
 // For "Upload from Library"
 const handleFileSelectedFromInput = async (event: Event) => {
-    const target = event.target as HTMLInputElement;
-    if (target.files && target.files[0]) {
-        const imageFile = target.files[0];
-        target.value = ''; 
-        await processIngredientImageFile(imageFile);
-    }
+    // const target = event.target as HTMLInputElement;
+    // if (target.files && target.files[0]) {
+    //     const imageFile = target.files[0];
+    //     target.value = ''; 
+    //     await processIngredientImageFile(imageFile);
+    // }
+    alert("This feature is not yet implemented. Please use the camera to capture images.");
 };
 
 // Centralized processing logic for the image file
@@ -451,33 +461,38 @@ const cancelIngredientAnalysis = () => {
 // --- AI Conclusion Styling Helpers (remain the same) ---
 const getConclusionColor = (conclusion?: AiHealthConclusion): string => { /* ... */
   switch (conclusion) {
-    case 'good': return 'bg-flavorpal-green';
-    case 'caution': return 'bg-yellow-400';
+    case 'ok': return 'bg-flavorpal-green';
+    case 'neutral': return 'bg-yellow-400';
     case 'avoid': return 'bg-red-500';
-    case 'info_needed': return 'bg-blue-400';
+    // case 'info_needed': return 'bg-blue-400';
     case 'error_analyzing': return 'bg-purple-500';
-    case 'neutral': default: return 'bg-gray-400';
+    case 'unknown': default: return 'bg-gray-400';
   }
 };
 const getConclusionTextColor = (conclusion?: AiHealthConclusion): string => { /* ... */
   switch (conclusion) {
-    case 'good': return 'text-flavorpal-green-dark';
-    case 'caution': return 'text-yellow-600';
+    case 'ok': return 'text-flavorpal-green-dark';
+    case 'neutral': return 'text-yellow-600';
     case 'avoid': return 'text-red-700';
-    case 'info_needed': return 'text-blue-600';
+    // case 'info_needed': return 'text-blue-600';
     case 'error_analyzing': return 'text-purple-700';
-    case 'neutral': default: return 'text-gray-600';
+    case 'unknown': default: return 'text-gray-600';
   }
 };
 const getConclusionText = (conclusion?: AiHealthConclusion): string => { /* ... */
   switch (conclusion) {
-    case 'good': return 'Looks good for you';
-    case 'caution': return 'Use with caution';
-    case 'avoid': return 'Best to avoid';
-    case 'info_needed': return 'More info needed';
-    case 'error_analyzing': return 'Analysis Error';
+    // case 'good': return 'Looks good for you';
+    // case 'caution': return 'Use with caution';
+    // case 'avoid': return 'Best to avoid';
+    // case 'info_needed': return 'More info needed';
+    // case 'error_analyzing': return 'Analysis Error';
+    // case 'neutral': return 'Neutral';
+    // default: return 'Analysis pending';
+    case 'ok': return 'Looks good for you';
     case 'neutral': return 'Neutral';
-    default: return 'Analysis pending';
+    case 'avoid': return 'Best to avoid';
+    case 'error_analyzing': return 'Analysis Error';
+    case 'unknown': default: return 'Unknown';
   }
 };
 </script>
