@@ -2,8 +2,8 @@
 import axios from 'axios';
 import { useAuthStore } from '@/store/auth';
 
-// const API_BASE_URL = 'http://127.0.0.1:54321/functions/v1/flavorpal-server/';
-const API_BASE_URL = "https://seywfkvidivfwivnsesg.supabase.co/functions/v1/flavorpal-server/"
+const API_BASE_URL = 'http://127.0.0.1:54321/functions/v1/flavorpal-server/';
+
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
