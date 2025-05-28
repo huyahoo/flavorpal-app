@@ -50,9 +50,7 @@ export const getProductByBarcodeApi = async (barcode: string): Promise<ApiRespon
   console.log(`SERVICE (getProductByBarcodeApi): Fetching product by barcode ${barcode}...`);
   const response = await apiClient.get<ApiResponse<ProductInteraction>>(`/products/product/${barcode}`);
   console.log("SERVICE (getProductByBarcodeApi): API call response:", response);
-  const productInteraction = mapApiProductToProductInteraction(response.data.data);
-  console.log("SERVICE (getProductByBarcodeApi): API call response:", productInteraction);
-  return productInteraction;
+  return response.data;
 };
 
 /**
