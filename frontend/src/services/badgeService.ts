@@ -39,6 +39,5 @@ export const getAllUserBadgesApi = async (): Promise<ApiResponse<UserBadge[]>> =
 export const updateUserBadgeApi = async (badgeId: number): Promise<ApiResponse<UserBadge>> => {
   console.log(`SERVICE (updateUserBadgeApi): Updating badge ID ${badgeId} for current user`);
   const response = await apiClient.patch<ApiResponse<UserBadge>>(`/badges/update/${badgeId}`);
-  console.log('respons', response)
   return response.data;
 };

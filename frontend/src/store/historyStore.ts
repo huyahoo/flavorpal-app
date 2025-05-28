@@ -2,7 +2,7 @@
 import { defineStore } from 'pinia';
 import type { ProductInteraction, AiHealthConclusion, ReViewDataPayload } from '../types';
 import { fetchScanStatisticsApi } from '../services/historyService';
-import { getAllProductsApi, getProductByIdApi, addReviewForProductApi, updateReviewForProductApi, deleteProductByIdApi, getProductHealthInsightApi } from '../services/productService';
+import { getAllProductsApi, getProductByIdApi, addReviewForProductApi, updateReviewForProductApi, deleteProductByIdApi, getProductHealthInsightApi, getAllProductReviewsApi } from '../services/productService';
 import type { CapturedPhoto } from '@/views/Scan/components/PhotoCapturer.vue';
 
 export type ReviewedFilterStatus = 'all' | 'reviewed_only' | 'scanned_only';
@@ -28,6 +28,7 @@ export interface ReviewDataPayload {
 export interface HistoryStoreState {
   allProductInteractions: ProductInteraction[];
   discoveredThisMonth: number;
+  totalReviewed: number;
   totalScanned: number;
   loadingStats: boolean;
   filterSearchQuery: string;
@@ -75,6 +76,7 @@ export const useHistoryStore = defineStore('history', {
   state: (): HistoryStoreState => ({
     allProductInteractions: [],
     discoveredThisMonth: 0,
+    totalReviewed: -1,
     totalScanned: 0,
     loadingStats: false,
     filterSearchQuery: '',
@@ -142,7 +144,7 @@ export const useHistoryStore = defineStore('history', {
             return dateA - dateB;
           })
           .slice(0, count);
-    }
+    },
   },
 
   actions: {
@@ -159,7 +161,7 @@ export const useHistoryStore = defineStore('history', {
       }
       this.loadingInteractions = true;
       this.error = null;
-    
+
       try {
         const response = await getAllProductsApi();
         console.log("STORE (loadProductInteractions): API call response:", response);
@@ -202,6 +204,16 @@ export const useHistoryStore = defineStore('history', {
       }
     },
 
+    async loadProductReviewStatistics() {
+      try {
+        const allProductReviews = await getAllProductReviewsApi()
+        this.totalReviewed = allProductReviews.data.length
+      } catch (err: any) {
+        const error = err.message || 'Failed to fetch product review statistics';
+        this.error = this.error ? `${this.error}; ${error}` : error;
+      }
+    },
+
     async getProductHealthInsight(productId: number, capturedPhoto: CapturedPhoto): Promise<boolean> {
       const response = await getProductHealthInsightApi({ productId, base64Image: capturedPhoto.data });
       return response.code == 200;
@@ -219,16 +231,16 @@ export const useHistoryStore = defineStore('history', {
       return response.code == 200;
     },
 
-    setFilters(filters: Partial<HistoryFilters>) { 
+    setFilters(filters: Partial<HistoryFilters>) {
       this.filterDateAfter = filters.dateAfter || '';
       this.filterReviewedStatus = filters.reviewedStatus || 'all';
       this.filterMinRating = filters.minRating || 0;
       this.filterAiConclusion = filters.aiConclusion || '';
     },
-    setInitialHistoryFilters(status: ReviewedFilterStatus) { 
+    setInitialHistoryFilters(status: ReviewedFilterStatus) {
       this.filterReviewedStatus = status;
     },
-    clearAllFilters() { 
+    clearAllFilters() {
       this.filterDateAfter = '';
       this.filterReviewedStatus = 'all';
       this.filterMinRating = 0;
@@ -240,6 +252,7 @@ export const useHistoryStore = defineStore('history', {
       this.clearAllFilters();
       this.discoveredThisMonth = 0;
       this.totalScanned = 0;
+      this.totalReviewed = 0;
       this.loadingStats = false;
       this.loadingInteractions = false;
       this.error = null;
@@ -266,7 +279,7 @@ export const useHistoryStore = defineStore('history', {
     //     saveInteractionsToStorage(this.allProductInteractions);
     // },
     async saveOrUpdateUserReview(productId: number, reviewData: ReViewDataPayload): Promise<Boolean> {
-
+      this.totalReviewed++; // Manually increment to avoid fetching it again
       const product = this.allProductInteractions.find(item => item.id === productId);
       if (product?.isReviewed) {
         const response = await updateReviewForProductApi(productId, reviewData);

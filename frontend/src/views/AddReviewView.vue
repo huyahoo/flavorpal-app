@@ -114,13 +114,11 @@ import { useRoute, useRouter } from 'vue-router';
 import { useHistoryStore } from '../store/historyStore';
 import type { BadgeStatistic, ProductInteraction, ReViewDataPayload } from '../types';
 import StarRatingInput from '@/components/common/StarRatingInput.vue';
-import { useUserProfileStore } from '@/store/userProfileStore';
 import { useBadgeStore } from '@/store/badgeStore';
 
 const route = useRoute();
 const router = useRouter();
 const historyStore = useHistoryStore();
-const userProfileStore = useUserProfileStore();
 const badgeStore = useBadgeStore();
 
 const currentStep = ref(1);
@@ -202,10 +200,12 @@ const handleNextOrSubmit = async () => {
 
     if (isSuccess && !historyStore.error) {
       // Check if new badges have been achieved
-      await userProfileStore.loadUserProfile();
-      const badgeStatistics: BadgeStatistic = { totalReviewCount: historyStore.totalScanned }
-
-      badgeStore.checkAllBadgesLogic(badgeStatistics, badgeStore.badges)
+      await Promise.all([
+        badgeStore.loadAllUserBadges(),
+        historyStore.loadProductReviewStatistics()
+      ])
+      const badgeStatistics: BadgeStatistic = { totalReviewCount: historyStore.totalReviewed }
+      await badgeStore.checkAllBadgesLogic(badgeStatistics)
 
       // Navigate to the product detail page of the newly reviewed/updated item
       router.push({ name: 'ProductDetail', params: { id: productId } });

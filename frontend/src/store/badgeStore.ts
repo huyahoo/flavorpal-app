@@ -62,29 +62,40 @@ export const useBadgeStore = defineStore('badge', {
      * Pop badges on popup
      */
     popBadgeToShow() {
-      this.selectedPopupBadges.pop()
+      this.selectedPopupBadges.shift()
     },
 
     /**
      * Check all badges logic to display popup
      * @return array of ApiBadge objects to update on user profile
      */
-    checkAllBadgesLogic(value: BadgeStatistic, userBadges: DisplayBadge[]) {
-      userBadges.forEach((badge) => {
+    async checkAllBadgesLogic(value: BadgeStatistic) {
+      console.log('Checking all badges...', this.badges, value)
+      let has_updated_badge = false
+      this.badges.forEach(async (badge) => {
         // Skip earned badges and badges that are not unlocked
-        if (badge.createdAt || !badge.isUnlockable(value) || !badge.id) {
+        if (
+            badge.createdAt ||
+            !badge.isUnlockable(value) ||
+            !badge.id ||
+            this.selectedPopupBadges.find(popupBadges => popupBadges.ref === badge.ref)
+        ) {
           return
         }
         // Badges that went up to this part can be assumed as a new one
-        updateUserBadgeApi(badge.id)
-          .then(response => {
-            this.pushBadgeToShow({
-              ...badge,
-              createdAt: response.data.createdAt?.slice(0, 10) ?? null
-            })
-            this.loadAllUserBadges()
+        await updateUserBadgeApi(badge.id)
+        .then(response => {
+          has_updated_badge = true
+          this.pushBadgeToShow({
+            ...badge,
+            createdAt: response.data.createdAt?.slice(0, 10) ?? null
           })
+        })
       })
+      if (has_updated_badge) {
+        // Reload data if badge is updated
+        this.loadAllUserBadges()
+      }
     },
 
     /**

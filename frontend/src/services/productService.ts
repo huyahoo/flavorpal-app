@@ -1,7 +1,7 @@
 // frontend/src/services/productService.ts
 import apiClient from './apiClient';
-import type { 
-    ProductInteraction, 
+import type {
+    ProductInteraction,
     ApiResponse,
     ReViewDataPayload
 } from '../types';
@@ -122,8 +122,8 @@ export const deleteProductByIdApi = async (productId: number): Promise<ApiRespon
     return response.data;
   } catch (error: any) {
     console.error("SERVICE (deleteProductByIdApi): API call failed:", error.response?.data || error.message);
-    return { 
-      code: error.response?.status || 500, 
+    return {
+      code: error.response?.status || 500,
       msg: error.response?.data?.detail || error.response?.data?.msg || `Failed to delete product ${productId}.`,
       data: null,
     };
@@ -168,5 +168,15 @@ export const updateReviewForProductApi = async (productId: number, payload: ReVi
   console.log(`SERVICE (updateReviewForProductApi): Updating review for product ID ${productId} with payload:`, payload);
   const response = await apiClient.patch<ApiResponse<ProductInteraction>>(`/reviews/products/${productId}`, payload);
   console.log("SERVICE (updateReviewForProductApi): API call response:", response);
+  return response.data;
+};
+
+/**
+ * Get all product reviews for current users
+ * Endpoint: GET /reviews/products @returns all product reviews */
+export const getAllProductReviewsApi = async (): Promise<ApiResponse<ProductInteraction[]>> => {
+  console.log(`SERVICE (getAllProductReviewsApi): Get all product reviews for current user`);
+  const response = await apiClient.get<ApiResponse<ProductInteraction[]>>(`/reviews/products`);
+  console.log("SERVICE (getAllProductReviewsApi): API call response:", response);
   return response.data;
 };
