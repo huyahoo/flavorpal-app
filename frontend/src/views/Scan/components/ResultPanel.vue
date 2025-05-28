@@ -82,7 +82,7 @@
       <div v-else>
         <h3 class="mb-1 text-lg font-semibold">{{ productForDisplay.name }}</h3>
         <p class="mb-1 line-clamp-2 text-sm text-gray-600">
-          {{ productForDisplay.aiHealthSummary || 'Product information processed.' }}
+          {{ productForDisplay.aiHealthSummary || 'Need more info to analyze...' }}
         </p>
         <div v-if="productForDisplay.aiHealthConclusion" class="mb-3 flex items-center">
           <span
