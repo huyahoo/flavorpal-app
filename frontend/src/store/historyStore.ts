@@ -39,7 +39,7 @@ export interface HistoryStoreState {
   error: string | null;
 }
 
-const HISTORY_INTERACTIONS_STORAGE_KEY = 'flavorpal_history_interactions_v1';
+// const HISTORY_INTERACTIONS_STORAGE_KEY = 'flavorpal_history_interactions_v1';
 
 // const getInteractionsFromStorage = (): ProductInteraction[] | null => {
 //   const interactionsJson = localStorage.getItem(HISTORY_INTERACTIONS_STORAGE_KEY);
@@ -243,7 +243,7 @@ export const useHistoryStore = defineStore('history', {
       this.loadingStats = false;
       this.loadingInteractions = false;
       this.error = null;
-      localStorage.removeItem(HISTORY_INTERACTIONS_STORAGE_KEY);
+      // localStorage.removeItem(HISTORY_INTERACTIONS_STORAGE_KEY);
     },
 
     // addOrUpdateInteraction(interaction: ProductInteraction) {

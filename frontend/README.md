@@ -19,6 +19,17 @@ See [Vite Configuration Reference](https://vite.dev/config/).
 npm install
 ```
 
+### Create .env file
+- .env.development
+```
+VITE_API_BASE_URL=https://localhost:8000/
+```
+- .env.production
+```
+VITE_API_BASE_URL=https://54.238.179.149:8000/
+```
+
+
 ### Compile and Hot-Reload for Development
 
 ```sh
