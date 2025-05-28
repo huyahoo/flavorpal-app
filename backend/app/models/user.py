@@ -27,9 +27,4 @@ class User(Base):
     user_health_flags = relationship(
         "UserHealthFlag", back_populates="user", cascade="all, delete-orphan")
 
-    @property
-    def health_flags(self) -> list[str]:
-        """Returns a list of names of the user's health flags."""
-        if self.user_health_flags:
-            return [assoc.health_flag.name for assoc in self.user_health_flags if assoc.health_flag]
-        return []
+

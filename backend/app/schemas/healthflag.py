@@ -6,8 +6,8 @@ class HealthFlag(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class HealthFlagOut(BaseModel):
-    userId: int
+class HealthFlagOut(HealthFlag):
+    
     healthFlagId: int
     model_config = ConfigDict(from_attributes=True)
 

@@ -307,3 +307,4 @@ def update_ai_health_suggestion(
     )
 
     return Response(code=200, data=product_details, msg="AI suggestion updated and product info returned")
+

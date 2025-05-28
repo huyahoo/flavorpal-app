@@ -3,4 +3,4 @@ from .review import ReviewBase, ReviewCreate, ReviewUpdate, ReviewOut, ReviewPro
 from .healthflag import HealthFlag, HealthFlagOut, UserHealthFlagOut
 from .badge import Badge, UserBadge, UserBadgeFrontend
 from .history import HistoryCreate, HistoryOut
-from .user import UserCreate, UserUpdate, UserProfileOut, UserLogin, UserCreateFrontend, UserCreateFrontendOut, UserUpdateFrontend, UserProfileFrontendOut
+from .user import UserCreate, UserUpdate, UserProfileOut, UserLogin, UserCreateFrontend, UserCreateFrontendOut, UserUpdateFrontend, UserProfileFrontendOut, UserUpdateFrontendOut, ScanStatistics

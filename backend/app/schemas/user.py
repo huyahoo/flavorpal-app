@@ -33,7 +33,7 @@ class UserProfileOut(UserBase):
 
 
 class UserBaseFrontend(BaseModel):
-    name: str
+    name: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -47,13 +47,17 @@ class UserCreateFrontend(UserBaseFrontend):
         orm_mode = True
 
 
-class UserUpdateFrontend(UserBaseFrontend):
+class UserUpdateFrontend(BaseModel):
     name: Optional[str] = None
     email: Optional[EmailStr] = None
     healthFlags: Optional[List[str]] = []
     class Config:
         orm_mode = True
 
+class UserUpdateFrontendOut(UserUpdateFrontend):
+    id: int
+    class Config:
+        orm_mode = True
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -86,6 +90,10 @@ class UserProfileFrontendOut(BaseModel):
     name: str
     email: EmailStr
     healthFlags: Optional[List[str]] = []
-
+    badges: Optional[List[str]] = []
     class Config:
         orm_mode = True
+
+class ScanStatistics(BaseModel):
+    discoveredThisMonth:int
+    totalScanned:int

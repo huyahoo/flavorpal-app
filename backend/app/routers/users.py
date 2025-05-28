@@ -10,7 +10,7 @@ from app.utils.dependencies import get_current_user
 from app.schemas.user import UserProfileOut
 from app.models import User as UserModel
 from app.utils.security import verify_password, create_access_token
-
+import datetime
 router = APIRouter(prefix="/users", tags=["users"])
 
 @router.post("/auth/login")
@@ -38,13 +38,27 @@ def get_me(current_user: models.User = Depends(get_current_user)):
     )
     return Response(code=200, data=user_profile, msg="User logged in successfully")
 
-@router.get("/",response_model=Response[List[schemas.UserProfileOut]])
+@router.get("/",response_model=Response[List[schemas.UserProfileFrontendOut]])
 def get_users(db: Session = Depends(get_db)):
     users = db.query(models.User).all()
     if not users:
         return response.not_found(msg="No users found",code=404)
     print(users)
-    return Response(code=200, data=users, msg="Users Found successfully")
+    users_out = []
+    for user in users:
+        health_flag_names = [hf.health_flag.name for hf in user.user_health_flags]
+        badges = [badge.badge.ref for badge in user.user_badges]
+        user_out = schemas.UserProfileFrontendOut(
+            id=user.id,
+            name=user.name,
+            email=user.email,
+            healthFlags=health_flag_names,
+            created_at=user.created_at,
+            updated_at=user.updated_at,
+            badges=badges
+        )
+        users_out.append(user_out)
+    return Response(code=200, data=users_out, msg="Users Found successfully")
 
 @router.get("/me", response_model=Response[UserProfileOut])
 async def read_users_me(current_user: UserModel = Depends(get_current_user)):
@@ -91,7 +105,24 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     return Response(code=201, data=db_user, msg="User created successfully")
 
 
+@router.get("/health_flags", response_model=Response[List[schemas.HealthFlagOut]])
+def get_health_flags(db: Session = Depends(get_db)):
+    health_flags = db.query(models.HealthFlag).all()
+    health_flags_out = [schemas.HealthFlagOut(
+        healthFlagId=health_flag.id,
+        name=health_flag.name
+    ) for health_flag in health_flags]
+    return Response(code=200, data=health_flags_out, msg="Health flags fetched successfully")
 
+
+@router.get("/scan_statistics", response_model=Response[schemas.ScanStatistics])
+def get_scan_statistics(db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):
+    scan_statistics = schemas.ScanStatistics(
+        discoveredThisMonth=db.query(models.Review).filter(models.Review.created_at >= datetime.datetime.now() - datetime.timedelta(days=30),models.Review.user_id == current_user.id).count(),
+        totalScanned=db.query(models.History).filter(models.History.user_id == current_user.id).count()
+    )
+    return Response(code=200, data=scan_statistics, msg="Scan statistics fetched successfully")
+    
 @router.get("/{user_id}",response_model=Response[schemas.UserProfileOut])
 def get_user(user_id: int, db: Session = Depends(get_db)):
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
@@ -111,6 +142,9 @@ def delete_all_users(db: Session = Depends(get_db)):
     db.commit()
     return Response(code=200, msg="All users deleted successfully")
 
+
+
+
 @router.delete("/{user_id}")
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
@@ -127,8 +161,8 @@ def get_user_health_flags(user_id: int, db: Session = Depends(get_db)):
         raise response.not_found(msg="User not found",code=404)
     return Response(code=200, data=user.user_health_flags, msg="User health flags fetched successfully")
 
-@router.patch("/{user_id}", response_model=Response[schemas.UserProfileOut])
-def update_user(user_id: int, payload: schemas.UserUpdate, db: Session = Depends(get_db)):
+@router.patch("/{user_id}", response_model=Response[schemas.UserUpdateFrontendOut])
+def update_user(user_id: int, payload: schemas.UserUpdateFrontend, db: Session = Depends(get_db)):
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -137,26 +171,40 @@ def update_user(user_id: int, payload: schemas.UserUpdate, db: Session = Depends
 
     if "name" in update_data:
         db_user.name = update_data["name"]
-
-    if "health_flags" in update_data:
+    print(update_data)
+    if "healthFlags" in update_data:
         db.query(models.UserHealthFlag).filter(models.UserHealthFlag.user_id == user_id).delete()
-        for flag_name_in in payload.health_flags:
+        for flag_name_in in payload.healthFlags:
+            print(flag_name_in)
             flag_db = db.query(models.HealthFlag).filter(models.HealthFlag.name == flag_name_in).first()
             if not flag_db:
                 flag_db = models.HealthFlag(name=flag_name_in)
                 db.add(flag_db)
-                db.flush()
+                db.commit()
+                db.refresh(flag_db)
             user_health_flag_assoc = models.UserHealthFlag(user_id=db_user.id, health_flag_id=flag_db.id)
             db.add(user_health_flag_assoc)
-
     db.commit()
     db.refresh(db_user)
-    return Response(code=200, data=db_user, msg="User updated successfully")
+    health_flag_names = [hf.health_flag.name for hf in db_user.user_health_flags]
+    print(health_flag_names)
+    user_profile = schemas.UserUpdateFrontendOut(
+        id=db_user.id,
+        name=db_user.name,
+        email=db_user.email,
+        healthFlags=health_flag_names
+    )
+    return Response(code=200, data=user_profile, msg="User updated successfully")
 
 @router.get("/{user_id}/badges", response_model=Response[List[schemas.UserBadge]])
 def get_user_badges(user_id: int, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise response.not_found(msg="User not found",code=404)
+    
     return Response(code=200, data=user.badges, msg="User badges fetched successfully")
+
+
+
+
 
