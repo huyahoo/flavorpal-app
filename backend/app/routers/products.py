@@ -138,6 +138,7 @@ def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)
     )
     return Response(code=200, data=product_info, msg="Product created successfully")
 
+import numpy as np
 @router.post("/image", response_model=Response[schemas.ProductOut])
 def add_by_image(request: schemas.ProductImageRequest,  db: Session = Depends(get_db)):
     base64image = request.base64image
@@ -151,12 +152,11 @@ def add_by_image(request: schemas.ProductImageRequest,  db: Session = Depends(ge
         
         image_url = services.upload_image_to_bucket(base64image)
         product_name, product_manufacturer, product_description = services.get_AI_product_info(base64image)
-        product = schemas.ProductCreate(
+        db_product = models.Product(
             name=product_name,
-            imageUrl=image_url,
-            imageEmbedding=embedding
+            image_url=image_url,
+            image_embedding=embedding
         )
-        db_product = models.Product(**product.dict())
         db.add(db_product)
         db.commit()
         db.refresh(db_product)

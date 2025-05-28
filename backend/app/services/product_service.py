@@ -90,8 +90,23 @@ def upload_image_to_bucket(image):
 
 
 def most_similar_img(embedding, db: Session):
-    threshold = 0.2
-    
+    threshold = 0.35
+    query = text("""
+        SELECT name, (image_embedding <=> CAST(:embedding AS vector)) AS distance
+        FROM Products
+        WHERE image_embedding IS NOT NULL;
+    """)
+
+    params = {
+        "embedding": embedding
+    }
+
+    result = db.execute(query, params).mappings().all()
+    print(f'result type: {type(result)}, result: {result}')
+    # query = text("""
+    #     SELECT name, (image_embedding <#> CAST(:embedding AS vector)) FROM Products
+    #     where image_embedding is not null;
+    # """)
     # query = text("""
     #     SELECT * FROM Products
     #     WHERE (image_embedding <-> :embedding::vector) < :threshold
@@ -106,8 +121,8 @@ def most_similar_img(embedding, db: Session):
     # """)
     query = text("""
         SELECT * FROM Products
-        WHERE (image_embedding <#> CAST(:embedding AS vector)) < :threshold
-        ORDER BY image_embedding <#> CAST(:embedding AS vector)
+        WHERE (image_embedding <=> CAST(:embedding AS vector)) < :threshold
+        ORDER BY image_embedding <=> CAST(:embedding AS vector)
         LIMIT 1;
     """)
 
@@ -115,11 +130,11 @@ def most_similar_img(embedding, db: Session):
         "embedding": embedding, 
         "threshold": 0.2,
     }
-
+    
     result = db.execute(query, params).mappings().fetchone()
 
     if result:
-        # print(f'result type: {type(result)}, result: {result}')
+        print(f'result type: {type(result)}, result: {result}')
         # Assuming the result is a dictionary or tuple-like object, we can map it to a product object
         return models.Product(**result)  # Convert the result to a Product model object
     return None
