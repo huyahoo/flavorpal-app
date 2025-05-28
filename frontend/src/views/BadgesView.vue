@@ -14,7 +14,6 @@
     </header>
 
     <main class="flex-grow p-4 sm:p-6 space-y-5 overflow-y-auto">
-      <button @click="testAddBadge">Debuggg</button>
       <div v-if="badgeStore.isLoading" class="text-center py-10">
         <svg class="animate-spin h-10 w-10 text-flavorpal-green mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -71,15 +70,6 @@ const handleOpenBadgePopup = (badge: DisplayBadge) => {
   selectedBadge.value = badge
 }
 const handleCloseBadgePopup = () => selectedBadge.value = null
-
-const testAddBadge = async () => {
-  historyStore.totalScanned += 1
-  console.log(historyStore.totalScanned)
-  badgeStore.checkAllBadgesLogic(
-    { totalReviewCount: historyStore.totalScanned },
-    badgeStore.badges
-  )
-}
 
 onMounted(() => {
   // Load badges data from badgeStore
