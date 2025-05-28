@@ -179,7 +179,7 @@ const getAIConclusionText = (conclusion?: AiHealthConclusion): string => {
         case 'info_needed': return 'More info needed';
         case 'error_analyzing': return 'Analysis Error';
         case 'neutral': return 'Neutral';
-        default: return 'Analysis pending';
+        default: return 'More info needed';
     }
 };
 </script>

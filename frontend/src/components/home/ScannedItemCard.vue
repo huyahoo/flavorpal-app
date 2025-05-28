@@ -62,34 +62,34 @@ const router = useRouter();
 // Function to determine the color class for the AI health conclusion dot
 const getConclusionColor = (conclusion?: AiHealthConclusion): string => {
   switch (conclusion) {
-    case 'good': return 'bg-flavorpal-green'; // Green for good
-    case 'caution': return 'bg-yellow-400';   // Yellow for caution
+    case 'ok': return 'bg-flavorpal-green'; // Green for good
+    case 'neutral': return 'bg-yellow-400';   // Yellow for caution
     case 'avoid': return 'bg-red-500';        // Red for avoid
-    case 'info_needed': return 'bg-blue-400'; // Blue for info needed
-    case 'neutral':
+    case 'unknown': return 'bg-blue-400'; // Blue for info needed
+    case 'error_analyzing':
     default: return 'bg-gray-400';        // Gray for neutral or undefined
   }
 };
 
 const getConclusionTextColor = (conclusion?: AiHealthConclusion): string => {
   switch (conclusion) {
-    case 'good': return 'text-flavorpal-green-dark';
-    case 'caution': return 'text-yellow-600';
+    case 'ok': return 'text-flavorpal-green-dark';
+    case 'neutral': return 'text-yellow-600';
     case 'avoid': return 'text-red-700';
-    case 'info_needed': return 'text-blue-600';
-    case 'neutral':
+    case 'unknown': return 'text-blue-600';
+    case 'error_analyzing':
     default: return 'text-gray-600';
   }
 };
 
 const getConclusionText = (conclusion?: AiHealthConclusion): string => {
   switch (conclusion) {
-    case 'good': return 'Looks good for you';
-    case 'caution': return 'Use with caution';
+    case 'ok': return 'Looks good for you';
+    case 'neutral': return 'Use with caution';
     case 'avoid': return 'Best to avoid';
-    case 'info_needed': return 'More info needed';
-    case 'neutral': return 'Neutral';
-    default: return 'Analysis pending';
+    case 'unknown': return 'More info needed';
+    case 'error_analyzing': return 'Analysis Error';
+    default: return 'More info needed';
   }
 };
 

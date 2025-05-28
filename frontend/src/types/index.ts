@@ -128,13 +128,11 @@ export interface ProductInteraction {
   id: number;                    // Unique identifier (can be barcode for scanned items from OFF)
   name: string;                  // Name of the product
   imageUrl?: string;             // Optional URL for the product image
+  imageIngredientsUrl?: string;      // Optional URL for the product image of ingredients
+  imageNutritionUrl?: string;      // Optional URL for the product image of nutrition
   barcode?: string;              // Barcode if scanned
-  brands?: string[];             // Product brands -> TODO: Should be string
-  categories?: string[];         // Product categories -> TODO:Should be string
-
-  // Data from Open Food Facts (or similar API)
-  ingredientsText?: string;      // Raw ingredients string
-  genericName?: string;          // Generic name from OFF
+  brands?: string;             // Product brands -> TODO: Should be string
+  categories?: string;         // Product categories -> TODO:Should be string
 
   // AI-generated insights (can be client-side mock based on ingredientsText and healthFlags)
   aiHealthSummary?: string;
@@ -147,7 +145,7 @@ export interface ProductInteraction {
   dateReviewed?: string;
 
   // Scanning-related data
-  dateScanned: string;           // Date when the product was first scanned/encountered
+  dateScanned?: string;           // Date when the product was first scanned/encountered
 }
 
 export interface PublicReviewItem {

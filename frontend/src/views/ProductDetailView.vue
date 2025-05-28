@@ -495,7 +495,7 @@ const getConclusionText = (conclusion?: AiHealthConclusion): string => {
     case 'avoid': return 'Best to avoid';
     case 'unknown': return 'More info needed';
     case 'error_analyzing': return 'Analysis Error';
-    default: return 'Analysis pending';
+    default: return 'More info needed';
   }
 };
 </script>

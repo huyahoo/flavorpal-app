@@ -137,35 +137,34 @@ const handleNavigateToProductDetail = () => {
 };
 
 // --- AI Conclusion Styling Helpers ---
-const getConclusionColor = (conclusion?: AiHealthConclusion): string => { /* ... */ 
+const getConclusionColor = (conclusion?: AiHealthConclusion): string => {
   switch (conclusion) {
-    case 'good': return 'bg-flavorpal-green';
-    case 'caution': return 'bg-yellow-400';
+    case 'ok': return 'bg-flavorpal-green';
+    case 'neutral': return 'bg-yellow-400';
     case 'avoid': return 'bg-red-500';
-    case 'info_needed': return 'bg-blue-400';
+    case 'unknown': return 'bg-blue-400';
     case 'error_analyzing': return 'bg-purple-500';
-    case 'neutral': default: return 'bg-gray-400';
+    default: return 'bg-gray-400';
   }
 };
-const getConclusionTextColor = (conclusion?: AiHealthConclusion): string => { /* ... */ 
+const getConclusionTextColor = (conclusion?: AiHealthConclusion): string => {
   switch (conclusion) {
-    case 'good': return 'text-flavorpal-green-dark';
-    case 'caution': return 'text-yellow-600';
+    case 'ok': return 'text-flavorpal-green-dark';
+    case 'neutral': return 'text-yellow-600';
     case 'avoid': return 'text-red-700';
-    case 'info_needed': return 'text-blue-600';
+    case 'unknown': return 'text-blue-600';
     case 'error_analyzing': return 'text-purple-700';
-    case 'neutral': default: return 'text-gray-600';
+    default: return 'text-gray-600';
   }
 };
-const getConclusionText = (conclusion?: AiHealthConclusion): string => { /* ... */ 
+const getConclusionText = (conclusion?: AiHealthConclusion): string => {
   switch (conclusion) {
-    case 'good': return 'Looks good for you';
-    case 'caution': return 'Use with caution';
+    case 'ok': return 'Looks good for you';
+    case 'neutral': return 'Use with caution';
     case 'avoid': return 'Best to avoid';
-    case 'info_needed': return 'More info needed';
+    case 'unknown': return 'More info needed';
     case 'error_analyzing': return 'Analysis Error';
-    case 'neutral': return 'Neutral';
-    default: return 'Analysis pending';
+    default: return 'More info needed';
   }
 };
 </script>
