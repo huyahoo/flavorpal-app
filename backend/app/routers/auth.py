@@ -16,7 +16,7 @@ router = APIRouter(
     tags=["authentication"]
 )
 
-@router.post("/token", response_model=Response[Token])
+@router.post("/token", response_model=Token)
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(), 
     db: Session = Depends(get_db)
@@ -27,7 +27,7 @@ async def login_for_access_token(
     """
     user = get_user_by_email(db, email=form_data.username) # OAuth2 form uses 'username' for the first field
     
-    if not user or not user.hashed_password or not verify_password(form_data.password, user.hashed_password):
+    if not user or not user.password or not verify_password(form_data.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -44,4 +44,4 @@ async def login_for_access_token(
     )
     
     token_response_data = Token(access_token=access_token, token_type="bearer")
-    return Response(code=200, data=token_response_data, msg="Login successful, token generated")
+    return token_response_data

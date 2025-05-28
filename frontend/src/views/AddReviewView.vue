@@ -22,36 +22,37 @@
           <h2 class="text-lg font-semibold text-flavorpal-gray-dark mb-1">What's the name of this product?</h2>
           <p class="text-sm text-flavorpal-gray mb-4">Enter the full product name as it appears on the packaging.</p>
           <div>
-            <label for="productName" class="sr-only">Product Name</label>
+            <label for="name" class="sr-only">Product Name</label>
             <input
               type="text"
-              id="productName"
-              v-model="reviewData.productName"
+              id="name"
+              v-model="reviewData.name"
               class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-flavorpal-green focus:border-flavorpal-green sm:text-base"
               placeholder="e.g., Organic Almond Milk"
               required
+              disabled
               ref="productNameInputRef"
             />
           </div>
         </div>
 
         <div v-if="currentStep === 2" class="animate-fade-in">
-          <h2 class="text-lg font-semibold text-flavorpal-gray-dark mb-1">Give your rating for "{{ reviewData.productName || 'this product' }}"</h2>
+          <h2 class="text-lg font-semibold text-flavorpal-gray-dark mb-1">Give your rating for "{{ reviewData.name || 'this product' }}"</h2>
           <p class="text-sm text-flavorpal-gray mb-4">How would you rate it out of 5 stars?</p>
           <div class="flex justify-center">
-            <StarRatingInput v-model="reviewData.userRating" starSize="w-10 h-10 sm:w-12 sm:h-12" />
+            <StarRatingInput v-model="reviewData.rating" starSize="w-10 h-10 sm:w-12 sm:h-12" />
           </div>
-           <p v-if="reviewData.userRating === 0 && currentStep === 2 && triedToSubmitStep2" class="text-xs text-center text-red-500 mt-2">Please select a rating.</p>
+           <p v-if="reviewData.rating === 0 && currentStep === 2 && triedToSubmitStep2" class="text-xs text-center text-red-500 mt-2">Please select a rating.</p>
         </div>
 
         <div v-if="currentStep === 3" class="animate-fade-in">
-          <h2 class="text-lg font-semibold text-flavorpal-gray-dark mb-1">Write a short review for "{{ reviewData.productName || 'this product' }}"</h2>
+          <h2 class="text-lg font-semibold text-flavorpal-gray-dark mb-1">Write a short review for "{{ reviewData.name || 'this product' }}"</h2>
           <p class="text-sm text-flavorpal-gray mb-4">Share your thoughts on taste, texture, price, or if you'd buy it again.</p>
           <div>
             <label for="userNotes" class="sr-only">Your Review Notes</label>
             <textarea
               id="userNotes"
-              v-model="reviewData.userNotes"
+              v-model="reviewData.note"
               rows="6"
               class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-flavorpal-green focus:border-flavorpal-green sm:text-sm"
               placeholder="Write your review here..."
@@ -79,7 +80,7 @@
             </div>
           </div>
           <p v-else class="text-sm text-flavorpal-gray text-center mb-4">
-            You're about to {{ isEditing ? 'update' : 'add' }} your review for "{{ reviewData.productName }}".
+            You're about to {{ isEditing ? 'update' : 'add' }} your review for "{{ reviewData.name }}".
           </p>
         </div>
 
@@ -111,18 +112,16 @@
 import { ref, reactive, computed, onMounted, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useHistoryStore } from '../store/historyStore';
-import type { BadgeStatistic, ProductInteraction } from '../types';
+import type { BadgeStatistic, ProductInteraction, ReViewDataPayload } from '../types';
 import StarRatingInput from '@/components/common/StarRatingInput.vue';
 import { useUserProfileStore } from '@/store/userProfileStore';
 import { useBadgeStore } from '@/store/badgeStore';
-import { useAuthStore } from '@/store/auth';
 
 const route = useRoute();
 const router = useRouter();
 const historyStore = useHistoryStore();
 const userProfileStore = useUserProfileStore();
 const badgeStore = useBadgeStore();
-const authStore = useAuthStore()
 
 const currentStep = ref(1);
 const totalSteps = 4; // Product Name, Rating, Notes, Confirmation
@@ -130,44 +129,28 @@ const totalSteps = 4; // Product Name, Rating, Notes, Confirmation
 const productNameInputRef = ref<HTMLInputElement | null>(null);
 const triedToSubmitStep2 = ref(false); // To show rating error only after trying to proceed
 
-const reviewData = reactive({
-  productIdToUpdate: route.query.editProductId as string || route.query.scanId as string || undefined,
-  productName: (route.query.productName as string) || '',
-  userRating: 0,
-  userNotes: '',
-  imageUrl: '',
-  barcode: '',
-  aiHealthSummary: '',
-  aiHealthConclusion: undefined as ProductInteraction['aiHealthConclusion'],
-  dateScanned: '',
+let reviewData = reactive({
+  name: '',
+  rating: 0,
+  note: '',
 });
 
-const isEditing = computed(() => !!route.query.editProductId);
+const productId = Number(route.query.editProductId as string || route.query.scanId as string)
+const isEditing = computed(() => !!productId);
 const productToReview = ref<ProductInteraction | null>(null);
 
 onMounted(async () => {
-  if (historyStore.allProductInteractions.length === 0 && !historyStore.loadingInteractions) {
-    await historyStore.loadProductInteractions();
-  }
-
-  const productId = route.query.editProductId as string || route.query.scanId as string;
   if (productId) {
-    const existingItem = historyStore.getProductInteractionById(productId);
+    const existingItem = await historyStore.getProductInteractionById(productId);
+    console.log("VIEW (onMounted): existingItem:", existingItem);
     if (existingItem) {
-      productToReview.value = existingItem; // Store for AI summary display
-      reviewData.productName = existingItem.name;
-      reviewData.imageUrl = existingItem.imageUrl || '';
-      reviewData.barcode = existingItem.barcode || '';
-      reviewData.aiHealthSummary = existingItem.aiHealthSummary || '';
-      reviewData.aiHealthConclusion = existingItem.aiHealthConclusion;
-      reviewData.dateScanned = existingItem.dateScanned; // Preserve original scan date
-
-      if (isEditing.value && existingItem.isReviewed) {
-        reviewData.userRating = existingItem.userRating || 0;
-        reviewData.userNotes = existingItem.userNotes || '';
-      }
+      productToReview.value = existingItem;
+      reviewData.name = existingItem.name;
+      reviewData.rating = existingItem.userRating || 0;
+      reviewData.note = existingItem.userNotes || '';
     }
   }
+
   // Focus the first input
   nextTick(() => {
     productNameInputRef.value?.focus();
@@ -175,16 +158,15 @@ onMounted(async () => {
 });
 
 const progressPercentage = computed(() => (currentStep.value / totalSteps) * 100);
-
 const isNextDisabled = computed(() => {
-  if (currentStep.value === 1 && !reviewData.productName.trim()) return true;
-  if (currentStep.value === 2 && reviewData.userRating === 0) return true;
+  if (currentStep.value === 1 && !reviewData.name.trim()) return true;
+  if (currentStep.value === 2 && reviewData.rating === 0) return true;
   // Notes can be optional, so step 3 doesn't have specific validation here for 'Next'
   return false;
 });
 
 const nextStep = () => {
-  if (currentStep.value === 2 && reviewData.userRating === 0) {
+  if (currentStep.value === 2 && reviewData.rating === 0) {
     triedToSubmitStep2.value = true; // Mark that user tried to proceed from step 2
     return; // Don't proceed if rating is 0
   }
@@ -202,7 +184,7 @@ const prevStep = () => {
 };
 
 const handleNextOrSubmit = async () => {
-  if (currentStep.value === 2 && reviewData.userRating === 0) {
+  if (currentStep.value === 2 && reviewData.rating === 0) {
     triedToSubmitStep2.value = true;
     return;
   }
@@ -216,30 +198,17 @@ const handleNextOrSubmit = async () => {
   if (currentStep.value < totalSteps) {
     nextStep();
   } else {
-    // Final step: Submit the review
-    const savedInteraction = await historyStore.saveOrUpdateUserReview({
-      productIdToUpdate: reviewData.productIdToUpdate,
-      productName: reviewData.productName,
-      userRating: reviewData.userRating,
-      userNotes: reviewData.userNotes,
-      // Pass through existing data if available
-      imageUrl: reviewData.imageUrl,
-      barcode: reviewData.barcode,
-      aiHealthSummary: reviewData.aiHealthSummary,
-      aiHealthConclusion: reviewData.aiHealthConclusion,
-      // dateScanned is implicitly handled by store if it's a new item or preserved if updating
-    });
+    const isSuccess = await historyStore.saveOrUpdateUserReview(productId, reviewData as ReViewDataPayload);
 
-    if (savedInteraction && !historyStore.error) {
+    if (isSuccess && !historyStore.error) {
       // Check if new badges have been achieved
       await userProfileStore.loadUserProfile();
       const badgeStatistics: BadgeStatistic = { totalReviewCount: historyStore.totalScanned }
 
-      badgeStore.checkAllBadgesLogic(badgeStatistics, userProfileStore.badges)
-        .then(apiBadges => authStore.updateBadges(apiBadges))
+      badgeStore.checkAllBadgesLogic(badgeStatistics, badgeStore.badges)
 
       // Navigate to the product detail page of the newly reviewed/updated item
-      router.push({ name: 'ProductDetail', params: { id: savedInteraction.id } });
+      router.push({ name: 'ProductDetail', params: { id: productId } });
     } else {
       // Error will be shown via historyStore.error in the template
       console.error("Failed to save review:", historyStore.error);
@@ -251,8 +220,8 @@ const goBack = () => {
   // Navigate back to where the user came from (ProductDetail or Scan results)
   const fromTitle = route.query.fromTitle as string;
   if (fromTitle && (fromTitle.toLowerCase().includes('details') || fromTitle.toLowerCase().includes('scan'))) {
-     if (reviewData.productIdToUpdate) { // If we had an ID, go back to that product's detail
-        router.push({ name: 'ProductDetail', params: { id: reviewData.productIdToUpdate } });
+     if (productId) { // If we had an ID, go back to that product's detail
+        router.push({ name: 'ProductDetail', params: { id: productId } });
         return;
      }
   }

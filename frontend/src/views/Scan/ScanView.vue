@@ -63,7 +63,9 @@ import BarcodeInput from './components/BarcodeInput.vue'
 import Analyzing from './components/Analyzing.vue'
 import ResultPanel from './components/ResultPanel.vue'
 import ErrorDisplay from './components/ErrorDisplay.vue'
-import { fetchProductDataFromOpenFoodFacts, mockPhotoAnalyze } from '@/services/scanService'
+
+import { getProductByBarcodeApi } from '@/services/productService'
+import { mockPhotoAnalyze } from '@/services/scanService'
 
 // DELETE AFTER BACKEND INTEGRATION
 import { useHistoryStore } from '../../store/historyStore'
@@ -103,9 +105,9 @@ const handleResetView = () => {
 const handleBarcodeSubmission = async (barcodeValue: string) => {
   console.log('Processing submitted barcode:', barcodeValue)
   state.value = 'analyzing'
-  const productInteraction = await fetchProductDataFromOpenFoodFacts(barcodeValue)
+  const productInteraction = await getProductByBarcodeApi(barcodeValue)
   if (productInteraction) {
-    productForDisplay.value = productInteraction as ProductInteraction
+    productForDisplay.value = productInteraction.data as ProductInteraction
   }
   // DELETE AFTER BACKEND INTEGRATION
   historyStore.addOrUpdateInteraction(productForDisplay.value as ProductInteraction)

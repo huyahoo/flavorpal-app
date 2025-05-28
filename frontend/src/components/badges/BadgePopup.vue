@@ -48,7 +48,7 @@
 
       <div class="mb-8">
         <p class="italic text-xs text-gray-500">
-          {{ "Achieved on " + badge.dateEarned }}
+          {{ "Achieved on " + badge.createdAt?.slice(0, 10) }}
         </p>
       </div>
 

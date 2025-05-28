@@ -1,16 +1,23 @@
 <template>
   <div class="flex flex-col min-h-full bg-flavorpal-gray-light">
-    <header class="sticky top-0 z-30 bg-flavorpal-gray-light p-4 shadow-sm flex items-center">
+    <header 
+      v-if="!showPhotoCapturer" 
+      class="sticky top-0 z-30 bg-flavorpal-gray-light p-4 shadow-sm flex items-center"
+      :style="{ paddingTop: `calc(env(safe-area-inset-top, 0px) + 1rem)` }" >
       <button @click="goBack" class="text-flavorpal-green hover:text-flavorpal-green-dark p-2 -ml-2 rounded-full" aria-label="Go back">
         <IconArrowBack />
       </button>
       <h1 class="text-xl font-semibold text-flavorpal-gray-dark ml-2 truncate">
         {{ previousRouteName || 'Back' }}
       </h1>
-      </header>
+    </header>
 
-    <main class="flex-grow p-4 sm:p-6 space-y-6">
-      <div v-if="loadingProduct" class="text-center py-10">
+    <main 
+      v-if="!showPhotoCapturer" 
+      class="flex-grow p-4 sm:p-6 space-y-6 overflow-y-auto" 
+      :style="{ paddingBottom: `calc(env(safe-area-inset-bottom, 0px) + 1.5rem)`}"
+    >
+      <div v-if="loadingProduct && !product" class="text-center py-10">
         <svg class="animate-spin h-8 w-8 text-flavorpal-green mx-auto mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -76,21 +83,33 @@
           <p class="text-flavorpal-gray text-sm leading-relaxed whitespace-pre-wrap">{{ product.userNotes || 'No notes added yet.' }}</p>
         </section>
 
-        <section v-if="product.aiHealthSummary || product.aiHealthConclusion" class="bg-white p-5 rounded-xl shadow-lg">
-            <h3 class="text-lg font-semibold text-flavorpal-gray-dark mb-2">Health Insights</h3>
-            <p v-if="product.aiHealthSummary" class="text-flavorpal-gray text-sm leading-relaxed mb-3">
-                {{ product.aiHealthSummary }}
-            </p>
-            <div v-if="product.aiHealthConclusion" class="flex items-center">
-                <span
-                class="w-3 h-3 rounded-full mr-1.5 flex-shrink-0"
-                :class="getConclusionColor(product.aiHealthConclusion)"
-                aria-hidden="true"
-                ></span>
-                <span class="text-sm font-medium" :class="getConclusionTextColor(product.aiHealthConclusion)">
-                {{ getConclusionText(product.aiHealthConclusion) }}
-                </span>
+        <section v-if="product.aiHealthSummary || product.aiHealthConclusion"  class="bg-white p-5 rounded-xl shadow-lg">
+          <h3 class="text-lg font-semibold text-flavorpal-gray-dark mb-2">Health Insights</h3>
+          <div v-if="isAnalyzingIngredients" class="py-4 text-center">
+              <svg class="animate-spin h-6 w-6 text-flavorpal-green mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle> <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path> </svg>
+              <p class="text-sm text-flavorpal-gray">Analyzing ingredients...</p>
+              <button @click="cancelIngredientAnalysis" class="mt-3 text-xs text-red-500 hover:text-red-700">Cancel</button>
+          </div>
+          <div v-else>
+            <p v-if="product.aiHealthSummary" class="text-flavorpal-gray text-sm leading-relaxed mb-3"> {{ product.aiHealthSummary }} </p>
+            <div v-if="product.aiHealthConclusion" class="flex items-center mb-4">
+                <span class="w-3 h-3 rounded-full mr-1.5 flex-shrink-0" :class="getConclusionColor(product.aiHealthConclusion)" aria-hidden="true"></span>
+                <span class="text-sm font-medium" :class="getConclusionTextColor(product.aiHealthConclusion)"> {{ getConclusionText(product.aiHealthConclusion) }} </span>
             </div>
+          </div>
+        </section>
+
+        <section class="mt-6">
+          <button 
+            @click="openImageSourceChoiceModal"
+            class="w-full flex items-center justify-center py-3 px-4 bg-flavorpal-green hover:bg-flavorpal-green-dark text-white font-medium rounded-xl transition-colors duration-150 ease-in-out"
+          >
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18v-2m0-4H9m3 4h3m-3-4V6"></path></svg>
+            Enhance Insights
+          </button>
+  
+          <input type="file" accept="image/*" ref="fileInputRef" @change="handleFileSelectedFromInput" class="opacity-0 w-0 h-0 absolute -z-10" aria-hidden="true"/>
+          <p v-if="productUpdateError" class="text-xs text-red-500 mt-2 text-center">{{ productUpdateError }}</p>
         </section>
 
         <section class="mt-6">
@@ -113,7 +132,7 @@
             </button>
         </section>
 
-        <section v-if="!product.isReviewed" class="bg-white p-5 rounded-xl shadow-lg">
+        <!-- <section v-if="!product.isReviewed" class="bg-white p-5 rounded-xl shadow-lg">
           <h3 class="text-lg font-semibold text-flavorpal-gray-dark mb-3">Is this a new product for you?</h3>
           <div class="flex space-x-3">
             <button
@@ -133,7 +152,7 @@
               No, I've had it before
             </button>
           </div>
-        </section>
+        </section> -->
 
         <section class="bg-white p-5 rounded-xl shadow-lg">
           <h3 class="text-lg font-semibold text-flavorpal-gray-dark mb-4">Related Products</h3>
@@ -168,6 +187,11 @@
             Go back to History
         </router-link>
       </div>
+      <ImageSourceChoiceModal
+        :is-open="showImageSourceModal"
+        @close="closeImageSourceChoiceModal"
+        @select-source="handleImageSourceSelected"
+      />
       <ConfirmationModal
         :is-open="showDeleteConfirmModal"
         title="Confirm Deletion"
@@ -176,46 +200,66 @@
         @cancel="showDeleteConfirmModal = false"
       />
     </main>
+    <div v-if="showPhotoCapturer" 
+         class="fixed inset-0 z-50 bg-black flex items-center justify-center p-0"
+         aria-modal="true"
+         role="dialog"
+    >
+      <PhotoCapturer 
+        :on-capture="handlePhotoSuccessfullyCaptured"
+        :cancel-capture-callback="handlePhotoCaptureCancelled"
+        :facing-mode="'environment'" 
+        :max-width="1280" 
+        :max-height="720"
+        class="w-full h-full" 
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// ... (imports remain the same as flavorpal_product_detail_view_v3_final)
 import { ref, onMounted, computed, watch, onBeforeMount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useUiStore } from '../store/uiStore';
 import { useHistoryStore } from '../store/historyStore';
 import type { ProductInteraction, AiHealthConclusion } from '../types';
 import StarRating from '@/components/common/StarRating.vue';
 import ConfirmationModal from '@/components/common/ConfirmationModal.vue';
 import IconArrowBack from '@/components/icons/IconArrowBack.vue';
+import ImageSourceChoiceModal from '@/components/common/ImageSourceChoiceModal.vue';
+import PhotoCapturer, { type CapturedPhoto } from '@/components/common/PhotoCapturer.vue';
 
-const props = defineProps<{
-  id: string;
-}>();
-
+const props = defineProps<{ id: string; }>();
 const router = useRouter();
+const uiStore = useUiStore();
 const route = useRoute();
 const historyStore = useHistoryStore();
-
-const product = ref<(ProductInteraction & { isNewForUser?: boolean }) | null>(null);
-const relatedProducts = ref<Partial<ProductInteraction & {isReviewed?: boolean, id?: string}>[]>([]);
+const product = ref<ProductInteraction | null>(null);
+const relatedProducts = ref<ProductInteraction[]>([]);
 const loadingProduct = ref<boolean>(true);
-const previousRouteName = ref<string | null>(null);
-
+const productUpdateError = ref<string | null>(null);
+const previousRouteName = ref<string | null>(null); 
 const showDeleteConfirmModal = ref(false);
 
-const loadProductData = async (productId: string) => {
+const showImageSourceModal = ref(false);
+const fileInputRef = ref<HTMLInputElement | null>(null); 
+const isAnalyzingIngredients = ref(false);
+let analysisController: AbortController | null = null; 
+const showPhotoCapturer = ref(false);
+
+
+const loadProductData = async (productId: number) => {
   loadingProduct.value = true;
   if (historyStore.allProductInteractions.length === 0 && !historyStore.loadingInteractions) {
     await historyStore.loadProductInteractions();
   }
 
-  const foundProduct = historyStore.getProductInteractionById(productId);
+  const foundProduct = await historyStore.getProductInteractionById(productId);
+  console.log("VIEW (loadProductData): foundProduct:", foundProduct);
 
   if (foundProduct) {
     product.value = {
         ...foundProduct,
-        isNewForUser: (foundProduct as any).isNewForUser === undefined ? undefined : (foundProduct as any).isNewForUser
     };
 
     relatedProducts.value = historyStore.allProductInteractions
@@ -245,7 +289,6 @@ onBeforeMount(() => {
     }
 });
 
-
 onMounted(() => {
   loadProductData(props.id);
 });
@@ -270,17 +313,17 @@ watch(() => props.id, (newId, oldId) => {
   }
 });
 
-const goBack = () => {
-  if (window.history.state.back) {
-    router.go(-1);
-  } else {
+const goBack = () => { 
+    if (showPhotoCapturer.value) {
+        handlePhotoCaptureCancelled();
+        return;
+    }
     router.push({ name: 'History' });
-  }
 };
 
 const editNotes = () => {
   if (!product.value) return;
-  router.push({ name: 'AddReview', query: { editProductId: product.value.id, fromTitle: previousRouteName.value || 'Details' } });
+  router.push({ name: 'AddReview', query: { editProductId: product.value.id, fromTitle: 'Details' } });
 };
 
 const navigateToAddReview = () => {
@@ -315,6 +358,94 @@ const executeDelete = async () => {
 const openDeleteConfirmModal = () => {
     if (!product.value) return;
     showDeleteConfirmModal.value = true;
+};
+
+const openImageSourceChoiceModal = () => {
+    showImageSourceModal.value = true;
+    uiStore.setCameraOverlayActive(true);
+};
+
+const closeImageSourceChoiceModal = () => {
+    showImageSourceModal.value = false;
+    uiStore.setCameraOverlayActive(false);
+};
+// --- Updated Ingredient Photo Upload Logic ---
+const handleImageSourceSelected = (source: 'camera' | 'upload') => {
+    closeImageSourceChoiceModal();
+    if (source === 'camera') {
+        showPhotoCapturer.value = true;
+        uiStore.setCameraOverlayActive(true);
+    } else if (source === 'upload') {
+        fileInputRef.value?.click(); 
+    }
+};
+
+// Callback for when PhotoCapturer successfully captures a photo
+const handlePhotoSuccessfullyCaptured = async (capturedPhoto: CapturedPhoto) => {
+    console.log('Photo captured by component:', capturedPhoto.mimeType);
+    showPhotoCapturer.value = false; // Hide the capturer
+
+    // Convert base64 to File object
+    try {
+        const response = await fetch(capturedPhoto.data);
+        const blob = await response.blob();
+        const imageFile = new File([blob], `ingredient_capture_${Date.now()}.${blob.type.split('/')[1] || 'jpg'}`, { type: blob.type });
+        await processIngredientImageFile(imageFile);
+        uiStore.setCameraOverlayActive(true);
+    } catch (error) {
+        console.error("Error converting base64 to File:", error);
+        productUpdateError.value = "Failed to process captured image.";
+    }
+};
+
+// Callback for when PhotoCapturer is cancelled by its own cancel button
+const handlePhotoCaptureCancelled = () => {
+    showPhotoCapturer.value = false;
+    uiStore.setCameraOverlayActive(false);
+    console.log('Photo capture cancelled by user from PhotoCapturer.');
+};
+
+// For "Upload from Library"
+const handleFileSelectedFromInput = async (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    if (target.files && target.files[0]) {
+        const imageFile = target.files[0];
+        target.value = ''; 
+        await processIngredientImageFile(imageFile);
+    }
+};
+
+// Centralized processing logic for the image file
+const processIngredientImageFile = async (imageFile: File) => {
+    if (!product.value) return;
+    console.log('Processing ingredient image:', imageFile.name);
+    
+    isAnalyzingIngredients.value = true; // Show "Analyzing..." text in the main view
+    productUpdateError.value = null;
+    analysisController = new AbortController();
+
+    try {
+        const success = await historyStore.analyzeAndUpdateIngredients(product.value.id, imageFile);
+        if (analysisController.signal.aborted) { console.log("Ingredient analysis was cancelled."); return; }
+        if (success) {
+            const updatedItem = historyStore.getProductInteractionById(product.value.id);
+            if (updatedItem) product.value = { ...updatedItem };
+        } else {
+            productUpdateError.value = historyStore.error || "Failed to update insights from image.";
+        }
+    } catch (error: any) {
+         if (error.name === 'AbortError') console.log('Fetch aborted for ingredient analysis');
+         else productUpdateError.value = "An unexpected error occurred during analysis.";
+    } finally {
+        isAnalyzingIngredients.value = false;
+        analysisController = null;
+    }
+};
+
+const cancelIngredientAnalysis = () => {
+    if (analysisController) analysisController.abort();
+    isAnalyzingIngredients.value = false;
+    productUpdateError.value = "Analysis cancelled.";
 };
 
 // --- AI Conclusion Styling Helpers (remain the same) ---

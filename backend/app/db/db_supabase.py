@@ -8,7 +8,7 @@ from sqlalchemy.orm import declarative_base
 from app import schemas, models
 import datetime
 
-load_dotenv()
+load_dotenv() 
 
 USER = os.getenv("USER")
 PASSWORD = os.getenv("PASSWORD")
@@ -23,7 +23,6 @@ engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
-
 
 def get_db():
     db = SessionLocal()
@@ -44,3 +43,6 @@ def test_exec():
                 WHERE table_schema = 'public';
             """)).fetchall()
     print("Accessible tables in 'public':", [t[0] for t in tables])
+
+if __name__ == '__main__':
+    test_exec()

@@ -426,3 +426,13 @@ https://localhost:8000/
         
 ## Database
 ![Database](static/picture/database.jpg)
+
+## Supabase
+![Supabase](static/picture/supabase-schema.png)
+> See `./app/db/schema.sql` for more details
+
+- `db_helper`: provides functions that help interact with supabase
+    - `upload_image_to_bucket`
+    - `send_to_image_encode_endpoint`: send image to AI image encoding endpoint and get embedding.
+    - `most_similar_img`: get most similar product based on image embedding
+    - sample usage are also provided in this file.

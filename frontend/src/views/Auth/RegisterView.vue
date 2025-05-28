@@ -145,7 +145,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useAuthStore } from '../../store/auth';
 import type { UserCreatePayload } from '../../types';
 import { useRouter } from 'vue-router';
@@ -197,21 +197,18 @@ const handleRegister = async () => {
 
   // Construct the payload according to UserCreatePayload
   const payload: UserCreatePayload = {
-    username: nameInput.value.trim(),
+    name: nameInput.value.trim(),
     email: email.value.trim(),
-    password: password.value, // Password is sent plain, backend should hash it
+    password: password.value,
     health_flags: flagsArray,
-    badges: [], // Send empty array for badges; backend might assign some initially or handle this differently
+    badges: [],
   };
 
-  console.log('Registering with payload:', payload); // For debugging
-
-  const result = await authStore.register(payload); // authStore.register now returns { success, message }
+  const result = await authStore.register(payload);
 
   if (result.success) {
     successModalMessage.value = result.message || "Your account has been created successfully. Please proceed to login.";
-    showSuccessModal.value = true; // Show the success modal
-    // Clear form fields after showing modal, or when modal is confirmed
+    showSuccessModal.value = true;
     nameInput.value = '';
     email.value = '';
     password.value = '';
@@ -224,6 +221,10 @@ const proceedToLogin = () => {
     showSuccessModal.value = false;
     router.push({ name: 'Login' });
 };
+
+onMounted(() => {
+  authStore.error = null;
+});
 </script>
 
 <style scoped>

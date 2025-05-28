@@ -1,7 +1,8 @@
 // src/store/historyStore.ts
 import { defineStore } from 'pinia';
-import type { ProductInteraction, AiHealthConclusion } from '../types';
+import type { ProductInteraction, AiHealthConclusion, ReViewDataPayload } from '../types';
 import { fetchProductInteractionsApi, fetchScanStatisticsApi } from '../services/historyService';
+import { getAllProductsApi, getProductByIdApi, addReviewForProductApi, updateReviewForProductApi, deleteProductByIdApi } from '../services/productService';
 
 export type ReviewedFilterStatus = 'all' | 'reviewed_only' | 'scanned_only';
 
@@ -85,7 +86,6 @@ export const useHistoryStore = defineStore('history', {
   }),
 
   getters: {
-    // ... (processedHistoryItems, activeFilterCount, getProductInteractionById, getRecentlyScannedItems remain the same) ...
     processedHistoryItems: (state): ProductInteraction[] => {
       let items = [...state.allProductInteractions];
       if (state.filterSearchQuery.trim()) {
@@ -133,11 +133,7 @@ export const useHistoryStore = defineStore('history', {
       if (state.filterReviewedStatus === 'scanned_only' && state.filterAiConclusion) count++;
       return count;
     },
-    getProductInteractionById: (state) => {
-      return (id: string): ProductInteraction | undefined => {
-        return state.allProductInteractions.find(item => item.id === id);
-      };
-    },
+
     getRecentlyScannedItems: (state) => (count: number = 3): ProductInteraction[] => {
         return [...state.allProductInteractions]
             .sort((a, b) => new Date(b.dateScanned).getTime() - new Date(a.dateScanned).getTime())
@@ -152,25 +148,24 @@ export const useHistoryStore = defineStore('history', {
             this.loadScanStatistics(forceReload)
         ]);
     },
+
     async loadProductInteractions(forceReload: boolean = false) {
-      // ... (logic remains the same) ...
       if (this.allProductInteractions.length > 0 && !forceReload && !this.error) {
-        // return;
+        return;
       }
       this.loadingInteractions = true;
       this.error = null;
+    
       try {
-        let interactions = null;
-        if (!forceReload) {
-          interactions = getInteractionsFromStorage();
-        }
-        if (interactions) {
-          this.allProductInteractions = interactions;
+        const response = await getAllProductsApi();
+        console.log("STORE (loadProductInteractions): API call response:", response);
+        if (response.code === 200 && response.data) {
+          this.allProductInteractions = response.data;
         } else {
-          interactions = await fetchProductInteractionsApi();
-          this.allProductInteractions = interactions;
-          saveInteractionsToStorage(this.allProductInteractions);
+          this.error = (response && response.msg) || 'Failed to load history or data is not in expected format.';
+          this.allProductInteractions = [];
         }
+        console.log("STORE (loadProductInteractions): API call response:", this.allProductInteractions);
       } catch (err: any) {
         this.error = err.message || 'Failed to load history.';
         this.allProductInteractions = [];
@@ -180,16 +175,15 @@ export const useHistoryStore = defineStore('history', {
     },
 
     async loadScanStatistics(forceReload: boolean = false) {
-      // ... (logic remains the same) ...
-       if (this.totalScanned > 0 && this.discoveredThisMonth > 0 && !forceReload && !this.error && !this.loadingStats) {
-        // return;
+      if (this.totalScanned > 0 && this.discoveredThisMonth > 0 && !forceReload && !this.error && !this.loadingStats) {
+        return;
       }
       this.loadingStats = true;
       try {
         const stats = await fetchScanStatisticsApi();
         this.discoveredThisMonth = stats.discoveredThisMonth;
         if (this.allProductInteractions.length === 0 || forceReload) {
-             this.totalScanned = stats.totalScanned;
+            this.totalScanned = stats.totalScanned;
         } else if (this.totalScanned < stats.totalScanned) {
             this.totalScanned = stats.totalScanned;
         }
@@ -202,6 +196,18 @@ export const useHistoryStore = defineStore('history', {
       } finally {
         this.loadingStats = false;
       }
+    },
+
+    async getProductInteractionById(id: number): Promise<ProductInteraction | undefined> {
+      const product = await getProductByIdApi(id);
+      console.log("STORE (getProductInteractionById): API call response:", product);
+      return product;
+    },
+
+    async deleteProductInteraction(id: number): Promise<boolean> {
+      const response = await deleteProductByIdApi(id);
+      console.log("STORE (deleteProductInteraction): API call response:", response);
+      return response.code == 200;
     },
 
     setFilters(filters: Partial<HistoryFilters>) { /* ... */ },
@@ -238,120 +244,16 @@ export const useHistoryStore = defineStore('history', {
         });
         saveInteractionsToStorage(this.allProductInteractions);
     },
+    async saveOrUpdateUserReview(productId: number, reviewData: ReViewDataPayload): Promise<Boolean> {
 
-    async saveOrUpdateUserReview(reviewData: ReviewDataPayload): Promise<ProductInteraction | null> {
-        // ... (logic remains the same, ensure it calls saveInteractionsToStorage) ...
-        this.loadingInteractions = true;
-        this.error = null;
-        await new Promise(resolve => setTimeout(resolve, 400));
-
-        try {
-            const todayISO = new Date().toISOString();
-            const displayDate = formatDateForDisplay(todayISO);
-
-            let interactionToSave: ProductInteraction;
-            let existingItemIndex = -1;
-
-            if (this.allProductInteractions.length === 0 && !this.loadingInteractions) {
-                await this.loadProductInteractions();
-            }
-
-            if (reviewData.productIdToUpdate) {
-                existingItemIndex = this.allProductInteractions.findIndex(item => item.id === reviewData.productIdToUpdate);
-            }
-
-            if (existingItemIndex !== -1) {
-                const existingItem = this.allProductInteractions[existingItemIndex];
-                interactionToSave = {
-                    ...existingItem,
-                    name: reviewData.productName,
-                    isReviewed: true,
-                    userRating: reviewData.userRating,
-                    userNotes: reviewData.userNotes,
-                    dateReviewed: displayDate,
-                    imageUrl: reviewData.imageUrl || existingItem.imageUrl,
-                    barcode: reviewData.barcode || existingItem.barcode,
-                    aiHealthSummary: existingItem.aiHealthSummary || reviewData.aiHealthSummary,
-                    aiHealthConclusion: existingItem.aiHealthConclusion || reviewData.aiHealthConclusion,
-                };
-                this.allProductInteractions[existingItemIndex] = interactionToSave;
-            } else {
-                interactionToSave = {
-                    id: reviewData.productIdToUpdate || generateInteractionId('review_'),
-                    name: reviewData.productName,
-                    imageUrl: reviewData.imageUrl,
-                    dateScanned: displayDate,
-                    aiHealthSummary: reviewData.aiHealthSummary,
-                    aiHealthConclusion: reviewData.aiHealthConclusion,
-                    isReviewed: true,
-                    userRating: reviewData.userRating,
-                    userNotes: reviewData.userNotes,
-                    dateReviewed: displayDate,
-                    barcode: reviewData.barcode,
-                };
-                this.allProductInteractions.unshift(interactionToSave);
-                this.totalScanned++;
-            }
-
-            this.allProductInteractions.sort((a, b) => {
-                const dateA = new Date((a.isReviewed && a.dateReviewed) ? a.dateReviewed : a.dateScanned).getTime();
-                const dateB = new Date((b.isReviewed && b.dateReviewed) ? b.dateReviewed : b.dateScanned).getTime();
-                return dateB - dateA;
-            });
-
-            saveInteractionsToStorage(this.allProductInteractions);
-            this.loadingInteractions = false;
-            return interactionToSave;
-
-        } catch (err: any) {
-            this.error = err.message || "Failed to save review.";
-            this.loadingInteractions = false;
-            return null;
-        }
+      const product = this.allProductInteractions.find(item => item.id === productId);
+      if (product?.isReviewed) {
+        const response = await updateReviewForProductApi(productId, reviewData);
+        return response.code == 201;
+      } else {
+        const response = await addReviewForProductApi(productId, reviewData);
+        return response.code == 200;
+      }
     },
-
-    /**
-     * NEW ACTION: Deletes a product interaction from history.
-     * @param itemId - The ID of the ProductInteraction to delete.
-     * @returns True if deletion was successful, false otherwise.
-     */
-    async deleteProductInteraction(itemId: string): Promise<boolean> {
-        this.loadingInteractions = true; // Indicate an operation is in progress
-        this.error = null;
-        await new Promise(resolve => setTimeout(resolve, 300)); // Simulate API delay
-
-        try {
-            const itemIndex = this.allProductInteractions.findIndex(item => item.id === itemId);
-            if (itemIndex !== -1) {
-                this.allProductInteractions.splice(itemIndex, 1); // Remove from array
-
-                // Decrement totalScanned.
-                // This is a simple decrement; more complex logic might be needed if an item
-                // could be "scanned" multiple times under the same ID before being deleted.
-                // For MVP, if it's removed from the list, we reduce the count.
-                if (this.totalScanned > 0) {
-                    this.totalScanned--;
-                }
-                // Note: Accurately adjusting discoveredThisMonth on client-side delete is complex.
-                // For MVP, we might accept this stat becomes slightly off or trigger a full stat reload (heavier).
-                // Let's keep it simple and just adjust totalScanned.
-
-                saveInteractionsToStorage(this.allProductInteractions); // Persist changes
-                console.log('HistoryStore: Deleted interaction -', itemId);
-                this.loadingInteractions = false;
-                return true;
-            } else {
-                console.warn('HistoryStore: Item to delete not found -', itemId);
-                this.error = "Item not found for deletion.";
-                this.loadingInteractions = false;
-                return false;
-            }
-        } catch (err: any) {
-            console.error('HistoryStore: Error deleting interaction -', err);
-            this.error = err.message || "Failed to delete item.";
-            this.loadingInteractions = false;
-            return false;
-        }
-    }
   },
 });

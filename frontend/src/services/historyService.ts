@@ -18,7 +18,7 @@ export const fetchProductInteractionsApi = async (): Promise<ProductInteraction[
       id: 'hist_item_002', name: 'Artisanal Sourdough Bread (Reviewed)', imageUrl: 'https://placehold.co/200x200/D1C0A8/FFFFFF?text=Bread&font=roboto', dateScanned: 'May 08, 2025', aiHealthSummary: 'Contains gluten. If not sensitive, a good choice.', aiHealthConclusion: 'good', isReviewed: true, userRating: 5, userNotes: 'Perfect crust and a tangy flavor. Made with organic flour. Best sourdough I have had in ages!', dateReviewed: 'May 09, 2025',
     },
     {
-      id: 'hist_item_003', name: 'Imported Olive Oil (Scanned Only)', imageUrl: 'https://placehold.co/200x200/A3B18A/FFFFFF?text=OliveOil&font=roboto', dateScanned: 'May 05, 2025', aiHealthSummary: 'Healthy fats, good for cooking and salads.', aiHealthConclusion: 'good', isReviewed: false, 
+      id: 'hist_item_003', name: 'Imported Olive Oil (Scanned Only)', imageUrl: 'https://placehold.co/200x200/A3B18A/FFFFFF?text=OliveOil&font=roboto', dateScanned: 'May 05, 2025', aiHealthSummary: 'Healthy fats, good for cooking and salads.', aiHealthConclusion: 'good', isReviewed: false,
     },
     {
       id: 'hist_item_007', name: 'Spicy Kimchi Ramen (Scanned Only)', dateScanned: 'Apr 20, 2025', aiHealthSummary: 'Very high in sodium. Contains wheat and soy.', aiHealthConclusion: 'avoid', isReviewed: false, barcode: 'ramen_spicy_789',
@@ -42,6 +42,6 @@ export const fetchScanStatisticsApi = async (): Promise<{ discoveredThisMonth: n
     // For mock, we can return static or slightly dynamic values.
     return {
         discoveredThisMonth: 7, // Example static value
-        totalScanned: 42,       // Example static value
+        totalScanned: 0,       // Example static value
     };
 };

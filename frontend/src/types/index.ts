@@ -5,7 +5,7 @@
  */
 export interface User {
   id: number;
-  username: string;
+  name: string;
   email: string;
   health_flags: string[];
   badges: ApiBadge[];
@@ -17,7 +17,7 @@ export interface User {
  * Payload for creating a new user (matches backend's UserCreate schema).
  */
 export interface UserCreatePayload {
-  username: string;
+  name: string;
   email: string;
   health_flags: string[];
   badges: ApiBadge[];
@@ -29,7 +29,7 @@ export interface UserCreatePayload {
  * Note: Fields are optional to allow partial updates.
  */
 export interface UserUpdatePayload {
-  username?: string;
+  name?: string;
   health_flags?: string[];
   badges?: ApiBadge[];
   password?: string;
@@ -55,25 +55,45 @@ export interface TokenResponse {
  * Generic API response structure from backend.
  */
 export interface ApiResponse<T = any> {
+    access_token: string | null;
+    token_type: string;
     code: number;
     data: T;
     msg: string;
-    details?: any;
+    detail?: any;
+}
+
+/**
+ * Interface for review data payload
+ */
+export interface ReViewDataPayload {
+  name: string;
+  rating: number;
+  note: string;
 }
 
 /**
  * Interface for badge data as it might come from an API or database.
  */
 export interface ApiBadge {
-  id: string;
-  dateEarned: string | null;
+  id: number;
+  ref: string;
+}
+
+/**
+ * Interface for badge data as it might come from an API or database.
+ */
+export interface UserBadge {
+  id: number;
+  badge: ApiBadge;
+  createdAt: string | null;
 }
 
 /**
  * Interface for mapping other badge data apart from API badge data
  */
 export interface BadgeMapping {
-  id: string
+  ref: string
   name: string
   description: string
   imageUrl: string
@@ -81,9 +101,12 @@ export interface BadgeMapping {
 }
 
 /**
- * Interface for badge data specific to user for frontend display
+ * Interface for badge data for frontend display
  */
-export interface DisplayBadge extends BadgeMapping, ApiBadge {}
+export interface DisplayBadge extends BadgeMapping {
+  id: number
+  createdAt: string | null;
+}
 
 /**
  * Interface for value to pass into badge checking logic
@@ -102,18 +125,15 @@ export type AiHealthConclusion = 'good' | 'caution' | 'avoid' | 'neutral' | 'inf
  * This can be a scan, a review, or both.
  */
 export interface ProductInteraction {
-  id: string;                    // Unique identifier (can be barcode for scanned items from OFF)
+  id: number;                    // Unique identifier (can be barcode for scanned items from OFF)
   name: string;                  // Name of the product
   imageUrl?: string;             // Optional URL for the product image
-
-  // Scanning-related data
-  dateScanned: string;           // Date when the product was first scanned/encountered
   barcode?: string;              // Barcode if scanned
+  brands?: string[];             // Product brands -> TODO: Should be string
+  categories?: string[];         // Product categories -> TODO:Should be string
 
   // Data from Open Food Facts (or similar API)
   ingredientsText?: string;      // Raw ingredients string
-  categories?: string[];         // Product categories
-  brands?: string[];             // Product brands
   genericName?: string;          // Generic name from OFF
 
   // AI-generated insights (can be client-side mock based on ingredientsText and healthFlags)
@@ -126,8 +146,8 @@ export interface ProductInteraction {
   userNotes?: string;
   dateReviewed?: string;
 
-  // For local UI state in ProductDetailView for "Is this a new product for you?"
-  isNewForUser?: boolean;
+  // Scanning-related data
+  dateScanned: string;           // Date when the product was first scanned/encountered
 }
 
 export interface PublicReviewItem {

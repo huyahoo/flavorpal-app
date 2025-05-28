@@ -1,35 +1,35 @@
 # backend/app/models/user.py
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import relationship
-from .base import Base 
+
+from app import models
+from .base import Base
 import datetime
 
+
 class User(Base):
-    __tablename__ = "users" 
+    __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-    email = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
+    name = Column(String(255), nullable=False)
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    password = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow,
                         onupdate=datetime.datetime.utcnow)
+    total_taste_points = Column(Integer, default=0)
 
-    user_health_flags_association = relationship("UserHealthFlag", back_populates="user", cascade="all, delete-orphan")
-    badges_association = relationship("UserBadge", back_populates="user", cascade="all, delete-orphan")
-    
-    reviews = relationship("Review", back_populates="user")
-    history = relationship("History", back_populates="user")
+    reviews = relationship("Review", back_populates="user",
+                           cascade="all, delete-orphan")
+    history = relationship("History", back_populates="user",
+                           cascade="all, delete-orphan")
+    user_badges = relationship(
+        "UserBadge", back_populates="user", cascade="all, delete-orphan")
+    user_health_flags = relationship(
+        "UserHealthFlag", back_populates="user", cascade="all, delete-orphan")
 
     @property
     def health_flags(self) -> list[str]:
         """Returns a list of names of the user's health flags."""
-        if self.user_health_flags_association:
-            return [assoc.health_flag.name for assoc in self.user_health_flags_association if assoc.health_flag]
-        return []
-
-    @property
-    def badges(self) -> list[str]:
-        """Returns a list of names of the user's badges."""
-        if self.badges_association:
-            return [assoc.badge.name for assoc in self.badges_association if assoc.badge]
+        if self.user_health_flags:
+            return [assoc.health_flag.name for assoc in self.user_health_flags if assoc.health_flag]
         return []

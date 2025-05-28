@@ -21,9 +21,9 @@
           <div v-if="!isEditingUsername" class="flex items-center space-x-2">
             <h2
               class="text-xl sm:text-2xl font-bold text-flavorpal-gray-dark truncate"
-              :title="authStore.user?.username || 'Username'"
+              :title="authStore.user?.name || 'Username'"
             >
-              {{ authStore.user?.username || 'Username' }}
+              {{ authStore.user?.name || 'Username' }}
             </h2>
             <button
               @click="startEditUsername"
@@ -79,14 +79,14 @@
         <div v-if="userProfileStore.loading" class="text-center py-3">
             <p class="text-xs text-flavorpal-gray animate-pulse">Loading badges...</p>
         </div>
-        <div v-else-if="userProfileStore.badges.length > 0" class="flex space-x-3 sm:space-x-4 overflow-x-auto pb-2">
+        <div v-else-if="badgeStore.badges.length > 0" class="flex space-x-3 sm:space-x-4 overflow-x-auto pb-2">
           <BadgeItem
-            v-for="badge in userProfileStore.getProfileSummaryBadges(4)"
-            :key="badge.id"
+            v-for="badge in badgeStore.getProfileSummaryBadges(4)"
+            :key="badge.ref"
             :badge="badge"
           />
         </div>
-        <p v-else-if="!userProfileStore.loading && userProfileStore.badges.length === 0" class="text-sm text-flavorpal-gray">No badges earned yet. Keep exploring!</p>
+        <p v-else-if="!userProfileStore.loading && badgeStore.badges.length === 0" class="text-sm text-flavorpal-gray">No badges earned yet. Keep exploring!</p>
         <p v-if="userProfileStore.error && !userProfileStore.loading" class="text-xs text-red-500 mt-1">Could not load badges: {{ userProfileStore.error }}</p>
       </section>
 
@@ -155,18 +155,18 @@
 
           <li>
             <button @click="navigateToConvertTastePoints" class="w-full flex items-center p-4 hover:bg-gray-50 transition-colors text-left">
-              <svg 
-                class="w-5 h-5 text-flavorpal-gray-dark mr-3" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24" 
+              <svg
+                class="w-5 h-5 text-flavorpal-gray-dark mr-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
               >
-                <path 
-                  stroke-linecap="round" 
-                  stroke-linejoin="round" 
-                  stroke-width="2" 
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
                   d="M7 16l-4-4m0 0l4-4m-4 4h18m-7 4l4 4m0 0l-4 4m4-4H3"
                 ></path>
               </svg>
@@ -177,18 +177,18 @@
 
           <li>
             <button @click="changePassword" class="w-full flex items-center p-4 hover:bg-gray-50 transition-colors text-left">
-              <svg 
-                class="w-5 h-5 text-flavorpal-gray-dark mr-3" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24" 
+              <svg
+                class="w-5 h-5 text-flavorpal-gray-dark mr-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
               >
-                <path 
-                  stroke-linecap="round" 
-                  stroke-linejoin="round" 
-                  stroke-width="2" 
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
                   d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                 ></path>
               </svg>
@@ -223,9 +223,11 @@ import { useUserProfileStore } from '../store/userProfileStore';
 import { useHistoryStore } from '../store/historyStore';
 import { useRouter } from 'vue-router';
 import BadgeItem from '@/components/account/BadgeItem.vue';
+import { useBadgeStore } from '@/store/badgeStore';
 
 const authStore = useAuthStore();
 const userProfileStore = useUserProfileStore();
+const badgeStore = useBadgeStore()
 const historyStore = useHistoryStore();
 const router = useRouter();
 
@@ -260,7 +262,7 @@ interface Badge {
 // --- Username Editing Functions ---
 const startEditUsername = () => {
   isEditingUsername.value = true;
-  newUsernameInput.value = authStore.user?.username || '';
+  newUsernameInput.value = authStore.user?.name || '';
   usernameEditError.value = null;
   nextTick(() => {
     usernameInputRef.value?.focus();
@@ -290,7 +292,7 @@ const saveUsername = async () => {
 const cancelEditUsername = () => {
   isEditingUsername.value = false;
   usernameEditError.value = null;
-  newUsernameInput.value = authStore.user?.username || '';
+  newUsernameInput.value = authStore.user?.name || '';
 };
 
 // --- Keywords Editing Functions ---
@@ -362,8 +364,9 @@ onMounted(async () => {
     // userProfileStore.loadUserProfile() is already called in the previous version,
     // ensure it's still being called if you need tastePoints and badges from there.
     // If not already called by another component or App.vue, call it here.
-    if (userProfileStore.badges.length === 0 && userProfileStore.tastePoints === 0) {
-        userProfileStore.loadUserProfile();
+    if (badgeStore.badges.length === 0 && userProfileStore.tastePoints === 0) {
+      userProfileStore.loadUserProfile();
+      badgeStore.loadAllUserBadges();
     }
   }
 });

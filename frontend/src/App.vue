@@ -2,10 +2,6 @@
   <div
     id="flavorpal-app-container"
     class="max-w-md mx-auto h-dvh bg-flavorpal-gray-light font-sans overflow-hidden relative flex flex-col"
-    :style="{
-      // paddingTop: 'env(safe-area-inset-top)',
-      // paddingBottom: !showBottomNavComputed ? 'env(safe-area-inset-bottom)' : '0px'
-    }"
   >
     <main
       class="flex-grow overflow-y-auto"
@@ -27,18 +23,21 @@
 import { onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from './store/auth';
+import { useUiStore } from './store/uiStore';
 import BottomNavigationBar from './components/common/BottomNavigationBar.vue';
 import BadgePopupWrapper from './components/badges/BadgePopupWrapper.vue';
 
 const authStore = useAuthStore();
+const uiStore = useUiStore();
 const route = useRoute();
 
 const showBottomNavComputed = computed(() => {
-  return authStore.isAuthenticated && route.meta.showBottomNav !== false;
+  return authStore.isAuthenticated && route.meta.showBottomNav !== false  && 
+  !uiStore.isCameraOverlayActive;;
 });
 
-onMounted(async () => {
-  if (!authStore.user && localStorage.getItem('flavorpal_current_user_v4')) {
+onMounted(async () => { 
+  if (!authStore.isAuthenticatedInitiallyChecked) {
     await authStore.initializeAuth();
   }
 });
