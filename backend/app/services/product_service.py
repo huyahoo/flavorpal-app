@@ -90,7 +90,7 @@ def upload_image_to_bucket(image):
 
 
 def most_similar_img(embedding, db: Session):
-    threshold = 0.35
+    threshold = 0.2
     query = text("""
         SELECT name, (image_embedding <=> CAST(:embedding AS vector)) AS distance
         FROM Products
@@ -128,7 +128,7 @@ def most_similar_img(embedding, db: Session):
 
     params = {
         "embedding": embedding, 
-        "threshold": 0.2,
+        "threshold": threshold,
     }
     
     result = db.execute(query, params).mappings().fetchone()
