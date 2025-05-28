@@ -64,7 +64,7 @@ import Analyzing from './components/Analyzing.vue'
 import ResultPanel from './components/ResultPanel.vue'
 import ErrorDisplay from './components/ErrorDisplay.vue'
 
-import { getProductByBarcodeApi } from '@/services/productService'
+import { getProductByBarcodeApi, getProductByPhotoApi } from '@/services/productService'
 import { mockPhotoAnalyze } from '@/services/scanService'
 
 // DELETE AFTER BACKEND INTEGRATION
@@ -126,10 +126,10 @@ const handleNavigateToProductDetail = () => {
 const handlePhotoCapture = async (photo: CapturedPhoto) => {
   console.log('Processing captured photo:', photo)
   state.value = 'analyzing'
-  const result = await mockPhotoAnalyze(photo.data) // This line always returns the same mock result
+  const result = await getProductByPhotoApi(photo.data) // This line always returns the same mock result
   console.log('Photo analysis result:', result)
   if (result) {
-    productForDisplay.value = result
+    productForDisplay.value = result.data as ProductInteraction
   }
   state.value = 'result_display'
 }

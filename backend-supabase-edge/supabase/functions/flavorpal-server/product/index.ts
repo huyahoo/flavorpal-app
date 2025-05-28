@@ -49,7 +49,7 @@ productRouter.get("/", async (c) => {
 
   return c.json({
     code: 200,
-    data: { products: productsInfo },
+    data: productsInfo,
     msg: "",
   });
 });
