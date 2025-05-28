@@ -21,7 +21,7 @@ reviewRouter.get("/", async (c) => {
   const { data: reviewData, error: reviewError } = await client
     .from("reviews_view")
     .select()
-    .eq("ai_suggestions.user_id", userId)
+    .eq("ai_health_user_id", userId)
     .order("date_reviewed", { ascending: false });
   if (reviewError) {
     return c.json(getCommonError(reviewError.message));
@@ -69,7 +69,7 @@ reviewRouter.get("/:id", async (c) => {
     .from("reviews_view")
     .select()
     .eq("review_id", reviewId)
-    .eq("ai_suggestions.user_id", userId)
+    .eq("ai_health_user_id", userId)
     .single();
   if (reviewError) {
     return c.json(getCommonError(reviewError.message));
