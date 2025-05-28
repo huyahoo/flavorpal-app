@@ -8,29 +8,6 @@ import type {
     ReViewDataPayload
 } from '../types';
 
-
-const convertDateToDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-};
-
-const mapApiProductToProductInteraction = (product: any): ProductInteraction => {
-  return ({
-    id: product.id,
-    name: product.name,
-    barcode: product.barcode,
-    brands: product.brands,
-    categories: product.categories,
-    dateScanned: convertDateToDate(product.data_scanned_at),
-    dateReviewed: convertDateToDate(product.data_reviewed),
-    isReviewed: product.isReviewed,
-    imageUrl: product.image_url,
-    userRating: product.user_rating,
-    userNotes: product.user_note,
-    aiHealthSummary: product.ai_health_summary || "No summary available",
-    aiHealthConclusion: product.ai_health_conclusion || "info_needed",
-  });
-};
-
 /**
  * Creates a new product.
  * Endpoint: POST /products/
@@ -87,11 +64,9 @@ export const getProductByBarcodeApi = async (barcode: string): Promise<ApiRespon
 export const getProductByIdApi = async (productId: number): Promise<ProductInteraction> => {
   console.log(`SERVICE (getProductByIdApi): Fetching product ID ${productId}...`);
   const response = await apiClient.get<ApiResponse<ProductInteraction>>(`/products/${productId}`);
-  console.log("SERVICE (getProductByIdApi): API call response:", response.data.data);
-  const productInteraction = mapApiProductToProductInteraction(response.data.data);
-  console.log("SERVICE (getProductByIdApi): API call response:", productInteraction);
+  console.log("SERVICE (getProductByIdApi): API call response:", response.data);
 
-  return productInteraction;
+  return response.data.data;
 };
 
 /**

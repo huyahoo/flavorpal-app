@@ -61,11 +61,11 @@ class ProductDetailsFrontend(BaseModel):
     categories: Optional[str] = None
     isReviewed: Optional[bool] = None
     userRating: Optional[int] = None
-    userNote: Optional[str] = None
+    userNotes: Optional[str] = None
     aiHealthSummary: Optional[str] = None
     aiHealthConclusion: Optional[str] = None
-    dateScanned: Optional[datetime] = None
-    dateReviewed: Optional[datetime] = None
+    dateScanned: Optional[str] = None
+    dateReviewed: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -88,7 +88,7 @@ class ProductDetailsThroughBarcode(BaseModel):
     imageIngredientsUrl: Optional[str] = None
     imageNutritionUrl: Optional[str] = None
     isReviewed: Optional[bool] = None
-    dateScanned: Optional[datetime] = None
+    dateScanned: Optional[str] = None
     likesCount: Optional[int] = None
     aiHealthSummary: Optional[str] = None
     aiHealthConclusion: Optional[str] = None

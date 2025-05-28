@@ -30,6 +30,7 @@
               class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-flavorpal-green focus:border-flavorpal-green sm:text-base"
               placeholder="e.g., Organic Almond Milk"
               required
+              disabled
               ref="productNameInputRef"
             />
           </div>

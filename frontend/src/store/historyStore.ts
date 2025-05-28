@@ -70,28 +70,6 @@ export const formatDateForDisplay = (dateInput?: string | Date): string => {
     }
 };
 
-const convertDateToDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-};
-
-const mapApiProductToProductInteraction = (productList: any[]): ProductInteraction[] => {
-  return productList.map((item: any) => ({
-    id: item.id,
-    name: item.name,
-    barcode: item.barcode,
-    brands: item.brands,
-    categories: item.categories,
-    dateScanned: convertDateToDate(item.data_scanned_at),
-    dateReviewed: convertDateToDate(item.data_reviewed),
-    isReviewed: item.isReviewed,
-    imageUrl: item.image_url,
-    userRating: item.user_rating,
-    userNotes: item.user_note,
-    aiHealthSummary: item.ai_health_summary || "No summary available",
-    aiHealthConclusion: item.ai_health_conclusion || "info_needed",
-  }));
-};
-
 export const useHistoryStore = defineStore('history', {
   state: (): HistoryStoreState => ({
     allProductInteractions: [],
@@ -182,7 +160,7 @@ export const useHistoryStore = defineStore('history', {
         const response = await getAllProductsApi();
         console.log("STORE (loadProductInteractions): API call response:", response);
         if (response.code === 200 && response.data) {
-          this.allProductInteractions = mapApiProductToProductInteraction(response.data);
+          this.allProductInteractions = response.data;
         } else {
           this.error = (response && response.msg) || 'Failed to load history or data is not in expected format.';
           this.allProductInteractions = [];

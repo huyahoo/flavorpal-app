@@ -37,11 +37,11 @@ def get_all_products(db: Session = Depends(get_db),current_user: models.User = D
                 categories=categories,
                 isReviewed=True,
                 userRating=review.rating,
-                userNote=review.note,
-                aiHealthSummary=product.ai_health_summary,
-                aiHealthConclusion=product.ai_health_conclusion,
-                dateScanned=product.last_updated,
-                dateReviewed=review.updated_at
+                userNotes=review.note,
+                aiHealthSummary=product.ai_health_summary if product.ai_health_summary else "No Summary Available",
+                aiHealthConclusion=product.ai_health_conclusion if product.ai_health_conclusion else "info_needed",
+                dateScanned=product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
+                dateReviewed=review.updated_at.strftime("%Y-%m-%d, %H:%M:%S")
             )
         else:
             brands = ",".join(product.brands) if isinstance(product.brands, list) else product.brands or ""
@@ -55,10 +55,10 @@ def get_all_products(db: Session = Depends(get_db),current_user: models.User = D
                 categories=categories,
                 isReviewed=False,
                 userRating=None,
-                userNote=None,
-                aiHealthSummary=product.ai_health_summary,
-                aiHealthConclusion=product.ai_health_conclusion,
-                dateScanned=product.last_updated,
+                userNotes=None,
+                aiHealthSummary=product.ai_health_summary if product.ai_health_summary else "No Summary Available",
+                aiHealthConclusion=product.ai_health_conclusion if product.ai_health_conclusion else "info_needed",
+                dateScanned=product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
                 dateReviewed=None
             )
         product_details.append(product_info)
@@ -84,11 +84,11 @@ def get_product(product_id: int, db: Session = Depends(get_db),current_user: mod
             categories=categories,
             isReviewed=True,
             userRating=review.rating,
-            userNote=review.note,
-            aiHealthSummary=product.ai_health_summary,
-            aiHealthConclusion=product.ai_health_conclusion,
-            dateScanned=product.last_updated,
-            dateReviewed=review.updated_at
+            userNotes=review.note,
+            aiHealthSummary=product.ai_health_summary if product.ai_health_summary else "No Summary Available",
+            aiHealthConclusion=product.ai_health_conclusion if product.ai_health_conclusion else "info_needed",
+            dateScanned=product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
+            dateReviewed=review.updated_at.strftime("%Y-%m-%d, %H:%M:%S")
         )
     else:
         brands = ",".join(product.brands) if isinstance(product.brands, list) else product.brands or ""
@@ -102,10 +102,10 @@ def get_product(product_id: int, db: Session = Depends(get_db),current_user: mod
             categories=categories,
             isReviewed=False,
             userRating=None,
-            userNote=None,
-            aiHealthSummary=product.ai_health_summary,
-            aiHealthConclusion=product.ai_health_conclusion,
-            dateScanned=product.last_updated,
+            userNotes=None,
+            aiHealthSummary=product.ai_health_summary if product.ai_health_summary else "No Summary Available",
+            aiHealthConclusion=product.ai_health_conclusion if product.ai_health_conclusion else "info_needed",
+            dateScanned=product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
             dateReviewed=None
         )
     return Response(code=200, data=product_details, msg="Product fetched successfully")
@@ -132,9 +132,9 @@ def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)
         brands=db_product.brands,
         imageUrl=db_product.image_url,
         imageEmbedding=db_product.image_embedding,
-        lastUpdated=db_product.last_updated,
-        aiHealthSummary=db_product.ai_health_summary,
-        aiHealthConclusion=db_product.ai_health_conclusion,
+        lastUpdated=db_product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
+        aiHealthSummary=db_product.ai_health_summary if db_product.ai_health_summary else "No Summary Available",
+        aiHealthConclusion=db_product.ai_health_conclusion if db_product.ai_health_conclusion else "info_needed",
     )
     return Response(code=200, data=product_info, msg="Product created successfully")
 
@@ -236,10 +236,10 @@ def get_product_by_barcode(barcode: str, db: Session = Depends(get_db),current_u
         imageIngredientsUrl = image_ingredients_url,
         imageNutritionUrl = image_nutrition_url,
         isReviewed = review is not None,
-        dateScanned = product.last_updated if product else None,
+        dateScanned = product.last_updated.strftime("%Y-%m-%d, %H:%M:%S") if product else None,
         likesCount = review.likes_count if review else 0,
-        aiHealthSummary = product.ai_health_summary if product else None,
-        aiHealthConclusion = product.ai_health_conclusion if product else None,
+        aiHealthSummary = product.ai_health_summary if product else "No Summary Available",
+        aiHealthConclusion = product.ai_health_conclusion if product else "info_needed",
     )
     return Response(code=200, data=product_info, msg="Product fetched successfully")
 
@@ -278,9 +278,9 @@ def update_ai_health_suggestion(
         isReviewed=bool(review),
         user_rating=review.rating if review else None,
         user_note=review.note if review else None,
-        ai_health_summary=summary,
-        ai_health_conclusion=conclusion,
-        data_scanned_at=product.last_updated,
+        ai_health_summary=summary if summary else "No Summary Available",
+        ai_health_conclusion=conclusion if conclusion else "info_needed",
+        data_scanned_at=product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
         data_reviewed=review.note if review else None
     )
 
