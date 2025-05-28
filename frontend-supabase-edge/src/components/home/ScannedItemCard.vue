@@ -59,37 +59,41 @@ const props = defineProps<{
 
 const router = useRouter();
 
-// Function to determine the color class for the AI health conclusion dot
-const getConclusionColor = (conclusion?: AiHealthConclusion): string => {
+// --- AI Conclusion Styling Helpers (remain the same) ---
+const getConclusionColor = (conclusion?: AiHealthConclusion): string => { /* ... */
   switch (conclusion) {
-    case 'good': return 'bg-flavorpal-green'; // Green for good
-    case 'caution': return 'bg-yellow-400';   // Yellow for caution
-    case 'avoid': return 'bg-red-500';        // Red for avoid
-    case 'info_needed': return 'bg-blue-400'; // Blue for info needed
-    case 'neutral':
-    default: return 'bg-gray-400';        // Gray for neutral or undefined
+    case 'ok': return 'bg-flavorpal-green';
+    case 'neutral': return 'bg-yellow-400';
+    case 'avoid': return 'bg-red-500';
+    // case 'info_needed': return 'bg-blue-400';
+    case 'error_analyzing': return 'bg-purple-500';
+    case 'unknown': default: return 'bg-gray-400';
   }
 };
-
-const getConclusionTextColor = (conclusion?: AiHealthConclusion): string => {
+const getConclusionTextColor = (conclusion?: AiHealthConclusion): string => { /* ... */
   switch (conclusion) {
-    case 'good': return 'text-flavorpal-green-dark';
-    case 'caution': return 'text-yellow-600';
+    case 'ok': return 'text-flavorpal-green-dark';
+    case 'neutral': return 'text-yellow-600';
     case 'avoid': return 'text-red-700';
-    case 'info_needed': return 'text-blue-600';
-    case 'neutral':
-    default: return 'text-gray-600';
+    // case 'info_needed': return 'text-blue-600';
+    case 'error_analyzing': return 'text-purple-700';
+    case 'unknown': default: return 'text-gray-600';
   }
 };
-
-const getConclusionText = (conclusion?: AiHealthConclusion): string => {
+const getConclusionText = (conclusion?: AiHealthConclusion): string => { /* ... */
   switch (conclusion) {
-    case 'good': return 'Looks good for you';
-    case 'caution': return 'Use with caution';
-    case 'avoid': return 'Best to avoid';
-    case 'info_needed': return 'More info needed';
+    // case 'good': return 'Looks good for you';
+    // case 'caution': return 'Use with caution';
+    // case 'avoid': return 'Best to avoid';
+    // case 'info_needed': return 'More info needed';
+    // case 'error_analyzing': return 'Analysis Error';
+    // case 'neutral': return 'Neutral';
+    // default: return 'Analysis pending';
+    case 'ok': return 'Looks good for you';
     case 'neutral': return 'Neutral';
-    default: return 'Analysis pending';
+    case 'avoid': return 'Best to avoid';
+    case 'error_analyzing': return 'Analysis Error';
+    case 'unknown': default: return 'Unknown';
   }
 };
 
