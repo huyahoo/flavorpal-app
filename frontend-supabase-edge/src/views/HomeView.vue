@@ -9,7 +9,8 @@
         
         <div v-if="historyStore.loadingStats" class="my-3 text-7xl font-bold tracking-tighter animate-pulse">--</div>
         <div v-else class="my-3">
-          <span class="text-7xl sm:text-8xl font-bold tracking-tighter">{{ historyStore.discoveredThisMonth }}</span>
+          <!-- Fix afterwards about scanned this month-->
+          <span class="text-7xl sm:text-8xl font-bold tracking-tighter">{{ historyStore.totalScanned }}</span>
         </div>
         
         <p class="text-base opacity-90 leading-tight">
