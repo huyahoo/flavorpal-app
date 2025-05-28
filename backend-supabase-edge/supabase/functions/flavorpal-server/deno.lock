@@ -11,6 +11,7 @@
     "npm:@supabase/realtime-js@2.11.2": "2.11.2",
     "npm:@supabase/storage-js@2.7.1": "2.7.1",
     "npm:@types/node@*": "22.15.15",
+    "npm:hono@*": "4.7.10",
     "npm:openai@*": "4.103.0",
     "npm:openai@^4.52.5": "4.103.0",
     "npm:zod@*": "3.25.28"
@@ -229,6 +230,9 @@
       "dependencies": [
         "function-bind"
       ]
+    },
+    "hono@4.7.10": {
+      "integrity": "sha512-QkACju9MiN59CKSY5JsGZCYmPZkA6sIW6OFCUp7qDjZu6S6KHtJHhAc9Uy9mV9F8PJ1/HQ3ybZF2yjCa/73fvQ=="
     },
     "humanize-ms@1.2.1": {
       "integrity": "sha512-Fl70vYtsAFb/C06PTS9dZBo7ihau+Tu/DNCk/OyHhea07S+aeMWpFFkUaXRa8fI+ScZbEI8dfSxwY7gxZ9SAVQ==",

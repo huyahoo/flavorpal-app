@@ -16,12 +16,12 @@ import type {
  */
 export const registerUserApi = async (userData: UserCreatePayload): Promise<ApiResponse<User>> => {
   const payload = {
-      name: userData.name,
+      username: userData.name,
       email: userData.email,
       password: userData.password,
       health_flags: userData.health_flags,
   };
-  const response = await apiClient.post<ApiResponse<User>>('/users/', payload);
+  const response = await apiClient.post<ApiResponse<User>>('/user/register', payload);
 
   return response.data;
 };
@@ -33,13 +33,15 @@ export const registerUserApi = async (userData: UserCreatePayload): Promise<ApiR
  */
 export const loginUserApi = async (credentials: LoginCredentials): Promise<ApiResponse<TokenResponse>> => {
   // FastAPI's OAuth2PasswordRequestForm expects form data
-  const formData = new URLSearchParams();
-  formData.append('username', credentials.username);
-  formData.append('password', credentials.password);
+  // const formData = new URLSearchParams();
+  // formData.append('username', credentials.username);
+  // formData.append('password', credentials.password);
+  const payload = {
+    email: credentials.username,
+    password: credentials.password,
+  }
 
-  const response = await apiClient.post<ApiResponse<TokenResponse>>('/auth/token', formData, {
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-  });
+  const response = await apiClient.post<ApiResponse<TokenResponse>>('/user/login', payload);
   console.log(response);
   return response.data;
 };
@@ -49,7 +51,7 @@ export const loginUserApi = async (credentials: LoginCredentials): Promise<ApiRe
  * @returns A Promise resolving to the backend's ApiResponse containing the user data.
  */
 export const fetchCurrentUserApi = async (): Promise<ApiResponse<User>> => {
-    const response = await apiClient.get<ApiResponse<User>>('/users/auth/me');
+    const response = await apiClient.get<ApiResponse<User>>('/user/me');
     console.log("AuthStore: Fetch current user response:", response);
     return response.data;
 };

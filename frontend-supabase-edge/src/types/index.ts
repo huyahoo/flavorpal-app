@@ -47,16 +47,14 @@ export interface LoginCredentials {
  * Expected response data from the /auth/token endpoint.
  */
 export interface TokenResponse {
-    access_token: string;
-    token_type: string;
+    accessToken: string;
+    tokenType: string;
 }
 
 /**
  * Generic API response structure from backend.
  */
 export interface ApiResponse<T = any> {
-    access_token: string | null;
-    token_type: string;
     code: number;
     data: T;
     msg: string;

@@ -102,12 +102,14 @@ export const useAuthStore = defineStore('auth', {
 
       try {
         const tokenResponse = await loginUserApi(credentials);
-        if (tokenResponse && tokenResponse.access_token) {
-          this.token = tokenResponse.access_token;
+        console.log("AuthStore: Login response:", tokenResponse);
+        if (tokenResponse && tokenResponse.data.accessToken) {
+          this.token = tokenResponse.data.accessToken;
           localStorage.setItem(AUTH_STORE_TOKEN_KEY, this.token);
           this.setTokenInApiClient(this.token);
           
           const userResponse = await fetchCurrentUserApi();
+          console.log("AuthStore: Fetch current user response after login:", userResponse);
           if (userResponse.code === 200 && userResponse.data) {
             this.user = userResponse.data;
             localStorage.setItem(AUTH_STORE_USER_KEY, JSON.stringify(this.user));
