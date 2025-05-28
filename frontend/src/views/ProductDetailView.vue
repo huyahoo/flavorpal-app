@@ -229,7 +229,7 @@ import IconArrowBack from '@/components/icons/IconArrowBack.vue';
 import ImageSourceChoiceModal from '@/components/common/ImageSourceChoiceModal.vue';
 import PhotoCapturer, { type CapturedPhoto } from '@/components/common/PhotoCapturer.vue';
 
-const props = defineProps<{ id: string; }>();
+const props = defineProps<{ id: number; }>();
 const router = useRouter();
 const uiStore = useUiStore();
 const route = useRoute();
@@ -400,13 +400,37 @@ const handlePhotoCaptureCancelled = () => {
     console.log('Photo capture cancelled by user from PhotoCapturer.');
 };
 
+const convertFileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+            if (typeof reader.result === 'string') {
+                resolve(reader.result);
+            } else {
+                reject(new Error('Failed to convert file to base64 string.'));
+            }
+        };
+        reader.onerror = (error) => reject(error);
+    });
+};
+
 // For "Upload from Library"
 const handleFileSelectedFromInput = async (event: Event) => {
     const target = event.target as HTMLInputElement;
     if (target.files && target.files[0]) {
         const imageFile = target.files[0];
-        target.value = ''; 
-        await processIngredientImageFile(imageFile);
+        console.log('imageFile:', target.files[0]);
+        target.value = '';
+        const base64String = await convertFileToBase64(imageFile);
+        const capturedPhoto: CapturedPhoto = {
+            data: base64String,
+            timestamp: Date.now(),
+            dimensions: {width: 0, height: 0},
+            mimeType: 'any',
+            size: imageFile.size
+        };
+        await processIngredientImageFile(capturedPhoto);
     }
 };
 
@@ -429,8 +453,8 @@ const processIngredientImageFile = async (capturedPhoto: CapturedPhoto) => {
             productUpdateError.value = historyStore.error || "Failed to update insights from image.";
         }
     } catch (error: any) {
-         if (error.name === 'AbortError') console.log('Fetch aborted for ingredient analysis');
-         else productUpdateError.value = "An unexpected error occurred during analysis.";
+        if (error.name === 'AbortError') console.log('Fetch aborted for ingredient analysis');
+        else productUpdateError.value = "An unexpected error occurred during analysis.";
     } finally {
         isAnalyzingIngredients.value = false;
         analysisController = null;
@@ -443,8 +467,7 @@ const cancelIngredientAnalysis = () => {
     productUpdateError.value = "Analysis cancelled.";
 };
 
-// --- AI Conclusion Styling Helpers (remain the same) ---
-// conclusion only contain "ok", "neutral", "avoid", "unknown"
+// --- AI Conclusion Styling Helpers ---
 const getConclusionColor = (conclusion?: AiHealthConclusion): string => {
   switch (conclusion) {
     case 'ok': return 'bg-flavorpal-green';
