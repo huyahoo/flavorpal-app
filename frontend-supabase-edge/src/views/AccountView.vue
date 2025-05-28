@@ -99,9 +99,9 @@
           </button>
         </div>
         <div v-if="!isEditingKeywords">
-            <div v-if="authStore.healthFlags.length > 0" class="flex flex-wrap gap-2">
+            <div v-if="healthFlags.length > 0" class="flex flex-wrap gap-2">
             <span
-                v-for="(flag, index) in authStore.healthFlags"
+                v-for="(flag, index) in healthFlags"
                 :key="index"
                 class="px-3 py-1.5 bg-flavorpal-green-light text-flavorpal-green-dark text-sm font-medium rounded-full shadow-sm"
             >
@@ -224,6 +224,7 @@ import { useHistoryStore } from '../store/historyStore';
 import { useRouter } from 'vue-router';
 import BadgeItem from '@/components/account/BadgeItem.vue';
 import { useBadgeStore } from '@/store/badgeStore';
+import { fetchCurrentUserApi } from '@/services/authService';
 
 const authStore = useAuthStore();
 const userProfileStore = useUserProfileStore();
@@ -242,6 +243,9 @@ const isEditingKeywords = ref(false);
 const newKeywordsInput = ref(''); // Comma-separated string
 const keywordsInputRef = ref<HTMLInputElement | null>(null); // For focusing the input
 const keywordsEditError = ref<string | null>(null);
+
+// Progressive integration for health keywords
+const healthFlags = ref<string[]>([]); // This will be populated from the endpoint directly
 
 
 // Mock TastePoints (from userProfileStore now)
@@ -369,6 +373,19 @@ onMounted(async () => {
       badgeStore.loadAllUserBadges();
     }
   }
+
+  // Update the healthFlags
+  const currentUser = await fetchCurrentUserApi();
+  console.log("Fetched current user:", currentUser);
+  const userInfo = currentUser?.data.healthFlags;
+  console.log("Fetched health flags:", userInfo);
+  if (userInfo) {
+    healthFlags.value = userInfo;
+  } else {
+    healthFlags.value = [];
+  }
+
+  console.log("Health flags loaded:", healthFlags.value);
 });
 </script>
 
