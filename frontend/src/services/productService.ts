@@ -7,6 +7,7 @@ import type {
     FetchStatus,
     ReViewDataPayload
 } from '../types';
+import type { CapturedPhoto } from '@/views/Scan/components/PhotoCapturer.vue';
 
 /**
  * Creates a new product.
@@ -50,6 +51,36 @@ export const getProductByBarcodeApi = async (barcode: string): Promise<ApiRespon
   console.log(`SERVICE (getProductByBarcodeApi): Fetching product by barcode ${barcode}...`);
   const response = await apiClient.get<ApiResponse<ProductInteraction>>(`/products/product/${barcode}`);
   console.log("SERVICE (getProductByBarcodeApi): API call response:", response);
+  return response.data;
+};
+
+/**
+ * Get product by image.
+ * Endpoint: POST /products/image
+ * @param imgData - The image data to get the product by.
+ * @returns The product.
+ */
+export const getProductByImageApi = async (imgData: CapturedPhoto): Promise<ApiResponse<ProductInteraction>> => {
+  console.log(`SERVICE (getProductByImageApi): Getting product by image with payload:`, imgData);
+  const payload = {
+    base64image: imgData.data
+  }
+  console.log(imgData.data)
+  const response = await apiClient.post<ApiResponse<ProductInteraction>>(`/products/image`, payload);
+  console.log("SERVICE (getProductByImageApi): API call response:", response);
+  return response.data;
+};
+
+/**
+ * Get product health insight.
+ * Endpoint: POST /products/health_suggestion
+ * @param payload - The payload to get the product health insight.
+ * @returns The product health insight.
+ */
+export const getProductHealthInsightApi = async (payload: { productId: number, base64Image: string }): Promise<ApiResponse<ProductInteraction>> => {
+  console.log(`SERVICE (getProductHealthInsightApi): Getting product health insight with payload:`, payload);
+  const response = await apiClient.post<ApiResponse<ProductInteraction>>(`/products/health_suggestion`, payload);
+  console.log("SERVICE (getProductHealthInsightApi): API call response:", response);
   return response.data;
 };
 

@@ -230,7 +230,7 @@ def get_product_by_barcode(barcode: str, db: Session = Depends(get_db),current_u
         id=product.id if product else None,
         name=product.name if product else product_data.get("product_name"),
         barcode = barcode,
-        brand=product_data.get("brands"),
+        brands=product_data.get("brands"),
         categories = product_data.get("categories"),
         imageUrl = product.image_url if product else product_data.get("image_url"),
         imageIngredientsUrl = image_ingredients_url,
@@ -255,7 +255,7 @@ def update_ai_health_suggestion(
 
     health_flags = current_user.health_flags
     health_flags = ", ".join(health_flags) if len(health_flags) > 0 else ""
-    summary, conclusion = services.get_AI_health_suggestion(request.base64Image, health_flags)
+    conclusion, summary = services.get_AI_health_suggestion(request.base64Image, health_flags)
 
     product.ai_health_summary = summary
     product.ai_health_conclusion = conclusion
@@ -273,15 +273,15 @@ def update_ai_health_suggestion(
         name=product.name,
         brands=product.brands,
         barcode=product.barcode,
-        image_url=product.image_url,
+        imageUrl=product.image_url,
         categories=product.categories,
         isReviewed=bool(review),
-        user_rating=review.rating if review else None,
-        user_note=review.note if review else None,
-        ai_health_summary=summary if summary else "No Summary Available",
-        ai_health_conclusion=conclusion if conclusion else "info_needed",
-        data_scanned_at=product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
-        data_reviewed=review.note if review else None
+        userRating=review.rating if review else None,
+        userNotes=review.note if review else None,
+        aiHealthSummary=summary if summary else "No Summary Available",
+        aiHealthConclusion=conclusion if conclusion else "info_needed",
+        dateScanned=product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
+        dateReviewed=review.note if review else None
     )
 
     return Response(code=200, data=product_details, msg="AI suggestion updated and product info returned")

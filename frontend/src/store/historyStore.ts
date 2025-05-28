@@ -2,7 +2,8 @@
 import { defineStore } from 'pinia';
 import type { ProductInteraction, AiHealthConclusion, ReViewDataPayload } from '../types';
 import { fetchProductInteractionsApi, fetchScanStatisticsApi } from '../services/historyService';
-import { getAllProductsApi, getProductByIdApi, addReviewForProductApi, updateReviewForProductApi, deleteProductByIdApi } from '../services/productService';
+import { getAllProductsApi, getProductByIdApi, addReviewForProductApi, updateReviewForProductApi, deleteProductByIdApi, getProductHealthInsightApi } from '../services/productService';
+import type { CapturedPhoto } from '@/views/Scan/components/PhotoCapturer.vue';
 
 export type ReviewedFilterStatus = 'all' | 'reviewed_only' | 'scanned_only';
 
@@ -198,6 +199,11 @@ export const useHistoryStore = defineStore('history', {
       }
     },
 
+    async getProductHealthInsight(productId: number, capturedPhoto: CapturedPhoto): Promise<boolean> {
+      const response = await getProductHealthInsightApi({ productId, base64Image: capturedPhoto.data });
+      return response.code == 200;
+    },
+
     async getProductInteractionById(id: number): Promise<ProductInteraction | undefined> {
       const product = await getProductByIdApi(id);
       console.log("STORE (getProductInteractionById): API call response:", product);
@@ -210,9 +216,21 @@ export const useHistoryStore = defineStore('history', {
       return response.code == 200;
     },
 
-    setFilters(filters: Partial<HistoryFilters>) { /* ... */ },
-    setInitialHistoryFilters(status: ReviewedFilterStatus) { /* ... */ },
-    clearAllFilters() { /* ... */ },
+    setFilters(filters: Partial<HistoryFilters>) { 
+      this.filterDateAfter = filters.dateAfter || '';
+      this.filterReviewedStatus = filters.reviewedStatus || 'all';
+      this.filterMinRating = filters.minRating || 0;
+      this.filterAiConclusion = filters.aiConclusion || '';
+    },
+    setInitialHistoryFilters(status: ReviewedFilterStatus) { 
+      this.filterReviewedStatus = status;
+    },
+    clearAllFilters() { 
+      this.filterDateAfter = '';
+      this.filterReviewedStatus = 'all';
+      this.filterMinRating = 0;
+      this.filterAiConclusion = '';
+    },
 
     clearHistoryData() {
       this.allProductInteractions = [];
