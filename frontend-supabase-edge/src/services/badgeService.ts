@@ -13,7 +13,7 @@ import type {
  */
 export const getAllBadgesApi = async (): Promise<ApiResponse<ApiBadge[]>> => {
   console.log("SERVICE (getAllBadgesApi): Fetching all products...");
-  const response = await apiClient.get<ApiResponse<ApiBadge[]>>('/badges/all');
+  const response = await apiClient.get<ApiResponse<ApiBadge[]>>('/badge/all');
   console.log("SERVICE (getAllBadgesApi): API call response:", response);
   return response.data;
 };
@@ -25,7 +25,7 @@ export const getAllBadgesApi = async (): Promise<ApiResponse<ApiBadge[]>> => {
  */
 export const getAllUserBadgesApi = async (): Promise<ApiResponse<UserBadge[]>> => {
   console.log("SERVICE (getAllUserBadgesApi): Fetching all products...");
-  const response = await apiClient.get<ApiResponse<UserBadge[]>>('/badges');
+  const response = await apiClient.get<ApiResponse<UserBadge[]>>('/badge');
   console.log("SERVICE (getAllUserBadgesApi): API call response:", response);
   return response.data;
 };
@@ -38,7 +38,7 @@ export const getAllUserBadgesApi = async (): Promise<ApiResponse<UserBadge[]>> =
  */
 export const updateUserBadgeApi = async (badgeId: number): Promise<ApiResponse<UserBadge>> => {
   console.log(`SERVICE (updateUserBadgeApi): Updating badge ID ${badgeId} for current user`);
-  const response = await apiClient.patch<ApiResponse<UserBadge>>(`/badges/update/${badgeId}`);
+  const response = await apiClient.post<ApiResponse<UserBadge>>(`/badge`);
   console.log('respons', response)
   return response.data;
 };

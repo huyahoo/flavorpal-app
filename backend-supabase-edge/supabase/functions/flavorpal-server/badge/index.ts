@@ -24,7 +24,38 @@ badgeRouter.get("/", async (c) => {
     return c.json(getCommonError(error.message))
   }
   
-  const badges = data.filter((item) => item.badges !== null).map(item => item.badges);
+  const badges = data.filter((item) => item.badges !== null).map(item => {
+    return {
+      id: item.badge_id,
+      badge: {
+        id: item.badge_id,
+        ref: item.badges?.description
+      },
+      createdAt: item.created_at
+    }
+  });
+
+  return c.json(getCommonSuccess(badges));
+})
+
+// Get all possible badges
+badgeRouter.get("/all", async (c) => {
+  const client = getSupabaseClient();
+
+  const { data, error } = await client
+    .from("badges")
+    .select("*");
+
+  if (error) {
+    return c.json(getCommonError(error.message))
+  }
+  
+  const badges = data.map(item => {
+    return {
+      id: item.id,
+      ref: item.description
+    }
+  })
 
   return c.json(getCommonSuccess(badges));
 })
@@ -52,7 +83,27 @@ badgeRouter.post("/", async (c) => {
     return c.json(getCommonError(error.message));
   }
 
-  return c.json(getCommonSuccess(null, "Badge added successfully"));
+  const { data: newBadgeData, error: badgeRetrievalError } = await client
+    .from("user_badges")
+    .select("*, badges(*)")
+    .eq("user_id", userId)
+    .eq("badge_id", badgeId)
+    .single();
+
+  if (badgeRetrievalError) {
+    return c.json(getCommonError(badgeRetrievalError.message))
+  }
+  
+  const dtoBadge = {
+    id: newBadgeData.badge_id,
+    badge: {
+      id: newBadgeData.badge_id,
+      ref: newBadgeData.badges?.description
+    },
+    createdAt: newBadgeData.created_at
+  }
+
+  return c.json(getCommonSuccess(dtoBadge, "Badge added successfully"));
 })
 
 export default badgeRouter;
