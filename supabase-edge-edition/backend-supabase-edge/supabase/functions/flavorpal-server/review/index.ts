@@ -149,9 +149,6 @@ const updateReviewSchema = z.object({
 reviewRouter.put("/", async (c) => {
   const body = await c.req.json();
   const parsedBody = updateReviewSchema.safeParse(body);
-  if (!parsedBody.success) {
-    return c.json(getCommonError("Invalid request body", 400));
-  }
   const { reviewId, userRating, userNote } = parsedBody.data;
   const userId = c.get("user").id; // Get user ID from auth middleware
   const client = getSupabaseClient();
