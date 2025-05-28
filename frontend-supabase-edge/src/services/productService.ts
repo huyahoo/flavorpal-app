@@ -117,8 +117,13 @@ export const deleteProductByIdApi = async (productId: number): Promise<ApiRespon
  */
 export const addReviewForProductApi = async (productId: number, payload: ReViewDataPayload): Promise<ApiResponse<ProductInteraction>> => {
   console.log(`SERVICE (addReviewForProductApi): Adding review for product ID ${productId} with payload:`, payload);
-  const response = await apiClient.post<ApiResponse<ProductInteraction>>(`/reviews/products/${productId}`, payload);
-  console.log("SERVICE (addReviewForProductApi): API call response:", response);
+  const submissionPayload = {
+    productId: productId,
+    userRating: payload.rating,
+    userNote: payload.note || null
+  }
+  const response = await apiClient.post<ApiResponse<ProductInteraction>>(`/review`, submissionPayload);
+  console.log("SERVICE (addReviewForProductApi): API call response:", response.data);
   return response.data;
 };
 
@@ -131,7 +136,12 @@ export const addReviewForProductApi = async (productId: number, payload: ReViewD
  */
 export const updateReviewForProductApi = async (productId: number, payload: ReViewDataPayload): Promise<ApiResponse<ProductInteraction>> => {
   console.log(`SERVICE (updateReviewForProductApi): Updating review for product ID ${productId} with payload:`, payload);
-  const response = await apiClient.patch<ApiResponse<ProductInteraction>>(`/reviews/products/${productId}`, payload);
-  console.log("SERVICE (updateReviewForProductApi): API call response:", response);
+  const submissionPayload = {
+    productId: productId,
+    userRating: payload.rating,
+    userNote: payload.note || null
+  }
+  const response = await apiClient.put<ApiResponse<ProductInteraction>>(`/review`, submissionPayload);
+  console.log("SERVICE (updateReviewForProductApi): API call response:", response.data);
   return response.data;
 };

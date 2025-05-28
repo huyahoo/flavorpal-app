@@ -249,10 +249,14 @@ export const useHistoryStore = defineStore('history', {
       const product = this.allProductInteractions.find(item => item.id === productId);
       if (product?.isReviewed) {
         const response = await updateReviewForProductApi(productId, reviewData);
-        return response.code == 201;
+        console.log("STORE (updateUserReview): API call response:", response);
+        console.log("Response code:", response.code);
+        return response.code === 201 || response.code === 200;
       } else {
         const response = await addReviewForProductApi(productId, reviewData);
-        return response.code == 200;
+        console.log("STORE (addUserReview): API call response:", response);
+        console.log("Response code:", response.code);
+        return response.code === 200 || response.code === 201;
       }
     },
   },

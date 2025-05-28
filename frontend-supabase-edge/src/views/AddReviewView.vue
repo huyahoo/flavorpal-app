@@ -199,7 +199,7 @@ const handleNextOrSubmit = async () => {
     nextStep();
   } else {
     const isSuccess = await historyStore.saveOrUpdateUserReview(productId, reviewData as ReViewDataPayload);
-
+    console.log("VIEW (handleNextOrSubmit): isSuccess:", isSuccess, "productId:", productId, "reviewData:", reviewData);
     if (isSuccess && !historyStore.error) {
       // Check if new badges have been achieved
       await userProfileStore.loadUserProfile();
