@@ -391,6 +391,9 @@ const handlePhotoSuccessfullyCaptured = async (capturedPhoto: CapturedPhoto) => 
         console.error("Error converting base64 to File:", error);
         productUpdateError.value = "Failed to process captured image.";
     }
+    finally {
+      uiStore.setCameraOverlayActive(false);
+    }
 };
 
 // Callback for when PhotoCapturer is cancelled by its own cancel button
@@ -430,8 +433,18 @@ const handleFileSelectedFromInput = async (event: Event) => {
             mimeType: 'any',
             size: imageFile.size
         };
-        await processIngredientImageFile(capturedPhoto);
-    }
+        
+        try {
+            await processIngredientImageFile(capturedPhoto);
+        } 
+        catch (error) {
+            console.error("Error processing ingredient image:", error);
+            productUpdateError.value = "Failed to process captured image.";
+        } 
+        finally {
+            uiStore.setCameraOverlayActive(false);
+        }
+      }
 };
 
 // Centralized processing logic for the image file
@@ -457,6 +470,7 @@ const processIngredientImageFile = async (capturedPhoto: CapturedPhoto) => {
         else productUpdateError.value = "An unexpected error occurred during analysis.";
     } finally {
         isAnalyzingIngredients.value = false;
+
         analysisController = null;
     }
 };
