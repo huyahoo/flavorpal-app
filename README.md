@@ -9,3 +9,6 @@ FlavorPal is a mobile web application designed to help users, particularly trave
 # Front End
 
 # Back End
+
+# Attributions
+* Badge images provided by Twitter's [Twemoji](https://github.com/twitter/twemoji) under CC-BY 4.0
