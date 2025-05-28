@@ -2,7 +2,7 @@ from supabase import create_client, Client
 import os
 from dotenv import load_dotenv
 from storage3.utils import StorageException
-from app import models
+from app import models, schemas
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 import base64
@@ -18,7 +18,6 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 AI_SERVICE_URL = os.getenv("AI_SERVICE_URL")
 IMG_BUCKET_NAME = os.getenv("IMG_BUCKET_NAME")
 
-# supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 import base64
 import re
@@ -103,22 +102,6 @@ def most_similar_img(embedding, db: Session):
 
     result = db.execute(query, params).mappings().all()
     print(f'result type: {type(result)}, result: {result}')
-    # query = text("""
-    #     SELECT name, (image_embedding <#> CAST(:embedding AS vector)) FROM Products
-    #     where image_embedding is not null;
-    # """)
-    # query = text("""
-    #     SELECT * FROM Products
-    #     WHERE (image_embedding <-> :embedding::vector) < :threshold
-    #     ORDER BY image_embedding <-> :embedding::vector
-    #     LIMIT 1;
-    # """)
-    # query = text("""
-    #     SELECT * FROM Products
-    #     WHERE (image_embedding <-> :embedding) < :threshold
-    #     ORDER BY image_embedding <-> :embedding
-    #     LIMIT 1;
-    # """)
     query = text("""
         SELECT * FROM Products
         WHERE (image_embedding <=> CAST(:embedding AS vector)) < :threshold
@@ -135,8 +118,7 @@ def most_similar_img(embedding, db: Session):
 
     if result:
         print(f'result type: {type(result)}, result: {result}')
-        # Assuming the result is a dictionary or tuple-like object, we can map it to a product object
-        return models.Product(**result)  # Convert the result to a Product model object
+        return models.Product(**result)
     return None
 
 
@@ -206,3 +188,45 @@ if __name__ == '__main__':
     encoded_image = encode_image_to_base64(query_image_path)
     summary, reason = get_AI_health_suggestion(encoded_image, "peanut allergic")
     print(f'summary: {summary}, reason: {reason}')
+
+
+
+
+def generate_ProductDetailsFrontend(product, review):
+    if review:
+        brands = ",".join(product.brands) if isinstance(product.brands, list) else product.brands or ""
+        categories = ",".join(product.categories) if isinstance(product.categories, list) else product.categories or ""
+        product_details = schemas.ProductDetailsFrontend(
+            id=product.id,
+            name=product.name,
+            brands=brands,
+            barcode=product.barcode,
+            imageUrl=product.image_url,
+            categories=categories,
+            isReviewed=True,
+            userRating=review.rating,
+            userNotes=review.note,
+            aiHealthSummary=product.ai_health_summary if product.ai_health_summary else "No Summary Available",
+            aiHealthConclusion=product.ai_health_conclusion if product.ai_health_conclusion else "info_needed",
+            dateScanned=product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
+            dateReviewed=review.updated_at.strftime("%Y-%m-%d, %H:%M:%S")
+        )
+    else:
+        brands = ",".join(product.brands) if isinstance(product.brands, list) else product.brands or ""
+        categories = ",".join(product.categories) if isinstance(product.categories, list) else product.categories or ""
+        product_details = schemas.ProductDetailsFrontend(
+            id=product.id,
+            name=product.name,
+            brands=brands,
+            barcode=product.barcode,
+            imageUrl=product.image_url,
+            categories=categories,
+            isReviewed=False,
+            userRating=None,
+            userNotes=None,
+            aiHealthSummary=product.ai_health_summary if product.ai_health_summary else "No Summary Available",
+            aiHealthConclusion=product.ai_health_conclusion if product.ai_health_conclusion else "info_needed",
+            dateScanned=product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
+            dateReviewed=None
+        )
+    return product_details
