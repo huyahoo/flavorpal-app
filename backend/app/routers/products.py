@@ -138,29 +138,51 @@ def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)
     )
     return Response(code=200, data=product_info, msg="Product created successfully")
 
-import numpy as np
-@router.post("/image", response_model=Response[schemas.ProductOut])
-def add_by_image(request: schemas.ProductImageRequest,  db: Session = Depends(get_db)):
+@router.post("/image", response_model=Response[schemas.ProductDetailsFrontend])
+def add_by_image(request: schemas.ProductImageRequest,  db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     base64image = request.base64image
     embedding = services.get_image_embedding(base64image)
     product = services.most_similar_img(embedding, db)
     
     if product:
         print(f"Most similar product id: {product.id}, name: {product.name}")
-        return Response(code=200, data=product, msg="Product fetched successfully")
+        user_id = current_user.id
+        review = db.query(models.Review).filter(models.Review.product_id == product.id, models.Review.user_id == user_id).first()
+        product_details = services.generate_ProductDetailsFrontend(product, review)
+        return Response(code=200, data=product_details, msg="Product fetched successfully")
     else:
-        
         image_url = services.upload_image_to_bucket(base64image)
         product_name, product_manufacturer, product_description = services.get_AI_product_info(base64image)
+        
+        
         db_product = models.Product(
             name=product_name,
             image_url=image_url,
-            image_embedding=embedding
+            image_embedding=embedding,
+            brands=product_manufacturer,
+            aiHealthSummary=product_description,
+            aiHealthConclusion="unknown",
         )
         db.add(db_product)
         db.commit()
         db.refresh(db_product)
-        return Response(code=200, data=db_product, msg="Product fetched successfully")
+        
+        product_details = schemas.ProductDetailsFrontend(
+            id=db_product.id,
+            name=db_product.name,
+            brands=product_manufacturer,
+            barcode=db_product.barcode,
+            imageUrl=image_url,
+            categories=None,
+            isReviewed=False,
+            userRating=None,
+            userNotes=None,
+            aiHealthSummary=product_description,
+            aiHealthConclusion="unknown",
+            dateScanned=db_product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
+            dateReviewed=None
+        )
+        return Response(code=200, data=product_details, msg="Product fetched successfully")
 
 
 
