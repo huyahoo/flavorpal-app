@@ -58,6 +58,7 @@ export const fetchCurrentUserApi = async (): Promise<ApiResponse<User>> => {
 
 
 /**
+ * NOT IMPLEMENTED
  * Updates user data by ID.
  * @param userId - The ID of the user to update.
  * @param payload - The user data to update.
