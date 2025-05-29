@@ -276,6 +276,8 @@ def get_product_by_barcode(barcode: str, db: Session = Depends(get_db),current_u
         db.add(product)
         db.commit()
         db.refresh(product)
+    existing_history = db.query(models.History).filter(models.History.product_id == product.id, models.History.user_id == current_user.id).first()
+    if not existing_history:
         history = models.History(
             product_id=product.id,
             user_id=current_user.id,
