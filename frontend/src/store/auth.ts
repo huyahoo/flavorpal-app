@@ -38,7 +38,7 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     isAuthenticated: (state): boolean => !!state.token && !!state.user,
     currentUsername: (state): string | null => state.user?.name || null,
-    healthFlags: (state): string[] => state.user?.health_flags || [],
+    healthFlags: (state): string[] => state.user?.healthFlags || [],
     userId: (state): number | null => state.user?.id || null,
   },
 
@@ -225,7 +225,7 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true;
       this.error = null;
       try {
-        const response = await updateUserApi(this.user.id, { health_flags: flags });
+        const response = await updateUserApi(this.user.id, { healthFlags: flags });
          if (response.code === 200 && response.data) {
           this.user = response.data;
           localStorage.setItem(AUTH_STORE_USER_KEY, JSON.stringify(this.user));

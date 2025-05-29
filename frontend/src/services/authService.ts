@@ -20,7 +20,7 @@ export const registerUserApi = async (userData: UserCreatePayload): Promise<ApiR
       name: userData.name,
       email: userData.email,
       password: userData.password,
-      health_flags: userData.health_flags,
+      healthFlags: userData.healthFlags,
   };
   const response = await apiClient.post<ApiResponse<User>>('/users/', payload);
 

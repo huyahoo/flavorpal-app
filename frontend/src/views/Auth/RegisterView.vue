@@ -200,7 +200,7 @@ const handleRegister = async () => {
     name: nameInput.value.trim(),
     email: email.value.trim(),
     password: password.value,
-    health_flags: flagsArray,
+    healthFlags: flagsArray,
     badges: [],
   };
 
