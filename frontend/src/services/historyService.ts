@@ -35,13 +35,13 @@ import type { ProductInteraction } from '../types'; // Assuming AiHealthConclusi
  * Simulates fetching user's scanning statistics.
  * @returns A Promise that resolves to an object with scan statistics.
  */
-export const fetchScanStatisticsApi = async (): Promise<{ discoveredThisMonth: number; totalScanned: number }> => {
-    console.log('Mock API Call: Fetching Scan Statistics from History Service...');
-    await new Promise(resolve => setTimeout(resolve, 250)); // Shorter delay
-    // These numbers would ideally be calculated by a backend based on actual scan/review data.
-    // For mock, we can return static or slightly dynamic values.
-    return {
-        discoveredThisMonth: 7, // Example static value
-        totalScanned: 0,       // Example static value
-    };
-};
+// export const fetchScanStatisticsApi = async (): Promise<{ discoveredThisMonth: number; totalScanned: number }> => {
+//     console.log('Mock API Call: Fetching Scan Statistics from History Service...');
+//     await new Promise(resolve => setTimeout(resolve, 250)); // Shorter delay
+//     // These numbers would ideally be calculated by a backend based on actual scan/review data.
+//     // For mock, we can return static or slightly dynamic values.
+//     return {
+//         discoveredThisMonth: 7, // Example static value
+//         totalScanned: 0,       // Example static value
+//     };
+// };

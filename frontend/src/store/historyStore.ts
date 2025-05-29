@@ -1,8 +1,8 @@
 // src/store/historyStore.ts
 import { defineStore } from 'pinia';
 import type { ProductInteraction, AiHealthConclusion, ReViewDataPayload } from '../types';
-import { fetchScanStatisticsApi } from '../services/historyService';
-import { getAllProductsApi, getProductByIdApi, addReviewForProductApi, updateReviewForProductApi, deleteProductByIdApi, getProductHealthInsightApi, getAllProductReviewsApi } from '../services/productService';
+import { getAllProductsApi, getAllProductsOfCurrentUserApi, getProductByIdApi, addReviewForProductApi, updateReviewForProductApi, deleteProductByIdApi, getProductHealthInsightApi, getAllProductReviewsApi } from '../services/productService';
+import { getScanStatisticsApi } from '@/services/authService';
 import type { CapturedPhoto } from '@/views/Scan/components/PhotoCapturer.vue';
 
 export type ReviewedFilterStatus = 'all' | 'reviewed_only' | 'scanned_only';
@@ -163,7 +163,7 @@ export const useHistoryStore = defineStore('history', {
       this.error = null;
 
       try {
-        const response = await getAllProductsApi();
+        const response = await getAllProductsOfCurrentUserApi();
         console.log("STORE (loadProductInteractions): API call response:", response);
         if (response.code === 200 && response.data) {
           this.allProductInteractions = response.data;
@@ -186,12 +186,12 @@ export const useHistoryStore = defineStore('history', {
       }
       this.loadingStats = true;
       try {
-        const stats = await fetchScanStatisticsApi();
-        this.discoveredThisMonth = stats.discoveredThisMonth;
+        const stats = await getScanStatisticsApi();
+        this.discoveredThisMonth = stats.data.discoveredThisMonth;
         if (this.allProductInteractions.length === 0 || forceReload) {
-            this.totalScanned = stats.totalScanned;
-        } else if (this.totalScanned < stats.totalScanned) {
-            this.totalScanned = stats.totalScanned;
+            this.totalScanned = stats.data.totalScanned;
+        } else if (this.totalScanned < stats.data.totalScanned) {
+            this.totalScanned = stats.data.totalScanned;
         }
         if (this.allProductInteractions.length > this.totalScanned) {
             this.totalScanned = this.allProductInteractions.length;

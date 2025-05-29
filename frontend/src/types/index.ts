@@ -148,6 +148,12 @@ export interface ProductInteraction {
   dateScanned?: string;           // Date when the product was first scanned/encountered
 }
 
+export interface ScanStatistics {
+  totalScanned: number;
+  discoveredThisMonth: number;
+  totalLikes?: number;
+}
+
 export interface PublicReviewItem {
   reviewId: string;          // Unique ID for this public review entry
   productId: string;         // ID of the product being reviewed
