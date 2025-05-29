@@ -16,7 +16,7 @@
 
     <BadgePopupWrapper />
     <BottomNavigationBar v-if="showBottomNavComputed" />
-    <iOSInstallPrompt />
+    <IOSInstallPrompt />
   </div>
 </template>
 
@@ -27,7 +27,7 @@ import { useAuthStore } from './store/auth';
 import { useUiStore } from './store/uiStore';
 import BottomNavigationBar from './components/common/BottomNavigationBar.vue';
 import BadgePopupWrapper from './components/badges/BadgePopupWrapper.vue';
-import iOSInstallPrompt from './views/iOSInstallPrompt.vue';
+import IOSInstallPrompt from './components/common/IOSInstallPrompt.vue';
 
 const authStore = useAuthStore();
 const uiStore = useUiStore();
