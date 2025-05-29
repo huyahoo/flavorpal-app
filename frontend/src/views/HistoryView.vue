@@ -151,7 +151,7 @@ import { useHistoryStore, type ReviewedFilterStatus } from '../store/historyStor
 import type { AiHealthConclusion } from '../types';
 import HistoryListItem from '@/components/history/HistoryListItem.vue'; // Import the list item component
 import IconClose from '@/components/icons/IconClose.vue';
-
+import { onBeforeRouteLeave } from 'vue-router';
 const historyStore = useHistoryStore();
 
 // --- Local State for UI Control ---
@@ -239,7 +239,14 @@ const clearAndCloseFilters = () => {
     closeFilterModal();
 };
 
-// viewItemDetail is now handled by HistoryListItem.vue's handleItemClick
+onBeforeRouteLeave((to) => {
+  const isProductDetailRoute = to.name === 'ProductDetail';
+
+  if (!isProductDetailRoute) {
+    historyStore.clearAllFilters();
+  }
+});
+
 </script>
 
 <style scoped>
