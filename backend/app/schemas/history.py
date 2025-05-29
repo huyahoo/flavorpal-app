@@ -11,6 +11,5 @@ class HistoryCreate(BaseModel):
 class HistoryOut(BaseModel):
     id: int
     productId: int
-    textContent: Optional[str] = None
     scannedAt: datetime
     model_config = ConfigDict(from_attributes=True)
