@@ -182,7 +182,7 @@ def get_AI_product_info(base64image):
 def get_AI_health_suggestion(base64image, health_flags):
     payload = {
         "image": base64image,
-        "dietaryPref": health_flags
+        "dietaryPref": ",".join(health_flags)
     }
     headers = {
         "Content-Type": "application/json"
