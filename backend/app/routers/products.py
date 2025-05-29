@@ -166,7 +166,13 @@ def add_by_image(request: schemas.ProductImageRequest,  db: Session = Depends(ge
         db.add(db_product)
         db.commit()
         db.refresh(db_product)
-        
+        history = models.History(
+            product_id=db_product.id,
+            user_id=current_user.id,
+            scanned_at=datetime.utcnow()
+        )
+        db.add(history)
+        db.commit()
         product_details = schemas.ProductDetailsFrontend(
             id=db_product.id,
             name=db_product.name,
@@ -270,6 +276,13 @@ def get_product_by_barcode(barcode: str, db: Session = Depends(get_db),current_u
         db.add(product)
         db.commit()
         db.refresh(product)
+        history = models.History(
+            product_id=product.id,
+            user_id=current_user.id,
+            scanned_at=datetime.utcnow()
+        )
+        db.add(history)
+        db.commit()
     review = None
     if product:
         review = db.query(models.Review).filter(models.Review.product_id == product.id, models.Review.user_id == current_user.id).first()
