@@ -373,13 +373,8 @@ onMounted(async () => {
   }
 
   if (authStore.isAuthenticated) {
-    // userProfileStore.loadUserProfile() is already called in the previous version,
-    // ensure it's still being called if you need tastePoints and badges from there.
-    // If not already called by another component or App.vue, call it here.
-    if (badgeStore.badges.length === 0 && userProfileStore.tastePoints === 0) {
-      userProfileStore.loadUserProfile();
-      badgeStore.loadAllUserBadges();
-    }
+    userProfileStore.loadUserProfile();
+    badgeStore.loadAllUserBadges();
   }
 });
 </script>

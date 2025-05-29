@@ -202,6 +202,10 @@ def get_current_user_products(db: Session = Depends(get_db),current_user: models
             isReviewed=True,
             userRating=product.rating,
             userNotes=product.note,
+            aiHealthSummary=product.product.ai_health_summary if product.product.ai_health_summary else "The image does not contain a product ingredient table to analyze for dietary preferences.",
+            aiHealthConclusion=product.product.ai_health_conclusion if product.product.ai_health_conclusion else "unknown",
+            dateScanned=product.product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
+            dateReviewed=product.updated_at.strftime("%Y-%m-%d, %H:%M:%S")
         ))
     return Response(code=200, data=product_details, msg="Products fetched successfully")
 
