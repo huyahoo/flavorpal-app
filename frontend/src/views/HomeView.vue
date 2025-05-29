@@ -131,6 +131,11 @@ const showUpcomingFeatureModal = (feature: string) => {
 const navigateToTrendingSnacks = () => {
   showUpcomingFeatureModal('Trending Snacks');
 };
+
+const navigateToLocalDelicacies = () => {
+  showUpcomingFeatureModal('Local Delicacies');
+};
+
 </script>
 
 <style scoped>
