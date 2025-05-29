@@ -25,7 +25,7 @@ export const getAllBadgesApi = async (): Promise<ApiResponse<ApiBadge[]>> => {
  */
 export const getAllUserBadgesApi = async (): Promise<ApiResponse<UserBadge[]>> => {
   console.log("SERVICE (getAllUserBadgesApi): Fetching all products...");
-  const response = await apiClient.get<ApiResponse<UserBadge[]>>('/badges');
+  const response = await apiClient.get<ApiResponse<UserBadge[]>>('/badges/');
   console.log("SERVICE (getAllUserBadgesApi): API call response:", response);
   return response.data;
 };

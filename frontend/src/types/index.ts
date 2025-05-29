@@ -7,7 +7,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  health_flags: string[];
+  healthFlags: string[];
   badges: ApiBadge[];
   created_at?: string; // Optional, from GET response
   updated_at?: string; // Optional, from GET response
@@ -19,7 +19,7 @@ export interface User {
 export interface UserCreatePayload {
   name: string;
   email: string;
-  health_flags: string[];
+  healthFlags: string[];
   badges: ApiBadge[];
   password: string;
 }
@@ -30,7 +30,7 @@ export interface UserCreatePayload {
  */
 export interface UserUpdatePayload {
   name?: string;
-  health_flags?: string[];
+  healthFlags?: string[];
   badges?: ApiBadge[];
   password?: string;
 }
@@ -146,6 +146,12 @@ export interface ProductInteraction {
 
   // Scanning-related data
   dateScanned?: string;           // Date when the product was first scanned/encountered
+}
+
+export interface ScanStatistics {
+  totalScanned: number;
+  discoveredThisMonth: number;
+  totalLikes?: number;
 }
 
 export interface PublicReviewItem {

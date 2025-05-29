@@ -30,6 +30,11 @@
       :giftList="mockOthersGifts.giftList"
       :onGiftRedeem="mockGiftRedeemCallback"
     />
+    <UpcomingFeatureModal
+      :is-open="isUpcomingModalOpen"
+      :feature-name="upcomingFeatureName"
+      @close="isUpcomingModalOpen = false"
+    />
   </div>
 </template>
 
@@ -37,8 +42,17 @@
 import GiftList from '@/components/pointConversion/GiftList.vue'
 import type { PointConversionGift } from '@/types'
 import { useRoute, useRouter } from 'vue-router'
+import UpcomingFeatureModal from '@/components/common/UpcomingFeatureModal.vue';
+import { ref } from 'vue';
 
 const router = useRouter()
+const isUpcomingModalOpen = ref(false);
+const upcomingFeatureName = ref('');
+
+const showUpcomingFeatureModal = (feature: string) => {
+  upcomingFeatureName.value = feature;
+  isUpcomingModalOpen.value = true;
+};
 
 // Define mock data for point shop
 const mockLinePointsGifts: { title: string; giftList: PointConversionGift[] } = {
@@ -79,6 +93,6 @@ const goBack = () => {
 }
 
 const mockGiftRedeemCallback = () => {
-  alert('Coming soon!')
+  showUpcomingFeatureModal('Taste Point Conversion');
 }
 </script>

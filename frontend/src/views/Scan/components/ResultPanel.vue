@@ -81,9 +81,21 @@
 
       <div v-else>
         <h3 class="mb-1 text-lg font-semibold">{{ productForDisplay.name }}</h3>
-        <p class="mb-1 line-clamp-2 text-sm text-gray-600">
+        <div v-if="productForDisplay.brands" class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span class="text-sm text-flavorpal-gray-dark font-medium leading-tight">
+            {{ productForDisplay.brands?.length && productForDisplay.brands?.length > 1 ? 'Brands:' : 'Brand:' }}
+          </span>
+          <span
+            class="inline-block bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold px-2 py-0.5 rounded-full transition-colors"
+            >
+            {{ productForDisplay.brands }}
+          </span>
+        </div>
+
+        <p class="mb-1 line-clamp-2 text-sm text-gray-600 mt-1">
           {{ productForDisplay.aiHealthSummary || 'Need more info to analyze...' }}
         </p>
+
         <div v-if="productForDisplay.aiHealthConclusion" class="mb-3 flex items-center">
           <span
             class="mr-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full"

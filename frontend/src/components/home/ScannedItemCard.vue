@@ -56,7 +56,6 @@ import { useRouter } from 'vue-router';
 const props = defineProps<{
   item: ProductInteraction; // MODIFIED: Use ProductInteraction
 }>();
-
 const router = useRouter();
 
 // Function to determine the color class for the AI health conclusion dot
@@ -95,12 +94,8 @@ const getConclusionText = (conclusion?: AiHealthConclusion): string => {
 
 // Handler for when the item card is clicked
 const handleItemClick = () => {
-  console.log('Scanned item clicked:', props.item.id);
-  // Navigate to a product detail page, passing the item's ID or barcode
-  // This assumes you have a route like '/product/:id' or similar.
-  // If the item was scanned via barcode and you want to use that:
-  const identifier = props.item.barcode || props.item.id;
-  router.push({ name: 'ProductDetail', params: { id: props.item.id } });
+  const identifier = props.item.id;
+  router.push({ name: 'ProductDetail', params: { id: identifier } });
 };
 </script>
 

@@ -30,7 +30,18 @@ export const createProductApi = async (payload: ProductInteraction): Promise<Api
   }
 };
 
-// get all products
+/**
+ * Get all products of current user
+ * Endpoint: GET /products/currentuser/list/products
+ * @returns The products.
+ */
+export const getAllProductsOfCurrentUserApi = async (): Promise<ApiResponse<ProductInteraction[]>> => {
+  console.log("SERVICE (getAllProductsOfCurrentUserApi): Fetching all products of current user...");
+  const response = await apiClient.get<ApiResponse<ProductInteraction[]>>('/products/currentuser/list/products');
+  console.log("SERVICE (getAllProductsOfCurrentUserApi): API call response:", response);
+  return response.data;
+};
+
 /**
  * Fetches all products.
  * Endpoint: GET /products/

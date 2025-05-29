@@ -6,7 +6,8 @@ import type {
     UserUpdatePayload,
     LoginCredentials,
     TokenResponse,
-    ApiResponse
+    ApiResponse,
+    ScanStatistics
 } from '../types';
 
 /**
@@ -19,7 +20,7 @@ export const registerUserApi = async (userData: UserCreatePayload): Promise<ApiR
       name: userData.name,
       email: userData.email,
       password: userData.password,
-      health_flags: userData.health_flags,
+      healthFlags: userData.healthFlags,
   };
   const response = await apiClient.post<ApiResponse<User>>('/users/', payload);
 
@@ -74,5 +75,17 @@ export const updateUserApi = async (userId: number, payload: UserUpdatePayload):
  */
 export const logoutUserApi = async (): Promise<ApiResponse<null>> => {
   const response = await apiClient.post<ApiResponse<null>>('/users/auth/logout'); 
+  return response.data;
+};
+
+/**
+ * Get scan statistics
+ * Endpoint: GET /users/scan_statistics
+ * @returns The scan statistics.
+ */
+export const getScanStatisticsApi = async (): Promise<ApiResponse<ScanStatistics>> => {
+  console.log("AuthStore: Get scan statistics");
+  const response = await apiClient.get<ApiResponse<ScanStatistics>>('/users/scan_statistics');
+  console.log("AuthStore: Get scan statistics response:", response);
   return response.data;
 };

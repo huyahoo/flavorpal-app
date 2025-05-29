@@ -206,8 +206,8 @@ def generate_ProductDetailsFrontend(product, review):
             isReviewed=True,
             userRating=review.rating,
             userNotes=review.note,
-            aiHealthSummary=product.ai_health_summary if product.ai_health_summary else "No Summary Available",
-            aiHealthConclusion=product.ai_health_conclusion if product.ai_health_conclusion else "info_needed",
+            aiHealthSummary=product.ai_health_summary if product.ai_health_summary else "The image does not contain a product ingredient table to analyze for dietary preferences.",
+            aiHealthConclusion=product.ai_health_conclusion if product.ai_health_conclusion else "unknown",
             dateScanned=product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
             dateReviewed=review.updated_at.strftime("%Y-%m-%d, %H:%M:%S")
         )
@@ -224,8 +224,8 @@ def generate_ProductDetailsFrontend(product, review):
             isReviewed=False,
             userRating=None,
             userNotes=None,
-            aiHealthSummary=product.ai_health_summary if product.ai_health_summary else "No Summary Available",
-            aiHealthConclusion=product.ai_health_conclusion if product.ai_health_conclusion else "info_needed",
+            aiHealthSummary=product.ai_health_summary if product.ai_health_summary else "The image does not contain a product ingredient table to analyze for dietary preferences.",
+            aiHealthConclusion=product.ai_health_conclusion if product.ai_health_conclusion else "unknown",
             dateScanned=product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
             dateReviewed=None
         )

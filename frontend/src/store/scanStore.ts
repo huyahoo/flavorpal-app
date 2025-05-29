@@ -89,13 +89,13 @@ export const useScanStore = defineStore('scan', {
     //         }
     //       } else {
     //         finalAiSummary = `No flagged ingredients found. ${scannedDataPartial.aiHealthSummary || ''}`.trim();
-    //         if (scannedDataPartial.aiHealthConclusion !== 'error_analyzing' && scannedDataPartial.aiHealthConclusion !== 'info_needed') {
+    //         if (scannedDataPartial.aiHealthConclusion !== 'error_analyzing' && scannedDataPartial.aiHealthConclusion !== 'unknown') {
     //              finalAiConclusion = 'good';
     //         }
     //       }
-    //     } else if (authStore.healthFlags.length > 0 && !scannedDataPartial.ingredientsText && scannedDataPartial.aiHealthConclusion !== 'error_analyzing' && scannedDataPartial.aiHealthConclusion !== 'info_needed') {
+    //     } else if (authStore.healthFlags.length > 0 && !scannedDataPartial.ingredientsText && scannedDataPartial.aiHealthConclusion !== 'error_analyzing' && scannedDataPartial.aiHealthConclusion !== 'unknown') {
     //         finalAiSummary = "Ingredient information not available for detailed analysis.";
-    //         finalAiConclusion = 'info_needed';
+    //         finalAiConclusion = 'unknown';
     //     }
         
     //     const historyStore = useHistoryStore();

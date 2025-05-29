@@ -68,21 +68,21 @@ class ProductDetailsFrontend(BaseModel):
     dateReviewed: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class ProductDetailsFrontendOut(BaseModel):
     product: List[ProductDetailsFrontend]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class ProductDetailsThroughBarcode(BaseModel):
     id: int
     name: str
     barcode: str
-    brand: Optional[str] = None
+    brands: Optional[str] = None
     categories: Optional[str] = None
     imageUrl: Optional[str] = None
     imageIngredientsUrl: Optional[str] = None

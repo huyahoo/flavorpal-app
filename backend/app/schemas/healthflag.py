@@ -1,17 +1,17 @@
 from pydantic import BaseModel, ConfigDict
-
+from typing import List, Optional
 
 class HealthFlag(BaseModel):
     name: str
     model_config = ConfigDict(from_attributes=True)
 
 
-class HealthFlagOut(BaseModel):
-    userId: int
+class HealthFlagOut(HealthFlag):
+    
     healthFlagId: int
     model_config = ConfigDict(from_attributes=True)
 
 
 class UserHealthFlagOut(BaseModel):
-    healthFlag: HealthFlag
+    healthFlag: Optional[List[HealthFlag]] = None
     model_config = ConfigDict(from_attributes=True)
