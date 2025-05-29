@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col h-full w-full bg-black text-white relative items-center justify-center">
+  <div class="relative flex flex-grow items-center justify-center bg-black">
     <video
       ref="videoElementRef"
       autoplay
@@ -42,13 +42,21 @@
       >
         <button
           @click="stopScanCallback"
-          class="rounded-xl bg-red-600 px-8 py-3 text-base font-medium text-white shadow-lg transition-colors hover:bg-red-700"
+          class="rounded-xl bg-red-600 px-8 py-3 text-base font-medium text-white shadow-lg transition-colors hover:bg-red-700 flex items-center justify-center"
           :style="{ bottom: `calc(env(safe-area-inset-bottom, 0px) + 1.5rem)` }"
         >
-          Cancel Scan
+          Cancel Scan v2
         </button>
       </div>
     </div>
+
+    <button
+      @click="stopScanCallback"
+      class="absolute left-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-xl bg-red-600 px-8 py-3 text-base font-medium text-white shadow-lg transition-colors hover:bg-red-700"
+      :style="{ bottom: `calc(env(safe-area-inset-bottom, 0px) + 1.5rem)` }"
+    >
+      Cancel Scan v1
+    </button>
 
     
   </div>
