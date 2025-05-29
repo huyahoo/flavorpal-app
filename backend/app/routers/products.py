@@ -229,7 +229,11 @@ def delete_product(product_id: int, db: Session = Depends(get_db)):
     return Response(code=200,data=None, msg="Product deleted successfully")
 
 @router.get("/product/{barcode}", response_model=Response[schemas.ProductDetailsThroughBarcodeOut])
-def get_product_by_barcode(barcode: str, db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):
+def get_product_by_barcode(
+    barcode: str,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
     product = db.query(models.Product).filter(models.Product.barcode == barcode).first()
 
     OPEN_FOOD_FACTS_URL = f"https://world.openfoodfacts.org/api/v2/product/{barcode}.json"
@@ -254,7 +258,7 @@ def get_product_by_barcode(barcode: str, db: Session = Depends(get_db),current_u
             if product_data.get("categories"):
                 categories = [category.strip() for category in product_data.get("categories").split(",")]
 
-    if not product and  product_data:
+    if not product and product_data:
         product = models.Product(
             barcode=barcode,
             image_url=product_data.get("image_url"),
@@ -270,6 +274,16 @@ def get_product_by_barcode(barcode: str, db: Session = Depends(get_db),current_u
     review = None
     if product:
         review = db.query(models.Review).filter(models.Review.product_id == product.id, models.Review.user_id == current_user.id).first()
+        
+    # base64_image = services.image_url_to_base64(image_ingredients_url)
+    # health_flags = current_user.user_health_flags
+    # health_flags = [flag.health_flag.name for flag in health_flags]
+    # conclusion, summary = services.get_AI_health_suggestion(base64_image, health_flags)
+    # product.ai_health_summary = summary
+    # product.ai_health_conclusion = conclusion
+    # product.last_updated = datetime.utcnow()
+    # db.commit()
+    
     product_info = schemas.ProductDetailsThroughBarcodeOut(
         id=product.id if product else None,
         name=product.name if product else product_data.get("product_name"),
@@ -282,8 +296,8 @@ def get_product_by_barcode(barcode: str, db: Session = Depends(get_db),current_u
         isReviewed = review is not None,
         dateScanned = product.last_updated.strftime("%Y-%m-%d, %H:%M:%S") if product else None,
         likesCount = review.likes_count if review else 0,
-        aiHealthSummary = product.ai_health_summary if product else "The image does not contain a product ingredient table to analyze for dietary preferences.",
-        aiHealthConclusion = product.ai_health_conclusion if product else "unknown",
+        aiHealthSummary = product.ai_health_summary if product.ai_health_summary else "The image does not contain a product ingredient table to analyze for dietary preferences.",
+        aiHealthConclusion = product.ai_health_conclusion if product.ai_health_conclusion else "unknown",
     )
     return Response(code=200, data=product_info, msg="Product fetched successfully")
 
@@ -297,8 +311,8 @@ def update_ai_health_suggestion(
     if not product:
         return response.not_found(msg="Product not found", code=404)
 
-    health_flags = current_user.health_flags
-    health_flags = ", ".join(health_flags) if len(health_flags) > 0 else ""
+    health_flags = current_user.user_health_flags
+    health_flags = [flag.health_flag.name for flag in health_flags]
     conclusion, summary = services.get_AI_health_suggestion(request.base64Image, health_flags)
 
     product.ai_health_summary = summary
