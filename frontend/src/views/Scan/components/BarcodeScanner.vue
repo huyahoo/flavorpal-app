@@ -30,32 +30,12 @@
       {{ cameraError }}
     </p>
 
-    <div class="absolute inset-0 flex flex-col justify-between items-center z-10 pointer-events-none">
-      <div 
-        class="w-full flex justify-start p-3 sm:p-4 pointer-events-auto"
-        :style="{ paddingTop: `calc(env(safe-area-inset-top, 0px) + 0.75rem)` }"
-      >
-      </div>
-      <div 
-        class="w-full flex justify-center p-4 pointer-events-auto"
-        :style="{ paddingBottom: `calc(env(safe-area-inset-bottom, 0px) + 1rem)` }"
-      >
-        <button
-          @click="stopScanCallback"
-          class="rounded-xl bg-red-600 px-8 py-3 text-base font-medium text-white shadow-lg transition-colors hover:bg-red-700 flex items-center justify-center"
-          :style="{ bottom: `calc(env(safe-area-inset-bottom, 0px) + 1.5rem)` }"
-        >
-          Cancel Scan v2
-        </button>
-      </div>
-    </div>
-
     <button
       @click="stopScanCallback"
       class="absolute left-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-xl bg-red-600 px-8 py-3 text-base font-medium text-white shadow-lg transition-colors hover:bg-red-700"
       :style="{ bottom: `calc(env(safe-area-inset-bottom, 0px) + 1.5rem)` }"
     >
-      Cancel Scan v1
+      Cancel Scan
     </button>
 
     

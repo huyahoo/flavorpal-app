@@ -159,7 +159,7 @@ def add_by_image(request: schemas.ProductImageRequest,  db: Session = Depends(ge
             name=product_name,
             image_url=image_url,
             image_embedding=embedding,
-            brands=product_manufacturer,
+            brands=[product_manufacturer],
             ai_health_summary=product_description,
             ai_health_conclusion="unknown",
         )
