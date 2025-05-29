@@ -103,7 +103,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   quality: 0.9,
-  maxWidth: 1920,
+  maxWidth: 1280,
   maxHeight: 1080,
   facingMode: 'environment'
 })

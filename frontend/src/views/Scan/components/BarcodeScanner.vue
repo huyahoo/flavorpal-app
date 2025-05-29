@@ -4,7 +4,7 @@
       ref="videoElementRef"
       autoplay
       playsinline
-      class="min-h-screen w-full object-contain"
+      class="h-full w-full object-contain"
     ></video>
     <div
       class="pointer-events-none absolute left-1/2 top-1/2 aspect-[4/3] w-[80%] -translate-x-1/2 -translate-y-1/2 transform sm:w-[70%] sm:max-w-md"
@@ -66,7 +66,7 @@ const initializeScanner = async () => {
     stream.value = await navigator.mediaDevices.getUserMedia({ 
       video: { 
         facingMode: 'environment',
-        width: { ideal: 640 }, 
+        width: { ideal: 320 }, 
         height: { ideal: 480 }
       } 
     });
