@@ -24,7 +24,6 @@ def get_current_user_badges(current_user: models.User = Depends(get_current_user
 @router.get("/all", response_model=Response[List[schemas.Badge]])
 def get_all_badges(db: Session = Depends(get_db)):
     badges = db.query(models.Badge).all()
-    print(badges)
     return Response(code=200, data=badges, msg="All badges fetched successfully")
 
 @router.patch("/update/{badge_id}", response_model=Response[schemas.UserBadgeFrontend])
