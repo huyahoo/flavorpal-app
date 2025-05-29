@@ -185,7 +185,25 @@ def add_by_image(request: schemas.ProductImageRequest,  db: Session = Depends(ge
         return Response(code=200, data=product_details, msg="Product fetched successfully")
 
 
-
+@router.get("/currentuser/list/products", response_model=Response[List[schemas.ProductDetailsFrontend]])
+def get_current_user_products(db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):
+    products = db.query(models.Review).filter(models.Review.user_id == current_user.id).all()
+    product_details = []
+    for product in products:
+        brands = ",".join(product.product.brands) if isinstance(product.product.brands, list) else product.product.brands or ""
+        categories = ",".join(product.product.categories) if isinstance(product.product.categories, list) else product.product.categories or ""
+        product_details.append(schemas.ProductDetailsFrontend(
+            id=product.product.id,
+            name=product.product.name,
+            brands=brands,
+            barcode=product.product.barcode,
+            imageUrl=product.product.image_url,
+            categories=categories,
+            isReviewed=True,
+            userRating=product.rating,
+            userNotes=product.note,
+        ))
+    return Response(code=200, data=product_details, msg="Products fetched successfully")
 
 # @router.patch("/{product_id}", response_model=Response[schemas.ProductOut])
 # def update_product(product_id: int, product: schemas.ProductUpdate, db: Session = Depends(get_db)):

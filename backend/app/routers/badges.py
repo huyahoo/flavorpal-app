@@ -29,8 +29,7 @@ def get_all_badges(db: Session = Depends(get_db)):
 
 @router.patch("/update/{badge_id}", response_model=Response[schemas.UserBadgeFrontend])
 def update_current_user_badges(badge_id: int, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if not current_user:
-        raise response.not_found(msg="User not found",code=404)
+
     user_badge = models.UserBadge(user_id=current_user.id, badge_id=badge_id)
     db.add(user_badge)
     db.commit()

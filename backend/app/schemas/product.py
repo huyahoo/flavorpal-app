@@ -68,14 +68,14 @@ class ProductDetailsFrontend(BaseModel):
     dateReviewed: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class ProductDetailsFrontendOut(BaseModel):
     product: List[ProductDetailsFrontend]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class ProductDetailsThroughBarcode(BaseModel):

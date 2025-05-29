@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-
+from typing import List, Optional
 
 class HealthFlag(BaseModel):
     name: str
@@ -13,5 +13,5 @@ class HealthFlagOut(HealthFlag):
 
 
 class UserHealthFlagOut(BaseModel):
-    healthFlag: HealthFlag
+    healthFlag: Optional[List[HealthFlag]] = None
     model_config = ConfigDict(from_attributes=True)

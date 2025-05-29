@@ -50,7 +50,8 @@ class UserCreateFrontend(UserBaseFrontend):
 class UserUpdateFrontend(BaseModel):
     name: Optional[str] = None
     email: Optional[EmailStr] = None
-    healthFlags: Optional[List[str]] = []
+    healthFlags: Optional[List[str]] = None
+    badges: Optional[List[str]] = None
     class Config:
         orm_mode = True
 
