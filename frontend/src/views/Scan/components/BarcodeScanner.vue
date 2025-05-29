@@ -4,7 +4,7 @@
       ref="videoElementRef"
       autoplay
       playsinline
-      class="min-h-screen w-full object-contain"
+      class="h-full w-full object-contain"
     ></video>
     <div
       class="pointer-events-none absolute left-1/2 top-1/2 aspect-[4/3] w-[80%] -translate-x-1/2 -translate-y-1/2 transform sm:w-[70%] sm:max-w-md"
@@ -30,25 +30,13 @@
       {{ cameraError }}
     </p>
 
-    <div class="absolute inset-0 flex flex-col justify-between items-center z-10 pointer-events-none">
-      <div 
-        class="w-full flex justify-start p-3 sm:p-4 pointer-events-auto"
-        :style="{ paddingTop: `calc(env(safe-area-inset-top, 0px) + 0.75rem)` }"
-      >
-      </div>
-      <div 
-        class="w-full flex justify-center p-4 pointer-events-auto"
-        :style="{ paddingBottom: `calc(env(safe-area-inset-bottom, 0px) + 1rem)` }"
-      >
-        <button
-          @click="stopScanCallback"
-          class="rounded-xl bg-red-600 px-8 py-3 text-base font-medium text-white shadow-lg transition-colors hover:bg-red-700"
-          :style="{ bottom: `calc(env(safe-area-inset-bottom, 0px) + 1.5rem)` }"
-        >
-          Cancel Scan
-        </button>
-      </div>
-    </div>
+    <button
+      @click="stopScanCallback"
+      class="absolute left-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-xl bg-red-600 px-8 py-3 text-base font-medium text-white shadow-lg transition-colors hover:bg-red-700"
+      :style="{ bottom: `calc(env(safe-area-inset-bottom, 0px) + 1.5rem)` }"
+    >
+      Cancel Scan
+    </button>
 
     
   </div>
@@ -78,7 +66,7 @@ const initializeScanner = async () => {
     stream.value = await navigator.mediaDevices.getUserMedia({ 
       video: { 
         facingMode: 'environment',
-        width: { ideal: 640 }, 
+        width: { ideal: 320 }, 
         height: { ideal: 480 }
       } 
     });

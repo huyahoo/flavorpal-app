@@ -43,6 +43,20 @@ def base64_to_bytesio(base64_str: str) -> io.BytesIO:
 
     image_bytes = base64.b64decode(base64_data)
     return io.BytesIO(image_bytes)
+
+def image_url_to_base64(image_url):
+    response = requests.get(image_url)
+    mime_type, _ = mimetypes.guess_type(image_url)
+    
+    if not mime_type:
+        raise ValueError("Cannot determine the MIME type of the file")
+    
+    base64_string = base64.b64encode(response.content).decode("utf-8")
+    
+    data_uri = f"data:{mime_type};base64,{base64_string}"
+    return data_uri
+
+
 def encode_image_to_base64(image_path):
     mime_type, _ = mimetypes.guess_type(image_path)
     if not mime_type:

@@ -72,12 +72,12 @@
       <p class="mt-8 text-center text-sm text-flavorpal-gray">
         Don't have an account?
         <router-link to="/register" class="font-semibold text-flavorpal-green hover:text-flavorpal-green-dark hover:underline">
-          Sign up now
+          Sign Up Now
         </router-link>
       </p>
     </div>
      <footer class="text-center mt-8">
-        <p class="text-xs text-emerald-100">&copy; {{ new Date().getFullYear() }} FlavorPal. Happy Hacking!</p>
+        <p class="text-xs text-emerald-100">&copy; {{ new Date().getFullYear() }} FlavorPal v1.0.3</p>
     </footer>
   </div>
 </template>

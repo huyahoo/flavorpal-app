@@ -33,16 +33,24 @@ export const registerUserApi = async (userData: UserCreatePayload): Promise<ApiR
  * @returns A Promise resolving to the backend's ApiResponse containing the access token.
  */
 export const loginUserApi = async (credentials: LoginCredentials): Promise<ApiResponse<TokenResponse>> => {
-  // FastAPI's OAuth2PasswordRequestForm expects form data
-  const formData = new URLSearchParams();
-  formData.append('username', credentials.username);
-  formData.append('password', credentials.password);
+  try {
+    const formData = new URLSearchParams();
+    formData.append('username', credentials.username);
+    formData.append('password', credentials.password);
 
-  const response = await apiClient.post<ApiResponse<TokenResponse>>('/auth/token', formData, {
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-  });
-  console.log(response);
-  return response.data;
+    const response = await apiClient.post<ApiResponse<TokenResponse>>('/auth/token', formData, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    });
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.error("AuthStore: Login user error:", error);
+    return {
+      code: 401,
+      msg: "Username or password is incorrect",
+      data: null as unknown as TokenResponse,
+    };
+  }
 };
 
 /**
