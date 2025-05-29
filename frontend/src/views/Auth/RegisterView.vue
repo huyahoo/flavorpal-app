@@ -125,7 +125,7 @@
       <p class="mt-8 text-center text-sm text-flavorpal-gray">
         Already have an account?
         <router-link to="/login" class="font-semibold text-flavorpal-green hover:text-flavorpal-green-dark hover:underline">
-          Sign in instead
+          Sign In
         </router-link>
       </p>
     </div>

@@ -1,5 +1,5 @@
 <template>
-  <div class="relative flex flex-grow items-center justify-center bg-black">
+  <div class="flex flex-col h-full w-full bg-black text-white relative items-center justify-center">
     <video
       ref="videoElementRef"
       autoplay
