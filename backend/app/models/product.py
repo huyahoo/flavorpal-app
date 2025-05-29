@@ -16,8 +16,8 @@ class Product(Base):
     last_updated = Column(DateTime, default=datetime.datetime.utcnow)
     generic_name = Column(String(255))
     ingredients = Column(Text)
-    categories = Column(ARRAY(String))
-    brands = Column(ARRAY(String))
+    categories = Column(Text)
+    brands = Column(Text)
     ai_health_summary = Column(Text)
     ai_health_conclusion = Column(Text)
 
