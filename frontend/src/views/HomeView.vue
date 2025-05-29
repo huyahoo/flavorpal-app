@@ -65,30 +65,39 @@
       <section class="bg-white p-5 rounded-xl shadow-xl">
         <h2 class="text-xl font-semibold text-flavorpal-gray-dark mb-4">Discover New Flavors</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="bg-flavorpal-orange-light p-4 rounded-lg text-center hover:shadow-md transition-shadow cursor-pointer">
+          <div class="bg-flavorpal-orange-light p-4 rounded-lg text-center hover:shadow-md transition-shadow cursor-pointer" @click="navigateToTrendingSnacks">
             <p class="font-semibold text-flavorpal-orange-dark">Trending Snacks</p>
             <p class="text-xs text-flavorpal-orange-dark opacity-80 mt-1">Find what's popular!</p>
           </div>
-          <div class="bg-flavorpal-green-light p-4 rounded-lg text-center hover:shadow-md transition-shadow cursor-pointer">
+          <div class="bg-flavorpal-green-light p-4 rounded-lg text-center hover:shadow-md transition-shadow cursor-pointer" @click="navigateToLocalDelicacies">
             <p class="font-semibold text-flavorpal-green-dark">Local Delicacies</p>
             <p class="text-xs text-flavorpal-green-dark opacity-80 mt-1">Explore regional tastes.</p>
           </div>
         </div>
       </section>
     </main>
+    <UpcomingFeatureModal
+      :is-open="isUpcomingModalOpen"
+      :feature-name="upcomingFeatureName"
+      @close="isUpcomingModalOpen = false"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useAuthStore } from '../store/auth';
 import { useHistoryStore } from '../store/historyStore'; // Import the history store
 import ScannedItemCard from '@/components/home/ScannedItemCard.vue'; 
 import { useRouter } from 'vue-router';
+import UpcomingFeatureModal from '@/components/common/UpcomingFeatureModal.vue';
 
 const authStore = useAuthStore();
 const historyStore = useHistoryStore(); // Use history store
 const router = useRouter();
+
+const isUpcomingModalOpen = ref(false);
+const upcomingFeatureName = ref('');
 
 // Get a limited number of recent scans from historyStore
 const recentlyScannedItems = computed(() => historyStore.getRecentlyScannedItems(3)); // Show 3 items
@@ -113,6 +122,15 @@ onMounted(async () => {
     });
   }
 });
+
+const showUpcomingFeatureModal = (feature: string) => {
+  upcomingFeatureName.value = feature;
+  isUpcomingModalOpen.value = true;
+};
+
+const navigateToTrendingSnacks = () => {
+  showUpcomingFeatureModal('Trending Snacks');
+};
 </script>
 
 <style scoped>

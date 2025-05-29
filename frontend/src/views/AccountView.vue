@@ -213,6 +213,11 @@
         <router-link to="/login" class="text-flavorpal-green hover:underline">Go to Login</router-link>
       </div>
     </main>
+    <UpcomingFeatureModal
+      :is-open="isUpcomingModalOpen"
+      :feature-name="upcomingFeatureName"
+      @close="isUpcomingModalOpen = false"
+    />
   </div>
 </template>
 
@@ -224,12 +229,16 @@ import { useHistoryStore } from '../store/historyStore';
 import { useRouter } from 'vue-router';
 import BadgeItem from '@/components/account/BadgeItem.vue';
 import { useBadgeStore } from '@/store/badgeStore';
+import UpcomingFeatureModal from '@/components/common/UpcomingFeatureModal.vue';
 
 const authStore = useAuthStore();
 const userProfileStore = useUserProfileStore();
 const badgeStore = useBadgeStore()
 const historyStore = useHistoryStore();
 const router = useRouter();
+
+const isUpcomingModalOpen = ref(false);
+const upcomingFeatureName = ref('');
 
 // --- State for Username Editing ---
 const isEditingUsername = ref(false);
@@ -256,8 +265,11 @@ interface Badge {
   iconColor?: string;
 }
 
-// Mock user badges (from userProfileStore now)
-// const userBadges = ref<Badge[]>([]); // Removed, will use userProfileStore.badges
+
+const showUpcomingFeatureModal = (feature: string) => {
+  upcomingFeatureName.value = feature;
+  isUpcomingModalOpen.value = true;
+};
 
 // --- Username Editing Functions ---
 const startEditUsername = () => {
@@ -351,7 +363,7 @@ const handleLogout = async () => {
 
 // --- Change Password Functionality ---
 const changePassword = () => {
-  alert('Change password functionality to be implemented!');
+  showUpcomingFeatureModal('Change Password');
 };
 
 // Lifecycle hook
