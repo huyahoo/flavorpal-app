@@ -65,7 +65,7 @@ def get_users(db: Session = Depends(get_db)):
 
 
 
-@router.post("/", response_model=Response[schemas.UserProfileOut], status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=Response[schemas.UserProfileFrontendOut], status_code=status.HTTP_201_CREATED)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user_check = db.query(models.User).filter(models.User.email == user.email).first()
     if db_user_check:
@@ -98,8 +98,15 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     
     db.commit()
     db.refresh(db_user)
+    health_flag_names = [hf.health_flag.name for hf in db_user.user_health_flags]
 
-    return Response(code=201, data=db_user, msg="User created successfully")
+    user_profile = schemas.UserProfileFrontendOut(
+        id=db_user.id,
+        name=db_user.name,
+        email=db_user.email,
+        healthFlags=health_flag_names,
+    )
+    return Response(code=201, data=user_profile, msg="User created successfully")
 
 
 @router.get("/health_flags", response_model=Response[List[schemas.HealthFlagOut]])
