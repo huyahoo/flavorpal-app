@@ -28,14 +28,32 @@ services:
       - ./backend:/code
 
     command: >
-      sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --ssl-keyfile /code/certs/key.pem --ssl-certfile /code/certs/cert.pem"
+      sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     ports:
-      - "8000:8000"
+      - "8000:8000"    # Remove in production and only accepts nginx connections
     # depends_on:
     #   db:
     #     condition: service_healthy
     env_file:
       - ./backend/.env
+    networks:
+      - app-network
+  
+  # Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./backend/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./backend/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./backend/nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - backend
+    networks:
+      - app-network
 
  # Optional
   # frontend:
@@ -53,3 +71,7 @@ services:
 
 volumes:
   pgdata:
+
+networks:
+  app-network:
+    driver: bridge
