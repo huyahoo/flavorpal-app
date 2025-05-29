@@ -44,7 +44,7 @@ import axios from 'axios';
 //         name: `Product (Barcode: ${barcode})`, // Indicate it's an unrecognized barcode
 //         barcode: barcode,
 //         aiHealthSummary: 'This barcode was not found in the Open Food Facts database.',
-//         aiHealthConclusion: 'info_needed',
+//         aiHealthConclusion: 'unknown',
 //         isReviewed: false,
 //         fetchStatus: 'not_found_in_db',
 //       };
@@ -97,7 +97,7 @@ import axios from 'axios';
 //   // ... (rest of photo mock logic from artifact flavorpal_scan_service_barcode)
 //   const newProductNames = ["Exotic Berry Mix (Photo)", "Artisan Keto Crackers (Photo)", "Cold Brew Coffee (Photo)"];
 //   const randomName = newProductNames[Math.floor(Math.random() * newProductNames.length)];
-//   const conclusions: AiHealthConclusion[] = ['good', 'caution', 'avoid', 'neutral', 'info_needed'];
+//   const conclusions: AiHealthConclusion[] = ['good', 'caution', 'avoid', 'neutral', 'unknown'];
 //   const randomConclusion = conclusions[Math.floor(Math.random() * conclusions.length)];
 
 //   scannedData = {

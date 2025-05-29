@@ -38,8 +38,8 @@ def get_all_products(db: Session = Depends(get_db),current_user: models.User = D
                 isReviewed=True,
                 userRating=review.rating,
                 userNotes=review.note,
-                aiHealthSummary=product.ai_health_summary if product.ai_health_summary else "No Summary Available",
-                aiHealthConclusion=product.ai_health_conclusion if product.ai_health_conclusion else "info_needed",
+                aiHealthSummary=product.ai_health_summary if product.ai_health_summary else "The image does not contain a product ingredient table to analyze for dietary preferences.",
+                aiHealthConclusion=product.ai_health_conclusion if product.ai_health_conclusion else "unknown",
                 dateScanned=product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
                 dateReviewed=review.updated_at.strftime("%Y-%m-%d, %H:%M:%S")
             )
@@ -56,8 +56,8 @@ def get_all_products(db: Session = Depends(get_db),current_user: models.User = D
                 isReviewed=False,
                 userRating=None,
                 userNotes=None,
-                aiHealthSummary=product.ai_health_summary if product.ai_health_summary else "No Summary Available",
-                aiHealthConclusion=product.ai_health_conclusion if product.ai_health_conclusion else "info_needed",
+                aiHealthSummary=product.ai_health_summary if product.ai_health_summary else "The image does not contain a product ingredient table to analyze for dietary preferences.",
+                aiHealthConclusion=product.ai_health_conclusion if product.ai_health_conclusion else "unknown",
                 dateScanned=product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
                 dateReviewed=None
             )
@@ -85,8 +85,8 @@ def get_product(product_id: int, db: Session = Depends(get_db),current_user: mod
             isReviewed=True,
             userRating=review.rating,
             userNotes=review.note,
-            aiHealthSummary=product.ai_health_summary if product.ai_health_summary else "No Summary Available",
-            aiHealthConclusion=product.ai_health_conclusion if product.ai_health_conclusion else "info_needed",
+            aiHealthSummary=product.ai_health_summary if product.ai_health_summary else "The image does not contain a product ingredient table to analyze for dietary preferences.",
+            aiHealthConclusion=product.ai_health_conclusion if product.ai_health_conclusion else "unknown",
             dateScanned=product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
             dateReviewed=review.updated_at.strftime("%Y-%m-%d, %H:%M:%S")
         )
@@ -103,8 +103,8 @@ def get_product(product_id: int, db: Session = Depends(get_db),current_user: mod
             isReviewed=False,
             userRating=None,
             userNotes=None,
-            aiHealthSummary=product.ai_health_summary if product.ai_health_summary else "No Summary Available",
-            aiHealthConclusion=product.ai_health_conclusion if product.ai_health_conclusion else "info_needed",
+            aiHealthSummary=product.ai_health_summary if product.ai_health_summary else "The image does not contain a product ingredient table to analyze for dietary preferences.",
+            aiHealthConclusion=product.ai_health_conclusion if product.ai_health_conclusion else "unknown",
             dateScanned=product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
             dateReviewed=None
         )
@@ -133,8 +133,8 @@ def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)
         imageUrl=db_product.image_url,
         imageEmbedding=db_product.image_embedding,
         lastUpdated=db_product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
-        aiHealthSummary=db_product.ai_health_summary if db_product.ai_health_summary else "No Summary Available",
-        aiHealthConclusion=db_product.ai_health_conclusion if db_product.ai_health_conclusion else "info_needed",
+        aiHealthSummary=db_product.ai_health_summary if db_product.ai_health_summary else "The image does not contain a product ingredient table to analyze for dietary preferences.",
+        aiHealthConclusion=db_product.ai_health_conclusion if db_product.ai_health_conclusion else "unknown",
     )
     return Response(code=200, data=product_info, msg="Product created successfully")
 
@@ -260,8 +260,8 @@ def get_product_by_barcode(barcode: str, db: Session = Depends(get_db),current_u
         isReviewed = review is not None,
         dateScanned = product.last_updated.strftime("%Y-%m-%d, %H:%M:%S") if product else None,
         likesCount = review.likes_count if review else 0,
-        aiHealthSummary = product.ai_health_summary if product else "No Summary Available",
-        aiHealthConclusion = product.ai_health_conclusion if product else "info_needed",
+        aiHealthSummary = product.ai_health_summary if product else "The image does not contain a product ingredient table to analyze for dietary preferences.",
+        aiHealthConclusion = product.ai_health_conclusion if product else "unknown",
     )
     return Response(code=200, data=product_info, msg="Product fetched successfully")
 
@@ -300,8 +300,8 @@ def update_ai_health_suggestion(
         isReviewed=bool(review),
         userRating=review.rating if review else None,
         userNotes=review.note if review else None,
-        aiHealthSummary=summary if summary else "No Summary Available",
-        aiHealthConclusion=conclusion if conclusion else "info_needed",
+        aiHealthSummary=summary if summary else "The image does not contain a product ingredient table to analyze for dietary preferences.",
+        aiHealthConclusion=conclusion if conclusion else "unknown",
         dateScanned=product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
         dateReviewed=review.note if review else None
     )

@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col min-h-full bg-flavorpal-gray-light">
-    <header 
-      v-if="!showPhotoCapturer" 
+    <header
+      v-if="!showPhotoCapturer"
       class="sticky top-0 z-30 bg-flavorpal-gray-light p-4 shadow-sm flex items-center"
       :style="{ paddingTop: `calc(env(safe-area-inset-top, 0px) + 1rem)` }" >
       <button @click="goBack" class="text-flavorpal-green hover:text-flavorpal-green-dark p-2 -ml-2 rounded-full" aria-label="Go back">
@@ -12,9 +12,9 @@
       </h1>
     </header>
 
-    <main 
-      v-if="!showPhotoCapturer" 
-      class="flex-grow p-4 sm:p-6 space-y-6 overflow-y-auto" 
+    <main
+      v-if="!showPhotoCapturer"
+      class="flex-grow p-4 sm:p-6 space-y-6 overflow-y-auto"
       :style="{ paddingBottom: `calc(env(safe-area-inset-bottom, 0px) + 1.5rem)`}"
     >
       <div v-if="loadingProduct && !product" class="text-center py-10">
@@ -27,7 +27,18 @@
 
       <div v-else-if="product" class="space-y-6">
         <section class="bg-white p-5 rounded-xl shadow-lg">
-          <h2 class="text-2xl sm:text-3xl font-bold text-flavorpal-gray-dark mb-3">{{ product.name }}</h2>
+          <h2 class="text-2xl sm:text-3xl font-bold text-flavorpal-gray-dark mb-1">{{ product.name }}</h2>
+
+          <div v-if="product.brands" class="mt-1 mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span class="text-sm text-flavorpal-gray-dark font-medium leading-tight">
+               {{ product.brands.length > 1 ? 'Brands:' : 'Brand:' }}
+            </span>
+            <span
+              class="inline-block bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold px-2 py-0.5 rounded-full transition-colors"
+            >
+              {{ product.brands }}
+            </span>
+          </div>
           <div class="mb-4 relative w-full aspect-[16/9] bg-flavorpal-gray-light rounded-lg overflow-hidden flex items-center justify-center">
               <div
                 v-if="product.isReviewed"
@@ -72,6 +83,20 @@
           </div>
         </section>
 
+        <section v-if="product.categories" class="bg-white p-5 rounded-xl shadow-lg">
+          <h3 class="text-lg font-semibold text-flavorpal-gray-dark mb-3">Categories</h3>
+          <div class="flex flex-wrap gap-2">
+            <span
+              v-for="(category, index) in product.categories.split(',')"
+              :key="`category-${index}`"
+              class="inline-block bg-flavorpal-green-light hover:bg-flavorpal-green text-flavorpal-green-dark text-sm font-medium px-3 py-1.5 rounded-lg shadow-sm transition-colors"
+              @click="navigateToCategory(category)"
+            >
+              {{ category }}
+            </span>
+          </div>
+        </section>
+
         <section v-if="product.isReviewed" class="bg-white p-5 rounded-xl shadow-lg">
           <div class="flex justify-between items-center mb-2">
             <h3 class="text-lg font-semibold text-flavorpal-gray-dark">Your Notes</h3>
@@ -100,14 +125,14 @@
         </section>
 
         <section class="mt-6">
-          <button 
+          <button
             @click="openImageSourceChoiceModal"
             class="w-full flex items-center justify-center py-3 px-4 bg-flavorpal-green hover:bg-flavorpal-green-dark text-white font-medium rounded-xl transition-colors duration-150 ease-in-out"
           >
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18v-2m0-4H9m3 4h3m-3-4V6"></path></svg>
             Enhance Insights
           </button>
-  
+
           <input type="file" accept="image/*" ref="fileInputRef" @change="handleFileSelectedFromInput" class="opacity-0 w-0 h-0 absolute -z-10" aria-hidden="true"/>
           <p v-if="productUpdateError" class="text-xs text-red-500 mt-2 text-center">{{ productUpdateError }}</p>
         </section>
@@ -200,6 +225,7 @@
         @cancel="showDeleteConfirmModal = false"
       />
     </main>
+
     <div v-if="showPhotoCapturer" 
          class="fixed inset-0 z-50 bg-black flex items-center justify-center p-0"
          aria-modal="true"
@@ -214,6 +240,13 @@
         class="w-full h-full" 
       />
     </div>
+
+    <UpcomingFeatureModal
+        :is-open="isUpcomingModalOpen"
+        :feature-name="upcomingFeatureName"
+        @close="isUpcomingModalOpen = false"
+    />
+
   </div>
 </template>
 
@@ -228,6 +261,7 @@ import ConfirmationModal from '@/components/common/ConfirmationModal.vue';
 import IconArrowBack from '@/components/icons/IconArrowBack.vue';
 import ImageSourceChoiceModal from '@/components/common/ImageSourceChoiceModal.vue';
 import PhotoCapturer, { type CapturedPhoto } from '@/components/common/PhotoCapturer.vue';
+import UpcomingFeatureModal from '@/components/common/UpcomingFeatureModal.vue';
 
 const props = defineProps<{ id: number; }>();
 const router = useRouter();
@@ -246,7 +280,17 @@ const fileInputRef = ref<HTMLInputElement | null>(null);
 const isAnalyzingIngredients = ref(false);
 let analysisController: AbortController | null = null; 
 const showPhotoCapturer = ref(false);
+const isUpcomingModalOpen = ref(false);
+const upcomingFeatureName = ref('');  
 
+const showUpcomingFeatureModal = (feature: string) => {
+  upcomingFeatureName.value = feature;
+  isUpcomingModalOpen.value = true;
+};
+
+const navigateToCategory = (category: string) => {
+  showUpcomingFeatureModal('Category: ' + category);
+};
 
 const loadProductData = async (productId: number) => {
   loadingProduct.value = true;

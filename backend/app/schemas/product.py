@@ -82,7 +82,7 @@ class ProductDetailsThroughBarcode(BaseModel):
     id: int
     name: str
     barcode: str
-    brand: Optional[str] = None
+    brands: Optional[str] = None
     categories: Optional[str] = None
     imageUrl: Optional[str] = None
     imageIngredientsUrl: Optional[str] = None
