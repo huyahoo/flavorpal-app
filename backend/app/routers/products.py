@@ -187,26 +187,29 @@ def add_by_image(request: schemas.ProductImageRequest,  db: Session = Depends(ge
 
 @router.get("/currentuser/list/products", response_model=Response[List[schemas.ProductDetailsFrontend]])
 def get_current_user_products(db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):
-    products = db.query(models.Review).filter(models.Review.user_id == current_user.id).all()
+    history = db.query(models.History).filter(models.History.user_id == current_user.id).all()
     product_details = []
-    for product in products:
-        brands = ",".join(product.product.brands) if isinstance(product.product.brands, list) else product.product.brands or ""
-        categories = ",".join(product.product.categories) if isinstance(product.product.categories, list) else product.product.categories or ""
+    for record in history:
+        product = record.product
+        review = db.query(models.Review).filter(models.Review.product_id == product.id, models.Review.user_id == current_user.id).first()
+        brands = ",".join(product.brands) if isinstance(product.brands, list) else product.brands or ""
+        categories = ",".join(product.categories) if isinstance(product.categories, list) else product.categories or ""
         product_details.append(schemas.ProductDetailsFrontend(
-            id=product.product.id,
-            name=product.product.name,
+            id=product.id,
+            name=product.name,
             brands=brands,
-            barcode=product.product.barcode,
-            imageUrl=product.product.image_url,
+            barcode=product.barcode,
+            imageUrl=product.image_url,
             categories=categories,
-            isReviewed=True,
-            userRating=product.rating,
-            userNotes=product.note,
-            aiHealthSummary=product.product.ai_health_summary if product.product.ai_health_summary else "The image does not contain a product ingredient table to analyze for dietary preferences.",
-            aiHealthConclusion=product.product.ai_health_conclusion if product.product.ai_health_conclusion else "unknown",
-            dateScanned=product.product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
-            dateReviewed=product.updated_at.strftime("%Y-%m-%d, %H:%M:%S")
+            isReviewed=bool(review),
+            userRating=review.rating if review else None,
+            userNotes=review.note if review else None,
+            aiHealthSummary=product.ai_health_summary if product.ai_health_summary else "The image does not contain a product ingredient table to analyze for dietary preferences.",
+            aiHealthConclusion=product.ai_health_conclusion if product.ai_health_conclusion else "unknown",
+            dateScanned=product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
+            dateReviewed=review.updated_at.strftime("%Y-%m-%d, %H:%M:%S") if review else None
         ))
+    
     return Response(code=200, data=product_details, msg="Products fetched successfully")
 
 # @router.patch("/{product_id}", response_model=Response[schemas.ProductOut])
