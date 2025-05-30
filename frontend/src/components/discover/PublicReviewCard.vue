@@ -8,7 +8,7 @@
     @keypress.enter="navigateToDetail"
   >
     <div class="p-4 flex items-center space-x-3 border-b border-gray-100">
-      <img 
+      <img loading="lazy" 
         :src="review.reviewerAvatarUrl || defaultAvatar" 
         :alt="`${review.reviewerUsername}'s avatar`" 
         class="w-10 h-10 rounded-full object-cover bg-gray-200"
@@ -21,7 +21,7 @@
     </div>
 
     <div v-if="review.productImageUrl" class="w-full aspect-[16/9] bg-gray-100 overflow-hidden">
-      <img 
+      <img
         :src="review.productImageUrl" 
         :alt="review.productName" 
         class="w-full h-full object-contain"

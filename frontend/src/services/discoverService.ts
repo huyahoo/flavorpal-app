@@ -1,7 +1,7 @@
 // src/services/discoverService.ts
 import type { PublicReviewItem } from '../types';
 
-const allReviewsProducts: PublicReviewItem[] = [
+const allReviews: PublicReviewItem[] = [
     {
         reviewId: 1,
         productId: 1,
@@ -138,100 +138,76 @@ const allReviewsProducts: PublicReviewItem[] = [
         likeCount: 76
     },
     {
-      reviewId: 10,
-      productId: 4,
-      productName: "Twix glacé x6",
-      productBrands: "Twix",
-      productCategories: "Snacks,Desserts,Snacks sucrés",
-      productImageUrl: "https://images.openfoodfacts.org/images/products/500/015/948/4695/front_fr.85.400.jpg",
-      reviewerId: 124,
-      reviewerUsername: "aosdijf102",
-      reviewerAvatarUrl: `https://placehold.co/40x40/${Math.floor(Math.random()*16777215).toString(16)}/FFFFFF?text=${String.fromCharCode(65 + Math.floor(Math.random()*26))}`,
-      userRating: 2,
-      userNotes: "Too sweet for me. Not my type of snack. But texture was good. For the price, it's not bad. Alsolutely for sweet lovers",
-      dateReviewed: "2025-03-1, 11:24:34",
-      likeCount: 2
+        reviewId: 10,
+        productId: 4,
+        productName: "Twix glacé x6",
+        productBrands: "Twix",
+        productCategories: "Snacks,Desserts,Snacks sucrés",
+        productImageUrl: "https://images.openfoodfacts.org/images/products/500/015/948/4695/front_fr.85.400.jpg",
+        reviewerId: 124,
+        reviewerUsername: "aosdijf102",
+        reviewerAvatarUrl: `https://placehold.co/40x40/${Math.floor(Math.random()*16777215).toString(16)}/FFFFFF?text=${String.fromCharCode(65 + Math.floor(Math.random()*26))}`,
+        userRating: 2,
+        userNotes: "Too sweet for me. Not my type of snack. But texture was good. For the price, it's not bad. Alsolutely for sweet lovers",
+        dateReviewed: "2025-03-1, 11:24:34",
+        likeCount: 2
   },
   {
-      reviewId: 11,
-      productId: 5,
-      productName: "Orange juice",
-      productBrands: "Coca cola",
-      productCategories: "Cibi e bevande a base vegetale,Bevande,Bevande a base di piante,Succo e nettare",
-      productImageUrl: "https://images.openfoodfacts.org/images/products/544/900/014/7417/front_en.73.400.jpg",
-      reviewerId: 2,
-      reviewerUsername: "jania2002",
-      reviewerAvatarUrl: `https://placehold.co/40x40/${Math.floor(Math.random()*16777215).toString(16)}/FFFFFF?text=${String.fromCharCode(65 + Math.floor(Math.random()*26))}`,
-      userRating: 2,
-      userNotes: "I was expecting more based on the hype, but it's not bad at all.",
-      dateReviewed: "2025-03-11, 01:41:00",
-      likeCount: 1
+        reviewId: 11,
+        productId: 5,
+        productName: "Orange juice",
+        productBrands: "Coca cola",
+        productCategories: "Cibi e bevande a base vegetale,Bevande,Bevande a base di piante,Succo e nettare",
+        productImageUrl: "https://images.openfoodfacts.org/images/products/544/900/014/7417/front_en.73.400.jpg",
+        reviewerId: 2,
+        reviewerUsername: "jania2002",
+        reviewerAvatarUrl: `https://placehold.co/40x40/${Math.floor(Math.random()*16777215).toString(16)}/FFFFFF?text=${String.fromCharCode(65 + Math.floor(Math.random()*26))}`,
+        userRating: 2,
+        userNotes: "I was expecting more based on the hype, but it's not bad at all.",
+        dateReviewed: "2025-03-11, 01:41:00",
+        likeCount: 1
   },
   {
-      reviewId: 12,
-      productId: 3,
-      productName: "Albeni Bar Cake",
-      productBrands: "Ülker",
-      productCategories: "Candy chocolate bars",
-      productImageUrl: "https://images.openfoodfacts.org/images/products/869/050/406/3803/front_en.12.400.jpg",
-      reviewerId: 2,
-      reviewerUsername: "Jenni Pham",
-      reviewerAvatarUrl: `https://placehold.co/40x40/${Math.floor(Math.random()*16777215).toString(16)}/FFFFFF?text=${String.fromCharCode(65 + Math.floor(Math.random()*26))}`,
-      userRating: 5,
-      userNotes: "A new favorite! Shared it with friends and they all enjoyed it too.",
-      dateReviewed: "2025-04-16, 18:23:15",
-      likeCount: 12
+        reviewId: 12,
+        productId: 3,
+        productName: "Albeni Bar Cake",
+        productBrands: "Ülker",
+        productCategories: "Candy chocolate bars",
+        productImageUrl: "https://images.openfoodfacts.org/images/products/869/050/406/3803/front_en.12.400.jpg",
+        reviewerId: 2,
+        reviewerUsername: "Jenni Pham",
+        reviewerAvatarUrl: `https://placehold.co/40x40/${Math.floor(Math.random()*16777215).toString(16)}/FFFFFF?text=${String.fromCharCode(65 + Math.floor(Math.random()*26))}`,
+        userRating: 5,
+        userNotes: "A new favorite! Shared it with friends and they all enjoyed it too.",
+        dateReviewed: "2025-04-16, 18:23:15",
+        likeCount: 12
   },
   {
-      reviewId: 13,
-      productId: 3,
-      productName: "Albeni Bar Cake",
-      productBrands: "Ülker",
-      productCategories: "Candy chocolate bars",
-      productImageUrl: "https://images.openfoodfacts.org/images/products/869/050/406/3803/front_en.12.400.jpg",
-      reviewerId: 2,
-      reviewerUsername: "Pamella",
-      reviewerAvatarUrl: `https://placehold.co/40x40/${Math.floor(Math.random()*16777215).toString(16)}/FFFFFF?text=${String.fromCharCode(65 + Math.floor(Math.random()*26))}`,
-      userRating: 4,
-      userNotes: "The packaging was nice, and the product itself was quite unique.",
-      dateReviewed: "2025-04-16, 18:23:15",
-      likeCount: 12
+        reviewId: 13,
+        productId: 3,
+        productName: "Albeni Bar Cake",
+        productBrands: "Ülker",
+        productCategories: "Candy chocolate bars",
+        productImageUrl: "https://images.openfoodfacts.org/images/products/869/050/406/3803/front_en.12.400.jpg",
+        reviewerId: 2,
+        reviewerUsername: "Pamella",
+        reviewerAvatarUrl: `https://placehold.co/40x40/${Math.floor(Math.random()*16777215).toString(16)}/FFFFFF?text=${String.fromCharCode(65 + Math.floor(Math.random()*26))}`,
+        userRating: 4,
+        userNotes: "The packaging was nice, and the product itself was quite unique.",
+        dateReviewed: "2025-04-16, 18:23:15",
+        likeCount: 12
   },
 ]
 
-// sort by dateReviewed for allReviewsProducts
-allReviewsProducts.sort((a, b) => new Date(b.dateReviewed).getTime() - new Date(a.dateReviewed).getTime());
+const sortByDateReviewed = (reviews: PublicReviewItem[]) => {
+    return reviews.sort((a, b) => {
+        const dateA = new Date(a.dateReviewed?.replace(", ", " ") || '').getTime();
+        const dateB = new Date(b.dateReviewed?.replace(", ", " ") || '').getTime();
+        return dateB - dateA;
+    });
+}
 
-// Mock database of public reviews
-// const allPublicReviews: PublicReviewItem[] = Array.from({ length: 30 }, (_, i) => {
-//     const reviewDate = new Date(2025, 4, 20 - i); // Decreasing dates for recency
-//     const userNum = (i % 5) + 1;
-//     const productNum = (i % 7) + 1;
-//     const ratings = [3, 3.5, 4, 4.5, 5];
-//     const notesSamples = [
-//         "Absolutely loved this! The flavor was incredible and it was very fresh.",
-//         "Pretty good, but I've had better. Might buy again if it's on sale.",
-//         "Not a fan of the texture, but the taste was okay. Worth trying once.",
-//         "A new favorite! Shared it with friends and they all enjoyed it too.",
-//         "Decent product for the price. Good for a quick snack.",
-//         "The packaging was nice, and the product itself was quite unique.",
-//         "I was expecting more based on the hype, but it's not bad at all."
-//     ];
-
-//     return {
-//         reviewId: `pub_rev_${1000 + i}`,
-//         productId: `prod_id_${productNum}`,
-//         productName: `Product Name ${productNum}`,
-//         productImageUrl: `https://placehold.co/400x300/${Math.floor(Math.random()*16777215).toString(16)}/FFFFFF?text=Product${productNum}&font=roboto`,
-//         reviewerId: `user_${userNum}`,
-//         reviewerUsername: `User ${String.fromCharCode(65 + userNum -1)}`, // User A, User B, etc.
-//         reviewerAvatarUrl: `https://placehold.co/40x40/${Math.floor(Math.random()*16777215).toString(16)}/FFFFFF?text=${String.fromCharCode(65 + userNum -1)}&font=roboto`,
-//         userRating: ratings[i % ratings.length],
-//         userNotes: notesSamples[i % notesSamples.length] + ` (Review for Product ${productNum})`,
-//         dateReviewed: reviewDate.toISOString(),
-//         likeCount: Math.floor(Math.random() * 200) + 5,
-//     };
-// });
+const allReviewsProducts = sortByDateReviewed(allReviews);
 
 /**
  * Simulates fetching a paginated list of public reviews from other users.
@@ -248,6 +224,7 @@ export const fetchPublicReviewsApi = async (
 
   const startIndex = (page - 1) * limit;
   const endIndex = startIndex + limit;
+  
   const paginatedReviews = allReviewsProducts.slice(startIndex, endIndex);
 
   const hasMore = endIndex < allReviewsProducts.length;

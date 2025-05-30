@@ -8,7 +8,7 @@
     :aria-labelledby="`scannedItemName-${item.id}`"
   >
     <div class="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 bg-flavorpal-gray-light rounded-lg flex items-center justify-center mr-3 sm:mr-4 overflow-hidden">
-      <img 
+      <img
         v-if="item.imageUrl" 
         :src="item.imageUrl" 
         :alt="item.name" 

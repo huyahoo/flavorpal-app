@@ -8,7 +8,7 @@
     @keypress.enter="navigateToDetail"
   >
     <div class="flex-shrink-0 w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center overflow-hidden">
-      <img 
+      <img
         v-if="review.productImageUrl" 
         :src="review.productImageUrl" 
         :alt="review.productName" 
@@ -16,7 +16,7 @@
         onerror="this.style.display='none'; this.nextSibling.style.display='flex';"
         loading="lazy"
       />
-      <img 
+      <img
         v-else-if="review.reviewerAvatarUrl" 
         :src="review.reviewerAvatarUrl" 
         :alt="review.reviewerUsername" 

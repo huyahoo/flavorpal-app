@@ -159,7 +159,7 @@ def add_by_image(
             name=product_name,
             image_url=image_url,
             image_embedding=embedding,
-            brands=[product_manufacturer],
+            brands=product_manufacturer,
             ai_health_summary=product_description,
             ai_health_conclusion="unknown",
         )
@@ -298,8 +298,8 @@ def get_product_by_barcode(
     image_url = product_data.get("image_url")
     image_ingredients_url = product_data.get("image_ingredients_url")
     image_nutrition_url = product_data.get("image_nutrition_url")
-    brands = [brand.strip() for brand in product_data.get("brands", "").split(",")] if product_data.get("brands") else "Unknown"
-    categories = [category.strip() for category in product_data.get("categories", "").split(",")] if product_data.get("categories") else "Unknown"
+    brands = product_data.get("brands") if product_data.get("brands") else "Unknown"
+    categories = product_data.get("categories") if product_data.get("categories") else "Unknown"
     
     # Get AI health analysis if ingredients image available
     conclusion = "unknown"

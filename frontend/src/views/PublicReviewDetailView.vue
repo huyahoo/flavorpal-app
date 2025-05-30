@@ -16,7 +16,7 @@
       <div v-else-if="review" class="space-y-6">
         <section class="bg-white p-5 rounded-xl shadow-xl space-y-4">
           <div class="flex items-center space-x-3 border-b border-gray-100 pb-4">
-            <img :src="review.reviewerAvatarUrl || defaultAvatar" :alt="`${review.reviewerUsername}'s avatar`" class="w-12 h-12 rounded-full object-cover bg-gray-200" onerror="this.src='https://placehold.co/48x48/E5E7EB/4B5563?text=??&font=roboto';"/>
+            <img loading="lazy" :src="review.reviewerAvatarUrl || defaultAvatar" :alt="`${review.reviewerUsername}'s avatar`" class="w-12 h-12 rounded-full object-cover bg-gray-200" onerror="this.src='https://placehold.co/48x48/E5E7EB/4B5563?text=??&font=roboto';"/>
             <div>
               <p class="font-semibold text-lg text-flavorpal-gray-dark">{{ review.reviewerUsername }}</p>
               
@@ -39,7 +39,7 @@
               </div>
 
               <div v-if="review.productImageUrl" class="w-full aspect-[16/9] bg-gray-100 rounded-lg overflow-hidden mb-3">
-                  <img :src="review.productImageUrl" :alt="review.productName" class="w-full h-full object-contain" onerror="this.style.display='none'; this.parentElement.innerHTML = '<div class=\'w-full h-full flex items-center justify-center bg-gray-200 text-gray-400\'><svg class=\'w-16 h-16\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M4...Z\'></path></svg></div>';"/>
+                  <img loading="lazy" :src="review.productImageUrl" :alt="review.productName" class="w-full h-full object-contain" onerror="this.style.display='none'; this.parentElement.innerHTML = '<div class=\'w-full h-full flex items-center justify-center bg-gray-200 text-gray-400\'><svg class=\'w-16 h-16\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M4...Z\'></path></svg></div>';"/>
               </div>
 
               <div class="flex items-center mb-1">

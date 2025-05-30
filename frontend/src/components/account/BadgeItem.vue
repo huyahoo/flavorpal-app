@@ -12,14 +12,15 @@
       class="w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-3xl sm:text-4xl mb-1 shadow-md transition-transform duration-200 ease-in-out group-hover:scale-110"
       :style="{ backgroundColor: '#E5E7EB' }"
     >
-      <img :src="badge.imageUrl" class="w-10 h-10" />
+      <img loading="lazy" :src="badge.imageUrl" class="w-10 h-10" />
     </div>
+
+    <BadgePopup
+      v-if="isBadgeModelOpen"
+      :badge="badge"
+      :handle-close-badge-popup="handleCloseBadgePopup"
+    />
   </div>
-  <BadgePopup
-    v-if="isBadgeModelOpen"
-    :badge="badge"
-    :handle-close-badge-popup="handleCloseBadgePopup"
-  />
 </template>
 
 <script setup lang="ts">
