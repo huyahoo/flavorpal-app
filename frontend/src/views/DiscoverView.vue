@@ -90,9 +90,4 @@ const loadMoreReviews = () => {
 </script>
 
 <style scoped>
-/* Ensure main content area scrolls if DiscoverView itself is taller than viewport (within App.vue's flex-grow) */
-main {
-    /* max-height: calc(100vh - (HEADER_HEIGHT + BOTTOM_NAV_HEIGHT_IF_VISIBLE)); */
-    /* This is tricky to get right without JS, relying on App.vue's structure is better */
-}
 </style>

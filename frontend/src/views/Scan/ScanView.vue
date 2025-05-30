@@ -178,7 +178,6 @@ onBeforeUnmount(() => {
 .aspect-\[16\/9\] {
   aspect-ratio: 16 / 9;
 }
-/* Ensure video element in camera view attempts to fill its container */
 .flex-grow.relative.flex.items-center.justify-center.bg-black video {
   min-width: 100%;
   min-height: 100%;

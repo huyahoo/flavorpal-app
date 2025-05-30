@@ -253,10 +253,7 @@ const keywordsInputRef = ref<HTMLInputElement | null>(null); // For focusing the
 const keywordsEditError = ref<string | null>(null);
 
 
-// Mock TastePoints (from userProfileStore now)
-// const tastePoints = ref(157); // Removed, will use userProfileStore.tastePoints
-
-// Interface for Badge data (remains the same)
+// Interface for Badge data 
 interface Badge {
   id: string;
   name: string;

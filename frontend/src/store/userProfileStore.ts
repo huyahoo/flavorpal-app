@@ -1,7 +1,7 @@
 // src/store/userProfileStore.ts
 import { defineStore } from 'pinia';
 import type { ApiBadge, DisplayBadge } from '../types';
-import { fetchTastePoints, fetchUserApiBadges } from '../services/userProfileService'; // Ensure service path is correct
+import { fetchTastePoints, fetchUserApiBadges } from '../services/userProfileService';
 
 // Define the shape of the user profile state
 export interface UserProfileState {

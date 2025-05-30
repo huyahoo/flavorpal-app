@@ -1,7 +1,7 @@
 // src/store/historyStore.ts
 import { defineStore } from 'pinia';
 import type { ProductInteraction, AiHealthConclusion, ReViewDataPayload } from '../types';
-import { getAllProductsApi, getAllProductsOfCurrentUserApi, getProductByIdApi, addReviewForProductApi, updateReviewForProductApi, deleteProductByIdApi, getProductHealthInsightApi, getAllProductReviewsApi } from '../services/productService';
+import { getAllProductsOfCurrentUserApi, getProductByIdApi, addReviewForProductApi, updateReviewForProductApi, deleteProductByIdApi, getProductHealthInsightApi, getAllProductReviewsApi } from '../services/productService';
 import { getScanStatisticsApi } from '@/services/authService';
 import type { CapturedPhoto } from '@/views/Scan/components/PhotoCapturer.vue';
 
@@ -39,38 +39,6 @@ export interface HistoryStoreState {
   loadingInteractions: boolean;
   error: string | null;
 }
-
-// const HISTORY_INTERACTIONS_STORAGE_KEY = 'flavorpal_history_interactions_v1';
-
-// const getInteractionsFromStorage = (): ProductInteraction[] | null => {
-//   const interactionsJson = localStorage.getItem(HISTORY_INTERACTIONS_STORAGE_KEY);
-//   try {
-//     return interactionsJson ? JSON.parse(interactionsJson) : null;
-//   } catch (e) {
-//     console.error("Error parsing history interactions from localStorage:", e);
-//     localStorage.removeItem(HISTORY_INTERACTIONS_STORAGE_KEY);
-//     return null;
-//   }
-// };
-
-// const saveInteractionsToStorage = (interactions: ProductInteraction[]) => {
-//   try {
-//     localStorage.setItem(HISTORY_INTERACTIONS_STORAGE_KEY, JSON.stringify(interactions));
-//   } catch (e) {
-//     console.error("Error saving history interactions to localStorage:", e);
-//   }
-// };
-
-// const generateInteractionId = (prefix: string = 'item_') => `${prefix}${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-
-// export const formatDateForDisplay = (dateInput?: string | Date): string => {
-//     if (!dateInput) return '';
-//     try {
-//         return new Date(dateInput).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-//     } catch (e) {
-//         return dateInput.toString();
-//     }
-// };
 
 export const useHistoryStore = defineStore('history', {
   state: (): HistoryStoreState => ({
@@ -256,28 +224,8 @@ export const useHistoryStore = defineStore('history', {
       this.loadingStats = false;
       this.loadingInteractions = false;
       this.error = null;
-      // localStorage.removeItem(HISTORY_INTERACTIONS_STORAGE_KEY);
     },
 
-    // addOrUpdateInteraction(interaction: ProductInteraction) {
-    //     const index = this.allProductInteractions.findIndex(item => item.id === interaction.id);
-    //     let isNewToList = false;
-    //     if (index !== -1) {
-    //         this.allProductInteractions[index] = { ...this.allProductInteractions[index], ...interaction };
-    //     } else {
-    //         this.allProductInteractions.unshift(interaction);
-    //         isNewToList = true;
-    //     }
-    //     if (isNewToList) {
-    //         this.totalScanned++;
-    //     }
-    //     this.allProductInteractions.sort((a, b) => {
-    //       const dateA = new Date((a.isReviewed && a.dateReviewed) ? a.dateReviewed : a.dateScanned).getTime();
-    //       const dateB = new Date((b.isReviewed && b.dateReviewed) ? b.dateReviewed : b.dateScanned).getTime();
-    //       return dateB - dateA;
-    //     });
-    //     saveInteractionsToStorage(this.allProductInteractions);
-    // },
     async saveOrUpdateUserReview(productId: number, reviewData: ReViewDataPayload): Promise<Boolean> {
       this.totalReviewed++; // Manually increment to avoid fetching it again
       const product = this.allProductInteractions.find(item => item.id === productId);

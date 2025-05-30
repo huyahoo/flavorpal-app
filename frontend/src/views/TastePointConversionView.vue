@@ -84,7 +84,6 @@ const mockOthersGifts: { title: string; giftList: PointConversionGift[] } = {
 }
 
 const goBack = () => {
-  /* ... as before ... */
   if (window.history.state.back) {
     router.go(-1)
   } else {
