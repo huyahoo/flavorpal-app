@@ -16,7 +16,7 @@
       />
       <div>
         <p class="font-semibold text-sm text-flavorpal-gray-dark">{{ review.reviewerUsername }}</p>
-        <p class="text-xs text-gray-500">{{ formatDate(review.dateReviewed) }}</p>
+        <p class="text-xs text-gray-500">{{ review.dateReviewed }}</p>
       </div>
     </div>
 

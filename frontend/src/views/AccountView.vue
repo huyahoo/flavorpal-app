@@ -65,7 +65,7 @@
             <p v-if="usernameEditError" id="username-edit-error-acc-view" class="text-xs text-red-600 mt-1">{{ usernameEditError }}</p>
           </form>
           <p v-if="userProfileStore.loading && authStore.user" class="text-xs text-flavorpal-gray animate-pulse mt-1">Loading points...</p>
-          <p v-else-if="!userProfileStore.loading && authStore.user" class="text-sm text-flavorpal-orange font-semibold mt-1">{{ userProfileStore.tastePoints }} TastePoints</p>
+          <router-link to="/point-conversion" v-else-if="!userProfileStore.loading && authStore.user" class="text-sm text-flavorpal-orange font-semibold mt-1">{{ userProfileStore.tastePoints }} TastePoints</router-link>
         </div>
       </section>
 

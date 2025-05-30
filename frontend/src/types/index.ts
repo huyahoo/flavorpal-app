@@ -155,12 +155,13 @@ export interface ScanStatistics {
 }
 
 export interface PublicReviewItem {
-  reviewId: string;          // Unique ID for this public review entry
-  productId: string;         // ID of the product being reviewed
+  reviewId: number;          // Unique ID for this public review entry
+  productId: number;         // ID of the product being reviewed
   productName: string;
-  productImageUrl?: string;
-
-  reviewerId: string;        // ID of the user who wrote the review
+  productImageUrl: string;
+  productBrands: string;
+  productCategories: string;
+  reviewerId: number;        // ID of the user who wrote the review
   reviewerUsername: string;
   reviewerAvatarUrl?: string; // Optional
 
