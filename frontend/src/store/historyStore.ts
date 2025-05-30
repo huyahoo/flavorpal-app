@@ -90,8 +90,8 @@ export const useHistoryStore = defineStore('history', {
         } catch (e) { console.error("Error parsing date for history filtering:", e); }
       }
       return items.sort((a, b) => {
-        const dateA = new Date((a.isReviewed && a.dateReviewed) ? a.dateReviewed : a.dateScanned || '').getTime();
-        const dateB = new Date((b.isReviewed && b.dateReviewed) ? b.dateReviewed : b.dateScanned || '').getTime();
+        const dateA = new Date(a.dateScanned?.replace(", ", " ") || '').getTime();
+        const dateB = new Date(b.dateScanned?.replace(", ", " ") || '').getTime();
         return dateB - dateA;
       });
     },
@@ -103,13 +103,15 @@ export const useHistoryStore = defineStore('history', {
       if (state.filterReviewedStatus === 'scanned_only' && state.filterAiConclusion) count++;
       return count;
     },
-
+    // get recently scanned items from allProductInteractions sort in order newest to oldest
+    // dateScanned return as string e.g: "2025-05-30, 06:29:31"
     getRecentlyScannedItems: (state) => (count: number = 3): ProductInteraction[] => {
       return [...state.allProductInteractions]
           .sort((a, b) => {
-            const dateA = b.dateScanned ? new Date(b.dateScanned).getTime() : 0;
-            const dateB = a.dateScanned ? new Date(a.dateScanned).getTime() : 0;
-            return dateA - dateB;
+            const dateA = new Date(a.dateScanned?.replace(", ", " ") || '').getTime();
+            const dateB = new Date(b.dateScanned?.replace(", ", " ") || '').getTime();
+
+            return dateB - dateA;
           })
           .slice(0, count);
     },
