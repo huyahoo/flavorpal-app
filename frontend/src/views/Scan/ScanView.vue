@@ -51,7 +51,6 @@
 </template>
 
 <script setup lang="ts">
-// ... (script setup remains the same as flavorpal_scan_view_v4_zxing)
 import { ref, onMounted, onUnmounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import type { AiHealthConclusion, ProductInteraction } from '../../types'
@@ -66,10 +65,8 @@ import ErrorDisplay from './components/ErrorDisplay.vue'
 
 import { getProductByBarcodeApi, getProductByImageApi } from '@/services/productService'
 
-// DELETE AFTER BACKEND INTEGRATION
 import { useHistoryStore } from '../../store/historyStore'
 const historyStore = useHistoryStore()
-//////////////////////////////////////
 
 const router = useRouter()
 
