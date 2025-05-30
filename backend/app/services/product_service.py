@@ -135,6 +135,38 @@ def most_similar_img(embedding, db: Session):
         return models.Product(**result)
     return None
 
+def most_similar_img_for_user(
+    embedding: str,
+    current_user_id: int,
+    db: Session
+):
+    threshold = 0.2
+    
+    query = text("""
+        SELECT p.*
+        FROM Products p
+        JOIN History h ON p.id = h.product_id
+        WHERE h.user_id = :current_user_id
+          AND p.image_embedding IS NOT NULL
+          AND (p.image_embedding <=> CAST(:embedding AS vector)) < :threshold
+        ORDER BY (p.image_embedding <=> CAST(:embedding AS vector)) ASC
+        LIMIT 1;
+    """)
+
+    params = {
+        "embedding": embedding,
+        "threshold": threshold,
+        "current_user_id": current_user_id
+    }
+    
+    result_row = db.execute(query, params).mappings().fetchone()
+
+    if result_row:
+        print(f'Most similar product for user {current_user_id} found: type: {type(result_row)}, result: {result_row}')
+        return models.Product(**result_row)
+    
+    print(f'No product found for user {current_user_id} within the similarity threshold.')
+    return None
 
 import numpy as np
 

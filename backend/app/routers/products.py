@@ -137,7 +137,8 @@ def add_by_image(
 ):
     base64image = request.base64image
     embedding = services.get_image_embedding(base64image)
-    product = services.most_similar_img(embedding, db)
+    # product = services.most_similar_img(embedding, db)
+    product = services.most_similar_img_for_user(embedding, current_user.id, db)
     
     is_in_history = False
     if product:
@@ -294,6 +295,7 @@ def get_product_by_barcode(
         return response.not_found(msg="Product not found", code=404)
     
     # Process OpenFoodFacts data
+    image_url = product_data.get("image_url")
     image_ingredients_url = product_data.get("image_ingredients_url")
     image_nutrition_url = product_data.get("image_nutrition_url")
     brands = [brand.strip() for brand in product_data.get("brands", "").split(",")] if product_data.get("brands") else "Unknown"
@@ -303,6 +305,10 @@ def get_product_by_barcode(
     conclusion = "unknown"
     summary = "The image does not contain a product ingredient table to analyze for dietary preferences."
     
+    if image_url:
+        image_base64 = services.image_url_to_base64(image_url)
+        embedding = services.get_image_embedding(image_base64)
+        
     if image_ingredients_url:
         base64_image = services.image_url_to_base64(image_ingredients_url)
         health_flags = [flag.health_flag.name for flag in current_user.user_health_flags]
@@ -311,10 +317,11 @@ def get_product_by_barcode(
     # Create new product in database
     new_product = models.Product(
         barcode=barcode,
-        image_url=product_data.get("image_url"),
+        image_url=image_url,
         name=product_data.get("product_name"),
         generic_name=product_data.get("generic_name"),
         ingredients=json.dumps(product_data.get("ingredients")),
+        image_embedding=embedding,
         categories=categories,
         brands=brands,
         ai_health_summary=summary,
@@ -334,7 +341,6 @@ def get_product_by_barcode(
         )
         db.add(history)
         db.commit()
-    
         
     return Response(
         code=200,
