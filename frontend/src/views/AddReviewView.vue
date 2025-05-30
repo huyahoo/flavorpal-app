@@ -5,7 +5,7 @@
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
       </button>
       <h1 class="text-xl font-semibold text-flavorpal-gray-dark ml-2">
-        {{ isEditing ? 'Edit Review' : 'Create Review' }}
+        {{ reviewData.isReviewed ? 'Edit Review' : 'Create Review' }}
       </h1>
     </header>
 
@@ -80,7 +80,7 @@
             </div>
           </div>
           <p v-else class="text-sm text-flavorpal-gray text-center mb-4">
-            You're about to {{ isEditing ? 'update' : 'add' }} your review for "{{ reviewData.name }}".
+            You're about to {{ reviewData.isReviewed ? 'update' : 'add' }} your review for "{{ reviewData.name }}".
           </p>
         </div>
 
@@ -98,7 +98,7 @@
             :disabled="isNextDisabled"
             class="px-5 py-2.5 text-sm font-medium text-white bg-flavorpal-green hover:bg-flavorpal-green-dark rounded-lg transition-colors disabled:opacity-60"
           >
-            {{ currentStep === totalSteps ? (isEditing ? 'UPDATE REVIEW' : 'DONE') : 'NEXT >' }}
+            {{ currentStep === totalSteps ? (reviewData.isReviewed ? 'UPDATE REVIEW' : 'DONE') : 'NEXT >' }}
           </button>
         </div>
          <p v-if="historyStore.loadingInteractions" class="text-xs text-center text-flavorpal-gray animate-pulse mt-2">Saving review...</p>
@@ -131,10 +131,11 @@ let reviewData = reactive({
   name: '',
   rating: 0,
   note: '',
+  isReviewed: false,
 });
 
 const productId = Number(route.query.editProductId as string || route.query.scanId as string)
-const isEditing = computed(() => !!productId);
+
 const productToReview = ref<ProductInteraction | null>(null);
 
 onMounted(async () => {
@@ -146,6 +147,7 @@ onMounted(async () => {
       reviewData.name = existingItem.name;
       reviewData.rating = existingItem.userRating || 0;
       reviewData.note = existingItem.userNotes || '';
+      reviewData.isReviewed = existingItem.isReviewed || false;
     }
   }
 
