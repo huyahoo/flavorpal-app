@@ -1,5 +1,5 @@
 <template>
-  <main>
+  <main class="flex flex-col items-center">
     <div class="w-20 h-20 items-center justify-center overflow-hidden mb-5">
       <img
         :src="badge.imageUrl"

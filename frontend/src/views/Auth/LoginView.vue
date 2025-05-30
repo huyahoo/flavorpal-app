@@ -77,7 +77,7 @@
       </p>
     </div>
      <footer class="text-center mt-8">
-        <p class="text-xs text-emerald-100">&copy; {{ new Date().getFullYear() }} FlavorPal v1.2.0</p>
+        <p class="text-xs text-emerald-100">&copy; {{ new Date().getFullYear() }} FlavorPal v1.2.1</p>
     </footer>
   </div>
 </template>
