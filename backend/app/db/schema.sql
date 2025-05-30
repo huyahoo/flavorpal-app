@@ -19,8 +19,8 @@ CREATE TABLE Products (
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     generic_name VARCHAR(255),
     ingredients TEXT,
-    categories TEXT[],
-    brands TEXT[],
+    categories TEXT,
+    brands TEXT,
     ai_health_summary TEXT,
     ai_health_conclusion TEXT 
 );

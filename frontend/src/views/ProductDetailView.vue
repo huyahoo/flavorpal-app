@@ -339,6 +339,7 @@ onMounted(() => {
 
 onBeforeRouteLeave(() => {
   historyStore.loadProductInteractions(true);
+  historyStore.loadScanStatistics(true);
 });
 
 watch(() => props.id, (newId, oldId) => {

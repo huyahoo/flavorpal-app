@@ -208,15 +208,13 @@ if __name__ == '__main__':
 
 def generate_ProductDetailsFrontend(product, review):
     if review:
-        brands = ",".join(product.brands) if isinstance(product.brands, list) else product.brands or ""
-        categories = ",".join(product.categories) if isinstance(product.categories, list) else product.categories or ""
         product_details = schemas.ProductDetailsFrontend(
             id=product.id,
             name=product.name,
-            brands=brands,
+            brands=product.brands if product.brands else "Unknown",
             barcode=product.barcode,
             imageUrl=product.image_url,
-            categories=categories,
+            categories=product.categories if product.categories else "Unknown",
             isReviewed=True,
             userRating=review.rating,
             userNotes=review.note,
@@ -226,15 +224,13 @@ def generate_ProductDetailsFrontend(product, review):
             dateReviewed=review.updated_at.strftime("%Y-%m-%d, %H:%M:%S")
         )
     else:
-        brands = ",".join(product.brands) if isinstance(product.brands, list) else product.brands or ""
-        categories = ",".join(product.categories) if isinstance(product.categories, list) else product.categories or ""
         product_details = schemas.ProductDetailsFrontend(
             id=product.id,
             name=product.name,
-            brands=brands,
+            brands=product.brands if product.brands else "Unknown",
             barcode=product.barcode,
             imageUrl=product.image_url,
-            categories=categories,
+            categories=product.categories if product.categories else "Unknown",
             isReviewed=False,
             userRating=None,
             userNotes=None,

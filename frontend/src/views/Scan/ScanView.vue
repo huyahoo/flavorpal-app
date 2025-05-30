@@ -143,6 +143,7 @@ onUnmounted(() => {
 
 onBeforeUnmount(() => {
   historyStore.loadProductInteractions(true);
+  historyStore.loadScanStatistics(true);
 });
 
 </script>
