@@ -52,7 +52,7 @@
 
 <script setup lang="ts">
 // ... (script setup remains the same as flavorpal_scan_view_v4_zxing)
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import type { AiHealthConclusion, ProductInteraction } from '../../types'
 import PhotoCapturer, { type CapturedPhoto } from './components/PhotoCapturer.vue'
@@ -112,9 +112,6 @@ const handleBarcodeSubmission = async (barcodeValue: string) => {
     state.value = 'error'
     errorMessage.value = 'Product not found'
   }
-  // DELETE AFTER BACKEND INTEGRATION
-  // historyStore.addOrUpdateInteraction(productForDisplay.value as ProductInteraction)
-  //////////////////////////////////////
 }
 
 const handleNavigateToProductDetail = () => {
@@ -143,6 +140,10 @@ const handlePhotoCapture = async (photo: CapturedPhoto) => {
 onUnmounted(() => {
   handleResetView()
 })
+
+onBeforeUnmount(() => {
+  historyStore.loadProductInteractions(true);
+});
 
 </script>
 

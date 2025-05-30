@@ -251,8 +251,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch, onBeforeMount } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { ref, onMounted, watch, onBeforeMount } from 'vue';
+import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
 import { useUiStore } from '../store/uiStore';
 import { useHistoryStore } from '../store/historyStore';
 import type { ProductInteraction, AiHealthConclusion } from '../types';
@@ -335,6 +335,10 @@ onBeforeMount(() => {
 
 onMounted(() => {
   loadProductData(props.id);
+});
+
+onBeforeRouteLeave(() => {
+  historyStore.loadProductInteractions(true);
 });
 
 watch(() => props.id, (newId, oldId) => {

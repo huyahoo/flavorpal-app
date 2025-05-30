@@ -92,11 +92,10 @@ export const getProductByBarcodeApi = async (barcode: string): Promise<ApiRespon
  * @returns The product.
  */
 export const getProductByImageApi = async (imgData: CapturedPhoto): Promise<ApiResponse<ProductInteraction>> => {
-  console.log(`SERVICE (getProductByImageApi): Getting product by image with payload:`, imgData);
+  // console.log(`SERVICE (getProductByImageApi): Getting product by image with payload:`, imgData);
   const payload = {
     base64image: imgData.data
   }
-  console.log(imgData.data)
   try {
     const response = await apiClient.post<ApiResponse<ProductInteraction>>(`/products/image`, payload);
     console.log("SERVICE (getProductByImageApi): API call response:", response);
