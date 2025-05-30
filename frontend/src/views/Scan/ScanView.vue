@@ -51,8 +51,7 @@
 </template>
 
 <script setup lang="ts">
-// ... (script setup remains the same as flavorpal_scan_view_v4_zxing)
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import type { AiHealthConclusion, ProductInteraction } from '../../types'
 import PhotoCapturer, { type CapturedPhoto } from './components/PhotoCapturer.vue'
@@ -66,10 +65,8 @@ import ErrorDisplay from './components/ErrorDisplay.vue'
 
 import { getProductByBarcodeApi, getProductByImageApi } from '@/services/productService'
 
-// DELETE AFTER BACKEND INTEGRATION
 import { useHistoryStore } from '../../store/historyStore'
 const historyStore = useHistoryStore()
-//////////////////////////////////////
 
 const router = useRouter()
 
@@ -112,9 +109,6 @@ const handleBarcodeSubmission = async (barcodeValue: string) => {
     state.value = 'error'
     errorMessage.value = 'Product not found'
   }
-  // DELETE AFTER BACKEND INTEGRATION
-  // historyStore.addOrUpdateInteraction(productForDisplay.value as ProductInteraction)
-  //////////////////////////////////////
 }
 
 const handleNavigateToProductDetail = () => {
@@ -143,6 +137,11 @@ const handlePhotoCapture = async (photo: CapturedPhoto) => {
 onUnmounted(() => {
   handleResetView()
 })
+
+onBeforeUnmount(() => {
+  historyStore.loadProductInteractions(true);
+  historyStore.loadScanStatistics(true);
+});
 
 </script>
 
@@ -179,7 +178,6 @@ onUnmounted(() => {
 .aspect-\[16\/9\] {
   aspect-ratio: 16 / 9;
 }
-/* Ensure video element in camera view attempts to fill its container */
 .flex-grow.relative.flex.items-center.justify-center.bg-black video {
   min-width: 100%;
   min-height: 100%;

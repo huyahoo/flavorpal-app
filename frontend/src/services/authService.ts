@@ -16,15 +16,24 @@ import type {
  * @returns A Promise resolving to the backend's ApiResponse containing the created user.
  */
 export const registerUserApi = async (userData: UserCreatePayload): Promise<ApiResponse<User>> => {
-  const payload = {
-      name: userData.name,
-      email: userData.email,
-      password: userData.password,
-      healthFlags: userData.healthFlags,
+  try {
+    const payload = {
+    name: userData.name,
+    email: userData.email,
+    password: userData.password,
+    healthFlags: userData.healthFlags,
   };
   const response = await apiClient.post<ApiResponse<User>>('/users/', payload);
 
   return response.data;
+  } catch (error) {
+    console.error("AuthStore: Register user error:", error);
+    return {
+      code: 400,
+      msg: "Failed to register user",
+      data: null as unknown as User,
+    };
+  }
 };
 
 /**

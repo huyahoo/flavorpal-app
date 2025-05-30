@@ -11,7 +11,7 @@ export const fetchTastePoints = async (): Promise<number> => {
   // Simulate a network delay
   await new Promise(resolve => setTimeout(resolve, 400));
   // Return a static mock value for demonstration
-  return 157; // Dummy TastePoints value
+  return 520; // Dummy TastePoints value
 };
 
 /**

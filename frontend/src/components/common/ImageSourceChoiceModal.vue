@@ -54,7 +54,6 @@ defineEmits(['close', 'selectSource']);
 </script>
 
 <style scoped>
-/* Using same modal fade from ConfirmationModal */
 .modal-fade-enter-active,
 .modal-fade-leave-active {
   transition: opacity 0.25s ease-in-out;

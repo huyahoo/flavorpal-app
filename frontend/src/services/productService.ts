@@ -25,7 +25,7 @@ export const createProductApi = async (payload: ProductInteraction): Promise<Api
     return {
       code: error.response?.status || 500,
       msg: error.response?.data?.detail || error.response?.data?.msg || "Failed to create product.",
-      data: {} as ProductInteraction,
+      data: null as unknown as ProductInteraction,
     };
   }
 };
@@ -36,10 +36,19 @@ export const createProductApi = async (payload: ProductInteraction): Promise<Api
  * @returns The products.
  */
 export const getAllProductsOfCurrentUserApi = async (): Promise<ApiResponse<ProductInteraction[]>> => {
-  console.log("SERVICE (getAllProductsOfCurrentUserApi): Fetching all products of current user...");
-  const response = await apiClient.get<ApiResponse<ProductInteraction[]>>('/products/currentuser/list/products');
-  console.log("SERVICE (getAllProductsOfCurrentUserApi): API call response:", response);
-  return response.data;
+  try {
+    console.log("SERVICE (getAllProductsOfCurrentUserApi): Fetching all products of current user...");
+    const response = await apiClient.get<ApiResponse<ProductInteraction[]>>('/products/currentuser/list/products');
+    console.log("SERVICE (getAllProductsOfCurrentUserApi): API call response:", response);
+    return response.data;
+  } catch (error: any) {
+    console.error("SERVICE (getAllProductsOfCurrentUserApi): API call failed:", error.response?.data || error.message);
+    return {
+      code: error.response?.status || 500,
+      msg: error.response?.data?.detail || error.response?.data?.msg || "Failed to get all products of current user.",
+      data: null as unknown as ProductInteraction[],
+    };
+  }
 };
 
 /**
@@ -61,10 +70,19 @@ export const getAllProductsApi = async (): Promise<ApiResponse<ProductInteractio
  * @returns The product.
  */
 export const getProductByBarcodeApi = async (barcode: string): Promise<ApiResponse<ProductInteraction>> => {
-  console.log(`SERVICE (getProductByBarcodeApi): Fetching product by barcode ${barcode}...`);
-  const response = await apiClient.get<ApiResponse<ProductInteraction>>(`/products/product/${barcode}`);
-  console.log("SERVICE (getProductByBarcodeApi): API call response:", response);
-  return response.data;
+  try {
+    console.log(`SERVICE (getProductByBarcodeApi): Fetching product by barcode ${barcode}...`);
+    const response = await apiClient.get<ApiResponse<ProductInteraction>>(`/products/product/${barcode}`);
+    console.log("SERVICE (getProductByBarcodeApi): API call response:", response);
+    return response.data;
+  } catch (error: any) {
+    console.error("SERVICE (getProductByBarcodeApi): API call failed:", error.response?.data || error.message);
+    return {
+      code: error.response?.status || 500,
+      msg: error.response?.data?.detail || error.response?.data?.msg || "Failed to get product by barcode.",
+      data: null as unknown as ProductInteraction,
+    };
+  }
 };
 
 /**
@@ -74,11 +92,10 @@ export const getProductByBarcodeApi = async (barcode: string): Promise<ApiRespon
  * @returns The product.
  */
 export const getProductByImageApi = async (imgData: CapturedPhoto): Promise<ApiResponse<ProductInteraction>> => {
-  console.log(`SERVICE (getProductByImageApi): Getting product by image with payload:`, imgData);
+  // console.log(`SERVICE (getProductByImageApi): Getting product by image with payload:`, imgData);
   const payload = {
     base64image: imgData.data
   }
-  console.log(imgData.data)
   try {
     const response = await apiClient.post<ApiResponse<ProductInteraction>>(`/products/image`, payload);
     console.log("SERVICE (getProductByImageApi): API call response:", response);
@@ -88,7 +105,7 @@ export const getProductByImageApi = async (imgData: CapturedPhoto): Promise<ApiR
     return {
       code: error.response?.status || 500,
       msg: error.response?.data?.detail || error.response?.data?.msg || "Failed to get product by image.",
-      data: {} as ProductInteraction,
+      data: null as unknown as ProductInteraction,
     };
   }
 };
@@ -100,10 +117,19 @@ export const getProductByImageApi = async (imgData: CapturedPhoto): Promise<ApiR
  * @returns The product health insight.
  */
 export const getProductHealthInsightApi = async (payload: { productId: number, base64Image: string }): Promise<ApiResponse<ProductInteraction>> => {
-  console.log(`SERVICE (getProductHealthInsightApi): Getting product health insight with payload:`, payload);
-  const response = await apiClient.post<ApiResponse<ProductInteraction>>(`/products/health_suggestion`, payload);
-  console.log("SERVICE (getProductHealthInsightApi): API call response:", response);
-  return response.data;
+  try {
+    console.log(`SERVICE (getProductHealthInsightApi): Getting product health insight with payload:`, payload);
+    const response = await apiClient.post<ApiResponse<ProductInteraction>>(`/products/health_suggestion`, payload);
+    console.log("SERVICE (getProductHealthInsightApi): API call response:", response);
+    return response.data;
+  } catch (error: any) {
+    console.error("SERVICE (getProductHealthInsightApi): API call failed:", error.response?.data || error.message);
+    return {
+      code: error.response?.status || 500,
+      msg: error.response?.data?.detail || error.response?.data?.msg || "Failed to get product health insight.",
+      data: null as unknown as ProductInteraction,
+    };
+  }
 };
 
 /**
@@ -113,11 +139,16 @@ export const getProductHealthInsightApi = async (payload: { productId: number, b
  * @returns The product.
  */
 export const getProductByIdApi = async (productId: number): Promise<ProductInteraction> => {
-  console.log(`SERVICE (getProductByIdApi): Fetching product ID ${productId}...`);
-  const response = await apiClient.get<ApiResponse<ProductInteraction>>(`/products/${productId}`);
-  console.log("SERVICE (getProductByIdApi): API call response:", response.data);
+  try {
+    console.log(`SERVICE (getProductByIdApi): Fetching product ID ${productId}...`);
+    const response = await apiClient.get<ApiResponse<ProductInteraction>>(`/products/${productId}`);
+    console.log("SERVICE (getProductByIdApi): API call response:", response.data);
 
-  return response.data.data;
+    return response.data.data;
+  } catch (error: any) {
+    console.error("SERVICE (getProductByIdApi): API call failed:", error.response?.data || error.message);
+    return null as unknown as ProductInteraction;
+  }
 };
 
 /**
@@ -162,10 +193,19 @@ export const updateProductApi = async (productId: number, payload: ProductIntera
  * @returns The added review.
  */
 export const addReviewForProductApi = async (productId: number, payload: ReViewDataPayload): Promise<ApiResponse<ProductInteraction>> => {
-  console.log(`SERVICE (addReviewForProductApi): Adding review for product ID ${productId} with payload:`, payload);
-  const response = await apiClient.post<ApiResponse<ProductInteraction>>(`/reviews/products/${productId}`, payload);
-  console.log("SERVICE (addReviewForProductApi): API call response:", response);
-  return response.data;
+  try {
+    console.log(`SERVICE (addReviewForProductApi): Adding review for product ID ${productId} with payload:`, payload);
+    const response = await apiClient.post<ApiResponse<ProductInteraction>>(`/reviews/products/${productId}`, payload);
+    console.log("SERVICE (addReviewForProductApi): API call response:", response);
+    return response.data;
+  } catch (error: any) {
+    console.error("SERVICE (addReviewForProductApi): API call failed:", error.response?.data || error.message);
+    return {
+      code: error.response?.status || 500,
+      msg: error.response?.data?.detail || error.response?.data?.msg || "Failed to add review for product.",
+      data: null as unknown as ProductInteraction,
+    };
+  }
 };
 
 /**
@@ -176,10 +216,19 @@ export const addReviewForProductApi = async (productId: number, payload: ReViewD
  * @returns The updated review.
  */
 export const updateReviewForProductApi = async (productId: number, payload: ReViewDataPayload): Promise<ApiResponse<ProductInteraction>> => {
-  console.log(`SERVICE (updateReviewForProductApi): Updating review for product ID ${productId} with payload:`, payload);
-  const response = await apiClient.patch<ApiResponse<ProductInteraction>>(`/reviews/products/${productId}`, payload);
-  console.log("SERVICE (updateReviewForProductApi): API call response:", response);
-  return response.data;
+  try {
+    console.log(`SERVICE (updateReviewForProductApi): Updating review for product ID ${productId} with payload:`, payload);
+    const response = await apiClient.patch<ApiResponse<ProductInteraction>>(`/reviews/products/${productId}`, payload);
+    console.log("SERVICE (updateReviewForProductApi): API call response:", response);
+    return response.data;
+  } catch (error: any) {
+    console.error("SERVICE (updateReviewForProductApi): API call failed:", error.response?.data || error.message);
+    return {
+      code: error.response?.status || 500,
+      msg: error.response?.data?.detail || error.response?.data?.msg || "Failed to update review for product.",
+      data: null as unknown as ProductInteraction,
+    };
+  }
 };
 
 /**

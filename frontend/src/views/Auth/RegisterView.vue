@@ -3,7 +3,7 @@
     <div class="w-full max-w-md bg-white p-6 sm:p-10 rounded-2xl shadow-2xl transform transition-all hover:scale-105 duration-300 ease-in-out">
       <div class="text-center mb-8">
         <div class="inline-block p-3 bg-flavorpal-green rounded-full mb-4 shadow-lg">
-          <img src="@/assets/flavorpal-logo.svg" alt="FlavorPal Logo" class="w-12 h-12" />
+          <img loading="lazy" src="@/assets/flavorpal-logo.svg" alt="FlavorPal Logo" class="w-12 h-12" />
         </div>
         <h1 class="text-3xl font-bold text-flavorpal-gray-dark tracking-tight">Create Your Account</h1>
         <p class="text-flavorpal-gray mt-2 text-sm">Join FlavorPal and start your culinary adventure!</p>

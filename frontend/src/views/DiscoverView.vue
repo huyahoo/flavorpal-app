@@ -48,21 +48,40 @@
         {{ discoverStore.error }}
       </p>
     </main>
+
+    <UpcomingFeatureModal
+      v-if="isUpcomingModalOpen"
+      :isOpen="isUpcomingModalOpen"
+      :featureName="upcomingFeatureName"
+      @close="isUpcomingModalOpen = false"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useDiscoverStore } from '../store/discoverStore';
-import PublicReviewCard from '@/components/discover/PublicReviewCard.vue'; // Adjust path if needed
+import PublicReviewCard from '@/components/discover/PublicReviewCard.vue';
+import UpcomingFeatureModal from '@/components/common/UpcomingFeatureModal.vue';
 
 const discoverStore = useDiscoverStore();
 
+const isUpcomingModalOpen = ref(false);
+const upcomingFeatureName = ref('');
+
+const showUpcomingFeatureModal = (feature: string) => {
+  upcomingFeatureName.value = feature;
+  isUpcomingModalOpen.value = true;
+};
 onMounted(() => {
   // Load initial set of reviews if the list is empty
   if (discoverStore.publicReviews.length === 0) {
     discoverStore.loadPublicReviews(true); // Pass true for forceRefresh on initial load
   }
+
+  setTimeout(() => {
+    showUpcomingFeatureModal('Discover');
+  }, 500);
 });
 
 const loadMoreReviews = () => {
@@ -71,9 +90,4 @@ const loadMoreReviews = () => {
 </script>
 
 <style scoped>
-/* Ensure main content area scrolls if DiscoverView itself is taller than viewport (within App.vue's flex-grow) */
-main {
-    /* max-height: calc(100vh - (HEADER_HEIGHT + BOTTOM_NAV_HEIGHT_IF_VISIBLE)); */
-    /* This is tricky to get right without JS, relying on App.vue's structure is better */
-}
 </style>

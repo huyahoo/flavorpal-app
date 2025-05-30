@@ -135,6 +135,38 @@ def most_similar_img(embedding, db: Session):
         return models.Product(**result)
     return None
 
+def most_similar_img_for_user(
+    embedding: str,
+    current_user_id: int,
+    db: Session
+):
+    threshold = 0.2
+    
+    query = text("""
+        SELECT p.*
+        FROM Products p
+        JOIN History h ON p.id = h.product_id
+        WHERE h.user_id = :current_user_id
+          AND p.image_embedding IS NOT NULL
+          AND (p.image_embedding <=> CAST(:embedding AS vector)) < :threshold
+        ORDER BY (p.image_embedding <=> CAST(:embedding AS vector)) ASC
+        LIMIT 1;
+    """)
+
+    params = {
+        "embedding": embedding,
+        "threshold": threshold,
+        "current_user_id": current_user_id
+    }
+    
+    result_row = db.execute(query, params).mappings().fetchone()
+
+    if result_row:
+        print(f'Most similar product for user {current_user_id} found: type: {type(result_row)}, result: {result_row}')
+        return models.Product(**result_row)
+    
+    print(f'No product found for user {current_user_id} within the similarity threshold.')
+    return None
 
 import numpy as np
 
@@ -182,7 +214,7 @@ def get_AI_product_info(base64image):
 def get_AI_health_suggestion(base64image, health_flags):
     payload = {
         "image": base64image,
-        "dietaryPref": health_flags
+        "dietaryPref": ",".join(health_flags)
     }
     headers = {
         "Content-Type": "application/json"
@@ -208,15 +240,13 @@ if __name__ == '__main__':
 
 def generate_ProductDetailsFrontend(product, review):
     if review:
-        brands = ",".join(product.brands) if isinstance(product.brands, list) else product.brands or ""
-        categories = ",".join(product.categories) if isinstance(product.categories, list) else product.categories or ""
         product_details = schemas.ProductDetailsFrontend(
             id=product.id,
             name=product.name,
-            brands=brands,
+            brands=product.brands if product.brands else "Unknown",
             barcode=product.barcode,
             imageUrl=product.image_url,
-            categories=categories,
+            categories=product.categories if product.categories else "Unknown",
             isReviewed=True,
             userRating=review.rating,
             userNotes=review.note,
@@ -226,15 +256,13 @@ def generate_ProductDetailsFrontend(product, review):
             dateReviewed=review.updated_at.strftime("%Y-%m-%d, %H:%M:%S")
         )
     else:
-        brands = ",".join(product.brands) if isinstance(product.brands, list) else product.brands or ""
-        categories = ",".join(product.categories) if isinstance(product.categories, list) else product.categories or ""
         product_details = schemas.ProductDetailsFrontend(
             id=product.id,
             name=product.name,
-            brands=brands,
+            brands=product.brands if product.brands else "Unknown",
             barcode=product.barcode,
             imageUrl=product.image_url,
-            categories=categories,
+            categories=product.categories if product.categories else "Unknown",
             isReviewed=False,
             userRating=None,
             userNotes=None,

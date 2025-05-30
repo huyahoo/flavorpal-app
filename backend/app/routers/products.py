@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app import models, schemas, services
@@ -26,15 +25,13 @@ def get_all_products(db: Session = Depends(get_db),current_user: models.User = D
     for product in products:
         review = db.query(models.Review).filter(models.Review.product_id == product.id, models.Review.user_id == user_id).first()
         if review:
-            brands = ",".join(product.brands) if isinstance(product.brands, list) else product.brands or ""
-            categories = ",".join(product.categories) if isinstance(product.categories, list) else product.categories or ""
             product_info = schemas.ProductDetailsFrontend(
                 id=product.id,
                 name=product.name,
-                brands=brands,
+                brands=product.brands if product.brands else "Unknown",
                 barcode=product.barcode,
                 imageUrl=product.image_url,
-                categories=categories,
+                categories=product.categories if product.categories else "Unknown",
                 isReviewed=True,
                 userRating=review.rating,
                 userNotes=review.note,
@@ -44,15 +41,13 @@ def get_all_products(db: Session = Depends(get_db),current_user: models.User = D
                 dateReviewed=review.updated_at.strftime("%Y-%m-%d, %H:%M:%S")
             )
         else:
-            brands = ",".join(product.brands) if isinstance(product.brands, list) else product.brands or ""
-            categories = ",".join(product.categories) if isinstance(product.categories, list) else product.categories or ""
             product_info = schemas.ProductDetailsFrontend(
                 id=product.id,
                 name=product.name,
-                brands=brands,
+                brands=product.brands if product.brands else "Unknown",
                 barcode=product.barcode,
                 imageUrl=product.image_url,
-                categories=categories,
+                categories=product.categories if product.categories else "Unknown",
                 isReviewed=False,
                 userRating=None,
                 userNotes=None,
@@ -73,15 +68,13 @@ def get_product(product_id: int, db: Session = Depends(get_db),current_user: mod
     review = db.query(models.Review).filter(models.Review.product_id == product_id, models.Review.user_id == user_id).first()
     product_details = None
     if review:
-        brands = ",".join(product.brands) if isinstance(product.brands, list) else product.brands or ""
-        categories = ",".join(product.categories) if isinstance(product.categories, list) else product.categories or ""
         product_details = schemas.ProductDetailsFrontend(
             id=product.id,
             name=product.name,
-            brands=brands,
+            brands=product.brands if product.brands else "Unknown",
             barcode=product.barcode,
             imageUrl=product.image_url,
-            categories=categories,
+            categories=product.categories if product.categories else "Unknown",
             isReviewed=True,
             userRating=review.rating,
             userNotes=review.note,
@@ -91,15 +84,13 @@ def get_product(product_id: int, db: Session = Depends(get_db),current_user: mod
             dateReviewed=review.updated_at.strftime("%Y-%m-%d, %H:%M:%S")
         )
     else:
-        brands = ",".join(product.brands) if isinstance(product.brands, list) else product.brands or ""
-        categories = ",".join(product.categories) if isinstance(product.categories, list) else product.categories or ""
         product_details = schemas.ProductDetailsFrontend(
             id=product.id,
             name=product.name,
-            brands=brands,
+            brands=product.brands if product.brands else "Unknown",
             barcode=product.barcode,
             imageUrl=product.image_url,
-            categories=categories,
+            categories=product.categories if product.categories else "Unknown",
             isReviewed=False,
             userRating=None,
             userNotes=None,
@@ -139,12 +130,22 @@ def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)
     return Response(code=200, data=product_info, msg="Product created successfully")
 
 @router.post("/image", response_model=Response[schemas.ProductDetailsFrontend])
-def add_by_image(request: schemas.ProductImageRequest,  db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+def add_by_image(
+    request: schemas.ProductImageRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
     base64image = request.base64image
     embedding = services.get_image_embedding(base64image)
-    product = services.most_similar_img(embedding, db)
+    # product = services.most_similar_img(embedding, db)
+    product = services.most_similar_img_for_user(embedding, current_user.id, db)
     
+    is_in_history = False
     if product:
+        is_in_history = db.query(models.History).filter(models.History.product_id == product.id, models.History.user_id == current_user.id).first() is not None
+    
+    if product and is_in_history:
+        print("product found in DB?")
         print(f"Most similar product id: {product.id}, name: {product.name}")
         user_id = current_user.id
         review = db.query(models.Review).filter(models.Review.product_id == product.id, models.Review.user_id == user_id).first()
@@ -154,12 +155,11 @@ def add_by_image(request: schemas.ProductImageRequest,  db: Session = Depends(ge
         image_url = services.upload_image_to_bucket(base64image)
         product_name, product_manufacturer, product_description = services.get_AI_product_info(base64image)
         
-        
         db_product = models.Product(
             name=product_name,
             image_url=image_url,
             image_embedding=embedding,
-            brands=[product_manufacturer],
+            brands=product_manufacturer,
             ai_health_summary=product_description,
             ai_health_conclusion="unknown",
         )
@@ -167,6 +167,15 @@ def add_by_image(request: schemas.ProductImageRequest,  db: Session = Depends(ge
         db.commit()
         db.refresh(db_product)
         
+        if not is_in_history:
+            history = models.History(
+                product_id=db_product.id,
+                user_id=current_user.id,
+                scanned_at=datetime.utcnow()
+            )
+            db.add(history)
+            db.commit()
+            
         product_details = schemas.ProductDetailsFrontend(
             id=db_product.id,
             name=db_product.name,
@@ -187,26 +196,27 @@ def add_by_image(request: schemas.ProductImageRequest,  db: Session = Depends(ge
 
 @router.get("/currentuser/list/products", response_model=Response[List[schemas.ProductDetailsFrontend]])
 def get_current_user_products(db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):
-    products = db.query(models.Review).filter(models.Review.user_id == current_user.id).all()
+    history = db.query(models.History).filter(models.History.user_id == current_user.id).all()
     product_details = []
-    for product in products:
-        brands = ",".join(product.product.brands) if isinstance(product.product.brands, list) else product.product.brands or ""
-        categories = ",".join(product.product.categories) if isinstance(product.product.categories, list) else product.product.categories or ""
+    for record in history:
+        product = record.product
+        review = db.query(models.Review).filter(models.Review.product_id == product.id, models.Review.user_id == current_user.id).first()
         product_details.append(schemas.ProductDetailsFrontend(
-            id=product.product.id,
-            name=product.product.name,
-            brands=brands,
-            barcode=product.product.barcode,
-            imageUrl=product.product.image_url,
-            categories=categories,
-            isReviewed=True,
-            userRating=product.rating,
-            userNotes=product.note,
-            aiHealthSummary=product.product.ai_health_summary if product.product.ai_health_summary else "The image does not contain a product ingredient table to analyze for dietary preferences.",
-            aiHealthConclusion=product.product.ai_health_conclusion if product.product.ai_health_conclusion else "unknown",
-            dateScanned=product.product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
-            dateReviewed=product.updated_at.strftime("%Y-%m-%d, %H:%M:%S")
+            id=product.id,
+            name=product.name,
+            brands=product.brands if product.brands else "Unknown",
+            barcode=product.barcode,
+            imageUrl=product.image_url,
+            categories=product.categories if product.categories else "Unknown",
+            isReviewed=bool(review),
+            userRating=review.rating if review else None,
+            userNotes=review.note if review else None,
+            aiHealthSummary=product.ai_health_summary if product.ai_health_summary else "The image does not contain a product ingredient table to analyze for dietary preferences.",
+            aiHealthConclusion=product.ai_health_conclusion if product.ai_health_conclusion else "unknown",
+            dateScanned=product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
+            dateReviewed=review.updated_at.strftime("%Y-%m-%d, %H:%M:%S") if review else None
         ))
+    
     return Response(code=200, data=product_details, msg="Products fetched successfully")
 
 # @router.patch("/{product_id}", response_model=Response[schemas.ProductOut])
@@ -234,72 +244,123 @@ def get_product_by_barcode(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
+    # First check if product exists in database
     product = db.query(models.Product).filter(models.Product.barcode == barcode).first()
-
-    OPEN_FOOD_FACTS_URL = f"https://world.openfoodfacts.org/api/v2/product/{barcode}.json"
-    image_ingredients_url = None
-    image_nutrition_url = None
-    product_info = None
-    brands = None
-    categories = None
-    if requests.get(OPEN_FOOD_FACTS_URL).status_code != 200 and not product:
-        return response.not_found(msg="Product not found",code=404)
+    is_in_history = False
     
-    if requests.get(OPEN_FOOD_FACTS_URL).status_code == 200:
-        data = requests.get(OPEN_FOOD_FACTS_URL).json()
-        product_data = data.get("product",{})
-        if product_data:
-            if product_data.get("image_ingredients_url"):
-                image_ingredients_url = product_data.get("image_ingredients_url")
-            if product_data.get("image_nutrition_url"):
-                image_nutrition_url = product_data.get("image_nutrition_url")
-            if product_data.get("brands"):
-                brands = [brand.strip() for brand in product_data.get("brands").split(",")]
-            if product_data.get("categories"):
-                categories = [category.strip() for category in product_data.get("categories").split(",")]
-
-    if not product and product_data:
-        product = models.Product(
-            barcode=barcode,
-            image_url=product_data.get("image_url"),
-            name=product_data.get("product_name"),
-            generic_name=product_data.get("generic_name"),
-            ingredients=json.dumps(product_data.get("ingredients")),
-            categories=categories,
-            brands=brands,
-        )
-        db.add(product)
-        db.commit()
-        db.refresh(product)
-    review = None
+    # Check if product is in history
     if product:
-        review = db.query(models.Review).filter(models.Review.product_id == product.id, models.Review.user_id == current_user.id).first()
+        is_in_history = db.query(models.History).filter(models.History.product_id == product.id, models.History.user_id == current_user.id).first() is not None
         
-    # base64_image = services.image_url_to_base64(image_ingredients_url)
-    # health_flags = current_user.user_health_flags
-    # health_flags = [flag.health_flag.name for flag in health_flags]
-    # conclusion, summary = services.get_AI_health_suggestion(base64_image, health_flags)
-    # product.ai_health_summary = summary
-    # product.ai_health_conclusion = conclusion
-    # product.last_updated = datetime.utcnow()
-    # db.commit()
+    if product and is_in_history:
+        # Get user's review if exists
+        review = db.query(models.Review).filter(
+            models.Review.product_id == product.id, 
+            models.Review.user_id == current_user.id
+        ).first()
+        
+        product_info = schemas.ProductDetailsThroughBarcodeOut(
+            id=product.id,
+            name=product.name,
+            barcode=barcode,
+            brands=product.brands if product.brands else "Unknown",
+            categories=product.categories if product.categories else "Unknown",
+            imageUrl = product.image_url,
+            # imageIngredientsUrl = None,
+            # imageNutritionUrl = None,
+            isReviewed = review is not None,
+            dateScanned = product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
+            likesCount = review.likes_count if review else 0,
+            aiHealthSummary = product.ai_health_summary if product.ai_health_summary else "The image does not contain a product ingredient table to analyze for dietary preferences.",
+            aiHealthConclusion = product.ai_health_conclusion if product.ai_health_conclusion else "unknown",
+        )
+        
+        return Response(
+            code=200,
+            data=product_info,
+            msg="Product fetched successfully"
+        )
+
+    # If product not in DB, fetch from OpenFoodFacts
+    OPEN_FOOD_FACTS_URL = f"https://world.openfoodfacts.org/api/v2/product/{barcode}.json"
+    response_off = requests.get(OPEN_FOOD_FACTS_URL)
     
-    product_info = schemas.ProductDetailsThroughBarcodeOut(
-        id=product.id if product else None,
-        name=product.name if product else product_data.get("product_name"),
-        barcode = barcode,
-        brands=product_data.get("brands"),
-        categories = product_data.get("categories"),
-        imageUrl = product.image_url if product else product_data.get("image_url"),
-        imageIngredientsUrl = image_ingredients_url,
-        imageNutritionUrl = image_nutrition_url,
-        isReviewed = review is not None,
-        dateScanned = product.last_updated.strftime("%Y-%m-%d, %H:%M:%S") if product else None,
-        likesCount = review.likes_count if review else 0,
-        aiHealthSummary = product.ai_health_summary if product.ai_health_summary else "The image does not contain a product ingredient table to analyze for dietary preferences.",
-        aiHealthConclusion = product.ai_health_conclusion if product.ai_health_conclusion else "unknown",
+    if response_off.status_code != 200:
+        return response.not_found(msg="Product not found", code=404)
+    
+    data = response_off.json()
+    product_data = data.get("product", {})
+    
+    if not product_data:
+        return response.not_found(msg="Product not found", code=404)
+    
+    # Process OpenFoodFacts data
+    image_url = product_data.get("image_url")
+    image_ingredients_url = product_data.get("image_ingredients_url")
+    image_nutrition_url = product_data.get("image_nutrition_url")
+    brands = product_data.get("brands") if product_data.get("brands") else "Unknown"
+    categories = product_data.get("categories") if product_data.get("categories") else "Unknown"
+    
+    # Get AI health analysis if ingredients image available
+    conclusion = "unknown"
+    summary = "The image does not contain a product ingredient table to analyze for dietary preferences."
+    
+    if image_url:
+        image_base64 = services.image_url_to_base64(image_url)
+        embedding = services.get_image_embedding(image_base64)
+        
+    if image_ingredients_url:
+        base64_image = services.image_url_to_base64(image_ingredients_url)
+        health_flags = [flag.health_flag.name for flag in current_user.user_health_flags]
+        conclusion, summary = services.get_AI_health_suggestion(base64_image, health_flags)
+
+    # Create new product in database
+    new_product = models.Product(
+        barcode=barcode,
+        image_url=image_url,
+        name=product_data.get("product_name"),
+        generic_name=product_data.get("generic_name"),
+        ingredients=json.dumps(product_data.get("ingredients")),
+        image_embedding=embedding,
+        categories=categories,
+        brands=brands,
+        ai_health_summary=summary,
+        ai_health_conclusion=conclusion,
+        last_updated=datetime.utcnow()
     )
-    return Response(code=200, data=product_info, msg="Product fetched successfully")
+    db.add(new_product)
+    db.commit()
+    db.refresh(new_product)
+    
+    # Add to user's scan history
+    if not is_in_history:
+        history = models.History(
+            product_id=new_product.id,
+            user_id=current_user.id,
+            scanned_at=datetime.utcnow()
+        )
+        db.add(history)
+        db.commit()
+        
+    return Response(
+        code=200,
+        data=schemas.ProductDetailsThroughBarcodeOut(
+            id=new_product.id,
+            name=new_product.name,
+            barcode=barcode,
+            brands=new_product.brands if new_product.brands else "Unknown",
+            categories=new_product.categories if new_product.categories else "Unknown",
+            imageUrl=new_product.image_url,
+            imageIngredientsUrl=image_ingredients_url,
+            imageNutritionUrl=image_nutrition_url,
+            isReviewed=False,
+            dateScanned=new_product.last_updated.strftime("%Y-%m-%d, %H:%M:%S"),
+            likesCount=0,
+            aiHealthSummary=summary,
+            aiHealthConclusion=conclusion,
+        ),
+        msg="Product fetched successfully"
+    )
 
 @router.post("/health_suggestion", response_model=Response[schemas.ProductDetailsFrontend])
 def update_ai_health_suggestion(
@@ -325,14 +386,15 @@ def update_ai_health_suggestion(
         models.Review.product_id == product.id,
         models.Review.user_id == current_user.id
     ).first()
+    
 
     product_details = schemas.ProductDetailsFrontend(
         id=product.id,
         name=product.name,
-        brands=product.brands,
+        brands=product.brands if product.brands else "Unknown",
         barcode=product.barcode,
         imageUrl=product.image_url,
-        categories=product.categories,
+        categories=product.categories if product.categories else "Unknown",
         isReviewed=bool(review),
         userRating=review.rating if review else None,
         userNotes=review.note if review else None,

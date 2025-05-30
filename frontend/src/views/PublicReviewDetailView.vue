@@ -16,19 +16,36 @@
       <div v-else-if="review" class="space-y-6">
         <section class="bg-white p-5 rounded-xl shadow-xl space-y-4">
           <div class="flex items-center space-x-3 border-b border-gray-100 pb-4">
-            <img :src="review.reviewerAvatarUrl || defaultAvatar" :alt="`${review.reviewerUsername}'s avatar`" class="w-12 h-12 rounded-full object-cover bg-gray-200" onerror="this.src='https://placehold.co/48x48/E5E7EB/4B5563?text=??&font=roboto';"/>
+            <img loading="lazy" :src="review.reviewerAvatarUrl || defaultAvatar" :alt="`${review.reviewerUsername}'s avatar`" class="w-12 h-12 rounded-full object-cover bg-gray-200" onerror="this.src='https://placehold.co/48x48/E5E7EB/4B5563?text=??&font=roboto';"/>
             <div>
               <p class="font-semibold text-lg text-flavorpal-gray-dark">{{ review.reviewerUsername }}</p>
-              <p class="text-xs text-gray-500">Reviewed on {{ formatDate(review.dateReviewed) }}</p>
+              
+              <p class="text-xs text-gray-500">Reviewed on {{ review.dateReviewed }}</p>
             </div>
           </div>
 
           <div>
               <h2 class="text-2xl font-bold text-flavorpal-gray-dark mb-2">{{ review.productName }}</h2>
-              <div v-if="review.productImageUrl" class="w-full aspect-[16/9] bg-gray-100 rounded-lg overflow-hidden mb-3">
-                  <img :src="review.productImageUrl" :alt="review.productName" class="w-full h-full object-contain" onerror="this.style.display='none'; this.parentElement.innerHTML = '<div class=\'w-full h-full flex items-center justify-center bg-gray-200 text-gray-400\'><svg class=\'w-16 h-16\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M4...Z\'></path></svg></div>';"/>
+
+              <div v-if="review.productBrands" class="mt-1 mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span class="text-sm text-flavorpal-gray-dark font-medium leading-tight">
+                    {{ review.productBrands.length > 1 ? 'Brands:' : 'Brand:' }}
+                  </span>
+                  <span
+                    class="inline-block bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold px-2 py-0.5 rounded-full transition-colors"
+                  >
+                    {{ review.productBrands }}
+                  </span>
               </div>
-              <StarRating :rating="review.userRating" starSize="w-6 h-6" class="mb-3"/>
+
+              <div v-if="review.productImageUrl" class="w-full aspect-[16/9] bg-gray-100 rounded-lg overflow-hidden mb-3">
+                  <img loading="lazy" :src="review.productImageUrl" :alt="review.productName" class="w-full h-full object-contain" onerror="this.style.display='none'; this.parentElement.innerHTML = '<div class=\'w-full h-full flex items-center justify-center bg-gray-200 text-gray-400\'><svg class=\'w-16 h-16\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M4...Z\'></path></svg></div>';"/>
+              </div>
+
+              <div class="flex items-center mb-1">
+                  <StarRating :rating="review.userRating" starSize="w-5 h-5 sm:w-6 sm:h-6"/>
+                  <span v-if="typeof review.userRating === 'number'" class="ml-2 text-sm text-gray-600">({{ review.userRating.toFixed(1) }} stars)</span>
+              </div>
           </div>
 
           <div>
@@ -43,6 +60,20 @@
             </svg>
               {{ localLikeCount }} people found this helpful
             </button>
+          </div>
+        </section>
+
+        <section v-if="review.productCategories" class="bg-white p-5 rounded-xl shadow-lg">
+          <h3 class="text-lg font-semibold text-flavorpal-gray-dark mb-3">Categories</h3>
+          <div class="flex flex-wrap gap-2">
+            <span
+              v-for="(category, index) in review.productCategories.split(',')"
+              :key="`category-${index}`"
+              class="inline-block bg-flavorpal-green-light hover:bg-flavorpal-green text-flavorpal-green-dark text-sm font-medium px-3 py-1.5 rounded-lg shadow-sm transition-colors"
+              @click="navigateToCategory(category)"
+            >
+              {{ category }}
+            </span>
           </div>
         </section>
 
@@ -85,6 +116,13 @@
          <button @click="goBack" class="mt-4 text-flavorpal-green hover:underline">Go Back</button>
       </div>
     </main>
+
+    <UpcomingFeatureModal
+        :is-open="isUpcomingModalOpen"
+        :feature-name="upcomingFeatureName"
+        @close="isUpcomingModalOpen = false"
+    />
+    
   </div>
 </template>
 
@@ -95,10 +133,11 @@ import { useDiscoverStore } from '../store/discoverStore';
 import { useHistoryStore } from '../store/historyStore'; // To get product interaction details
 import type { PublicReviewItem, ProductInteraction, AiHealthConclusion } from '../types';
 import StarRating from '@/components/common/StarRating.vue';
-import SmallPublicReviewCard from '@/components/discover/SmallPublicReviewCard.vue'; // Import new component
+import SmallPublicReviewCard from '@/components/discover/SmallPublicReviewCard.vue';
+import UpcomingFeatureModal from '@/components/common/UpcomingFeatureModal.vue';
 
 const props = defineProps<{
-  reviewId: string; 
+  reviewId: number; 
 }>();
 
 const discoverStore = useDiscoverStore();
@@ -114,7 +153,15 @@ const defaultAvatar = 'https://placehold.co/48x48/E5E7EB/4B5563?text=??&font=rob
 const localLikeCount = ref(0);
 const isLikedLocally = ref(false); 
 
-const loadData = async (currentReviewId: string) => {
+const isUpcomingModalOpen = ref(false);
+const upcomingFeatureName = ref('');
+
+const showUpcomingFeatureModal = (feature: string) => {
+  upcomingFeatureName.value = feature;
+  isUpcomingModalOpen.value = true;
+};
+
+const loadData = async (currentReviewId: number) => {
     await discoverStore.loadSingleReviewDetail(currentReviewId);
     if (review.value) {
         localLikeCount.value = review.value.likeCount;
@@ -124,7 +171,7 @@ const loadData = async (currentReviewId: string) => {
         if (historyStore.allProductInteractions.length === 0 && !historyStore.loadingInteractions) {
             await historyStore.loadProductInteractions();
         }
-        productInteractionDetails.value = await historyStore.getProductInteractionById(Number(review.value.productId));
+        productInteractionDetails.value = await historyStore.getProductInteractionById(review.value.productId);
     }
 };
 
@@ -139,17 +186,21 @@ watch(() => props.reviewId, (newId) => {
     }
 });
 
-const formatDate = (dateString: string) => { /* ... as before ... */ 
+const formatDate = (dateString: string) => {
     try { return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch(e) { return dateString; }
 };
-const toggleLike = () => { /* ... as before ... */ 
+const toggleLike = () => {
     if (!review.value) return;
     if (isLikedLocally.value) { localLikeCount.value--; } else { localLikeCount.value++; }
     isLikedLocally.value = !isLikedLocally.value;
     discoverStore.likeReview(props.reviewId);
 };
-const goBack = () => { /* ... as before ... */ 
+const goBack = () => {
     if (window.history.state.back) { router.go(-1); } else { router.push({ name: 'Discover' }); }
+};
+
+const navigateToCategory = (category: string) => {
+  showUpcomingFeatureModal('Category: ' + category);
 };
 
 // AI Conclusion Styling Helpers (can be moved to a utility file)

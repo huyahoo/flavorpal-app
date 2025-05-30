@@ -66,8 +66,8 @@ const initializeScanner = async () => {
     stream.value = await navigator.mediaDevices.getUserMedia({ 
       video: { 
         facingMode: 'environment',
-        width: { ideal: 320 }, 
-        height: { ideal: 480 }
+        width: { ideal: 1440 }, 
+        height: { ideal: 1880 }
       } 
     });
     isCameraActive.value = true; 

@@ -103,9 +103,6 @@ const setSeenInstallPrompt = () => {
 };
 
 onMounted(() => {
-  console.log("isIOS()", isIOS());
-  console.log("isInStandaloneMode()", isInStandaloneMode());
-  console.log("hasSeenInstallPrompt()", hasSeenInstallPrompt());
   if (isIOS() && !isInStandaloneMode() && !hasSeenInstallPrompt()) {
     setTimeout(() => {
       showInstallPromptModal.value = true;

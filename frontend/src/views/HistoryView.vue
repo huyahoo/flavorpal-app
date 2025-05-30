@@ -196,7 +196,7 @@ const searchQuery = computed({
 onMounted(() => {
   // Load product interactions if not already loaded or if forced
   // The store action itself can decide if it needs to re-fetch.
-  historyStore.loadProductInteractions(true);
+  historyStore.loadProductInteractions();
 });
 
 // --- Event Handlers ---

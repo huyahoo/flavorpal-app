@@ -39,7 +39,6 @@ export default {
       },
       fontFamily: {
         // Example: Using Inter as the primary sans-serif font
-        // Ensure 'Inter' is imported via a CDN or local font files if you uncomment this
         // sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', '"Noto Sans"', 'sans-serif', '"Apple Color Emoji"', '"Segoe UI Emoji"', '"Segoe UI Symbol"', '"Noto Color Emoji"'],
       },
       borderRadius: {

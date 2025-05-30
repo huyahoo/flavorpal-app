@@ -3,7 +3,7 @@
     <div class="w-full max-w-sm bg-white p-6 sm:p-10 rounded-2xl shadow-2xl transform transition-all hover:scale-105 duration-300 ease-in-out">
       <div class="text-center mb-8">
         <div class="inline-block p-3 bg-flavorpal-green rounded-full mb-4 shadow-lg">
-          <img src="@/assets/flavorpal-logo.svg" alt="FlavorPal Logo" class="w-12 h-12" />
+          <img loading="lazy" src="@/assets/flavorpal-logo.svg" alt="FlavorPal Logo" class="w-12 h-12" />
         </div>
         <h1 class="text-3xl font-bold text-flavorpal-gray-dark tracking-tight">Welcome Back!</h1>
         <p class="text-flavorpal-gray mt-2 text-sm">Log in to your FlavorPal account.</p>
@@ -77,7 +77,7 @@
       </p>
     </div>
      <footer class="text-center mt-8">
-        <p class="text-xs text-emerald-100">&copy; {{ new Date().getFullYear() }} FlavorPal v1.0.3</p>
+        <p class="text-xs text-emerald-100">&copy; {{ new Date().getFullYear() }} FlavorPal v1.2.0</p>
     </footer>
   </div>
 </template>

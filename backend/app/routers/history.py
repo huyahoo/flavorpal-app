@@ -10,6 +10,18 @@ router = APIRouter(
     tags=["History"]
 )
 
+@router.get("/", response_model=Response[List[schemas.HistoryOut]])
+def get_all_history(db: Session = Depends(get_db)):
+    histories = db.query(models.History).all()
+    history_list = []
+    for history in histories:
+        history_list.append(schemas.HistoryOut(
+            id=history.id,
+            productId=history.product.id,
+            scannedAt=history.scanned_at,
+        )) 
+    return Response(code=200, data=history_list, msg="History fetched successfully")
+
 @router.get("users/{user_id}/", response_model=Response[List[schemas.HistoryOut]])
 def get_user_history(user_id: int, db: Session = Depends(get_db)):
     histories = db.query(models.History).filter(models.History.user_id == user_id).all()
@@ -30,3 +42,4 @@ def delete_user_history(user_id: int, db: Session = Depends(get_db)):
     db.query(models.History).filter(models.History.user_id == user_id).delete()
     db.commit()
     return Response(code=200, msg="History deleted successfully")
+

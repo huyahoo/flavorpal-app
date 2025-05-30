@@ -65,7 +65,7 @@
             <p v-if="usernameEditError" id="username-edit-error-acc-view" class="text-xs text-red-600 mt-1">{{ usernameEditError }}</p>
           </form>
           <p v-if="userProfileStore.loading && authStore.user" class="text-xs text-flavorpal-gray animate-pulse mt-1">Loading points...</p>
-          <p v-else-if="!userProfileStore.loading && authStore.user" class="text-sm text-flavorpal-orange font-semibold mt-1">{{ userProfileStore.tastePoints }} TastePoints</p>
+          <router-link to="/point-conversion" v-else-if="!userProfileStore.loading && authStore.user" class="text-sm text-flavorpal-orange font-semibold mt-1">{{ userProfileStore.tastePoints }} TastePoints</router-link>
         </div>
       </section>
 
@@ -253,10 +253,7 @@ const keywordsInputRef = ref<HTMLInputElement | null>(null); // For focusing the
 const keywordsEditError = ref<string | null>(null);
 
 
-// Mock TastePoints (from userProfileStore now)
-// const tastePoints = ref(157); // Removed, will use userProfileStore.tastePoints
-
-// Interface for Badge data (remains the same)
+// Interface for Badge data 
 interface Badge {
   id: string;
   name: string;

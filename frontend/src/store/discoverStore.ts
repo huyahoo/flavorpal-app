@@ -90,7 +90,7 @@ export const useDiscoverStore = defineStore('discover', {
      * Fetches a single public review by its ID for the detail view.
      * @param reviewId - The ID of the review to fetch.
      */
-    async loadSingleReviewDetail(reviewId: string) {
+    async loadSingleReviewDetail(reviewId: number) {
         this.isLoadingDetail = true;
         this.error = null;
         this.currentReviewDetail = null;
@@ -113,7 +113,7 @@ export const useDiscoverStore = defineStore('discover', {
      * Simulates liking a review and updates the like count locally.
      * @param reviewId - The ID of the review to like.
      */
-    async likeReview(reviewId: string) {
+    async likeReview(reviewId: number) {
       const reviewIndex = this.publicReviews.findIndex(r => r.reviewId === reviewId);
       if (reviewIndex !== -1) {
         // Optimistic update
@@ -144,7 +144,7 @@ export const useDiscoverStore = defineStore('discover', {
      * @param productId - The ID of the product.
      * @param currentReviewId - The ID of the review currently being viewed, to exclude it.
      */
-    async loadRelatedPublicReviews(productId: string, currentReviewId: string) {
+    async loadRelatedPublicReviews(productId: number, currentReviewId: number) {
       if (!productId) return;
       this.isLoadingRelated = true;
       this.error = null; // Clear previous errors specific to this action if any

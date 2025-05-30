@@ -43,7 +43,7 @@ import GiftList from '@/components/pointConversion/GiftList.vue'
 import type { PointConversionGift } from '@/types'
 import { useRoute, useRouter } from 'vue-router'
 import UpcomingFeatureModal from '@/components/common/UpcomingFeatureModal.vue';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const router = useRouter()
 const isUpcomingModalOpen = ref(false);
@@ -84,13 +84,18 @@ const mockOthersGifts: { title: string; giftList: PointConversionGift[] } = {
 }
 
 const goBack = () => {
-  /* ... as before ... */
   if (window.history.state.back) {
     router.go(-1)
   } else {
     router.push({ name: 'Discover' })
   }
 }
+
+onMounted(() => {
+  setTimeout(() => {
+    showUpcomingFeatureModal('Taste Point Conversion');
+  }, 500);
+})
 
 const mockGiftRedeemCallback = () => {
   showUpcomingFeatureModal('Taste Point Conversion');
