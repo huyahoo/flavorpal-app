@@ -1,10 +1,10 @@
-**/__pycache__
-**/*.pyc
-**/.pytest_cache
-**/.DS_Store
-**/node_modules
-**/dist
-**/coverage
+__pycache__
+.pyc
+.pytest_cache
+.DS_Store
+node_modules
+dist
+coverage
 .env
 backend/.env
 frontend/.env

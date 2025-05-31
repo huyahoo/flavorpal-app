@@ -20,13 +20,18 @@ npm install
 ```
 
 ### Create .env file
+
+``` bash
+cp .env.example .env
+```
+or
 - .env.development
 ```
 VITE_API_BASE_URL=https://localhost:8000/
 ```
 - .env.production
 ```
-VITE_API_BASE_URL=https://54.238.179.149:8000/
+VITE_API_BASE_URL="your_production_api_base_url"
 ```
 
 
@@ -35,6 +40,9 @@ VITE_API_BASE_URL=https://54.238.179.149:8000/
 ```sh
 npm run dev
 ```
+
+### APP URL
+https://localhost:5173/
 
 ### Type-Check, Compile and Minify for Production
 
