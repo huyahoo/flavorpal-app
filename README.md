@@ -66,7 +66,7 @@ FlavorPal aims to make grocery shopping more transparent, personalized, and fun!
     * Navigate to the [aiengine-cloudflare](aiengine-cloudflare) directory.
     * Follow instructions in [aiengine-cloudflare/README.md](aiengine-cloudflare/README.md).
   
-### Running FE, BE
+### Running FE, BE in local
 Make sure you have Docker installed.
 
 ```bash
@@ -74,6 +74,18 @@ cd flavorpal-app
 docker compose up --build -d
 ```
 
+## Backup branch
+### Infra Production-ready Version
+- Checkout branch `dev/infra`
+```bash
+git checkout dev/infra
+```
+
+### Supabase Cloud
+- Checkot branch `dev/backend-supabasecloud`
+```bash
+git checkout dev/backend-supabasecloud
+```
 
 ## Credits
 
