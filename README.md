@@ -82,7 +82,7 @@ git checkout dev/infra
 ```
 
 ### Supabase Cloud
-- Checkot branch `dev/backend-supabasecloud`
+- Checkout branch `dev/backend-supabasecloud`
 ```bash
 git checkout dev/backend-supabasecloud
 ```
