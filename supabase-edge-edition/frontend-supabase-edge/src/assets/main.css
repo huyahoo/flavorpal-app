@@ -1,0 +1,72 @@
+/* src/assets/main.css */
+
+/* Import Tailwind's base styles, component classes, and utility classes. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Global base styles.
+  Using standard CSS here to avoid potential @apply issues in global scope
+  that were discussed earlier.
+*/
+body {
+  /* Tailwind's slate-100 */
+  background-color: #f1f5f9; 
+  /* Apply a nice default font stack. If you've configured 'Inter' or another font in tailwind.config.js,
+     Tailwind's 'font-sans' utility will use it. This is a fallback. */
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  /* Tailwind's gray-800 */
+  color: #1f2937; 
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Example: Custom component style using @apply (use sparingly in global CSS) */
+/*
+.btn-flavorpal-primary {
+  @apply bg-flavorpal-green text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-flavorpal-green-dark transition-colors;
+}
+*/
+
+
+
+
+/* @import './base.css';
+@import "tailwindcss";
+
+#app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-weight: normal;
+}
+
+a,
+.green {
+  text-decoration: none;
+  color: hsla(160, 100%, 37%, 1);
+  transition: 0.4s;
+  padding: 3px;
+}
+
+@media (hover: hover) {
+  a:hover {
+    background-color: hsla(160, 100%, 37%, 0.2);
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    display: flex;
+    place-items: center;
+  }
+
+  #app {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 0 2rem;
+  }
+} */
+
+
